@@ -1,5 +1,10 @@
 # PicToCraft
 
+### Descriere
+Inspirat de seria Picross, am creat un joc numit PictoCraft, care păstrează mecanicile de bază ale puzzle-urilor logice tip nonogramă, dar adaugă o tematică vizuală și stil grafic inspirate din Minecraft.
+
+Picross este o serie de jocuri video puzzle dezvoltate de Jupiter Corporation și deținute de Nintendo. Aceasta prezintă o serie de puzzle-uri cu nonograme rezolvate de jucător. Seria a început în 1995 cu Mario's Picross pentru Game Boy. După numeroase articole publicate de Nintendo pentru mai multe platforme, Jupiter a început să auto-publice jocuri Picross, cum ar fi seriile Picross e și Picross S, pe Nintendo 3DS și Nintendo Switch, sub licență Nintendo.
+
 ### Important!
 
 Aveți voie cu cod generat de modele de limbaj la care nu ați contribuit semnificativ doar dacă documentați riguros acest proces.
