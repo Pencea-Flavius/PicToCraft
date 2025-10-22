@@ -95,7 +95,12 @@ public:
         while (true) {
             int x, y;
             std::cout << "\nIntrodu coordonatele x y sau -1 -1 ca sa iesi: ";
-            std::cin >> x >> y;
+
+            if (!(std::cin >> x >> y)) {  // verifică dacă citirea a reușit
+                std::cout << "Input invalid sau EOF, ies din joc.\n";
+                break;  // oprește bucla dacă nu mai există input valid
+            }
+
             if (x == -1 && y == -1) break;
 
             grila.toggle_bloc(x, y);
@@ -106,6 +111,7 @@ public:
                 break;
             }
         }
+
     }
 };
 
