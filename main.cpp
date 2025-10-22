@@ -1,6 +1,5 @@
 #include <iostream>
 #include <fstream>
-#include <utility>
 #include <vector>
 #include <string>
 
@@ -9,14 +8,16 @@ class Block {
     bool completat;
 
 public:
-    explicit Block(bool corect_val) : corect(corect_val), completat(false) {
-    }
+    explicit Block(bool corect_val) : corect(corect_val), completat(false) {}
+    Block(const Block&) = default;
+    Block& operator=(const Block&) = default;
+    ~Block() = default;
 
     void inverseaza() { completat = !completat; }
     [[nodiscard]] bool este_corect() const { return corect; }
     [[nodiscard]] bool este_completat() const { return completat; }
 
-    friend std::ostream &operator<<(std::ostream &os, const Block &b) {
+    friend std::ostream& operator<<(std::ostream& os, const Block& b) {
         os << (b.completat ? "#" : ".");
         return os;
     }
@@ -24,12 +25,29 @@ public:
 
 class Grila {
     int dim{};
-    std::vector<std::vector<Block> > matrice;
+    std::vector<std::vector<Block>> matrice;
 
 public:
     Grila() = default;
 
-    void citeste_din_fisier(const std::string &nume_fisier) {
+    // Constructor cu parametri
+    Grila(int dimensiune, const std::vector<std::vector<bool>>& pattern) : dim(dimensiune) {
+        matrice.resize(dim);
+        for (int i = 0; i < dim; i++) {
+            matrice[i].reserve(dim);
+            for (int j = 0; j < dim; j++) {
+                bool val = (i < static_cast<int>(pattern.size()) &&
+                           j < static_cast<int>(pattern[i].size())) ? pattern[i][j] : false;
+                matrice[i].emplace_back(val);
+            }
+        }
+    }
+
+    Grila(const Grila&) = default;
+    Grila& operator=(const Grila&) = default;
+    ~Grila() = default;
+
+    void citeste_din_fisier(const std::string& nume_fisier) {
         std::ifstream fin(nume_fisier);
         if (!fin) {
             std::cout << "Eroare la deschiderea fisierului " << nume_fisier << "\n";
@@ -44,8 +62,9 @@ public:
         for (int i = 0; i < dim; i++) {
             fin >> linie;
             matrice[i].clear();
-            for (int j = 0; j < dim && j < static_cast<int>(linie.size()); j++) {
-                matrice[i].emplace_back(linie[j] == '1');
+            for (int j = 0; j < dim; j++) {
+                bool val = (j < static_cast<int>(linie.size()) && linie[j] == '1');
+                matrice[i].emplace_back(val);
             }
         }
         fin.close();
@@ -79,39 +98,57 @@ public:
         }
         return true;
     }
+
+    friend std::ostream& operator<<(std::ostream& os, const Grila& g) {
+        os << "Grila " << g.dim << "x" << g.dim << ":\n";
+        for (int i = 0; i < g.dim; i++) {
+            for (int j = 0; j < g.dim; j++)
+                os << g.matrice[i][j];
+            os << "\n";
+        }
+        return os;
+    }
+
+    [[nodiscard]] int get_dimensiune() const { return dim; }
 };
 
 class Joc {
     Grila grila;
 
 public:
-    explicit Joc(Grila g) : grila(std::move(g)) {
-    }
+    explicit Joc(const Grila& g) : grila(g) {}
+    Joc(const Joc&) = default;
+    Joc& operator=(const Joc&) = default;
+    ~Joc() = default;
 
     void ruleaza() {
         std::cout << "=== PICTOCRAFT ===\n";
-        grila.afiseaza();
+        std::cout << grila;
 
         while (true) {
             int x, y;
             std::cout << "\nIntrodu coordonatele x y sau -1 -1 ca sa iesi: ";
-
             if (!(std::cin >> x >> y)) {
                 std::cout << "Input invalid sau EOF, ies din joc.\n";
                 break;
             }
-
             if (x == -1 && y == -1) break;
 
             grila.toggle_bloc(x, y);
-            grila.afiseaza();
+            std::cout << grila;
 
             if (grila.este_castigata()) {
-                std::cout << "\n Bravo, ai castigat!\n";
+                std::cout << "\nBravo, ai castigat!\n";
                 break;
             }
         }
+    }
 
+    friend std::ostream& operator<<(std::ostream& os, const Joc& j) {
+        os << "=== STARE JOC ===\n";
+        os << j.grila;
+        os << "Status: " << (j.grila.este_castigata() ? "CASTIGAT" : "IN DESFASURARE") << "\n";
+        return os;
     }
 };
 
