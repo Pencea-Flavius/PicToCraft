@@ -38,14 +38,14 @@ public:
 
         fin >> dim;
         matrice.clear();
-        matrice.resize(dim); // doar rânduri pentru moment
+        matrice.resize(dim);
 
         std::string linie;
         for (int i = 0; i < dim; i++) {
             fin >> linie;
             matrice[i].clear();
             for (int j = 0; j < dim && j < static_cast<int>(linie.size()); j++) {
-                matrice[i].emplace_back(linie[j] == '1'); // corect sau nu
+                matrice[i].emplace_back(linie[j] == '1');
             }
         }
         fin.close();
@@ -96,9 +96,9 @@ public:
             int x, y;
             std::cout << "\nIntrodu coordonatele x y sau -1 -1 ca sa iesi: ";
 
-            if (!(std::cin >> x >> y)) {  // verifică dacă citirea a reușit
+            if (!(std::cin >> x >> y)) {
                 std::cout << "Input invalid sau EOF, ies din joc.\n";
-                break;  // oprește bucla dacă nu mai există input valid
+                break;
             }
 
             if (x == -1 && y == -1) break;
