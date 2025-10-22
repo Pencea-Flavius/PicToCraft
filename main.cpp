@@ -79,14 +79,6 @@ public:
         matrice[x][y].inverseaza();
     }
 
-    void afiseaza() const {
-        for (int i = 0; i < dim; i++) {
-            for (int j = 0; j < dim; j++)
-                std::cout << matrice[i][j];
-            std::cout << "\n";
-        }
-    }
-
     [[nodiscard]] bool este_castigata() const {
         for (int i = 0; i < dim; i++) {
             for (int j = 0; j < dim; j++) {
@@ -99,6 +91,7 @@ public:
         return true;
     }
 
+
     friend std::ostream& operator<<(std::ostream& os, const Grila& g) {
         os << "Grila " << g.dim << "x" << g.dim << ":\n";
         for (int i = 0; i < g.dim; i++) {
@@ -108,8 +101,6 @@ public:
         }
         return os;
     }
-
-    [[nodiscard]] int get_dimensiune() const { return dim; }
 };
 
 class Joc {
@@ -143,6 +134,7 @@ public:
             }
         }
     }
+
 
     friend std::ostream& operator<<(std::ostream& os, const Joc& j) {
         os << "=== STARE JOC ===\n";
