@@ -4,7 +4,6 @@
 #include <string>
 #include <algorithm>
 #include <random>
-#include <memory>
 
 class Block {
     bool corect;
@@ -138,11 +137,14 @@ class Grila {
     std::vector<std::vector<Block>> matrice;
     IndiciiPicross indicii;
     int greseli;
+    int scor;
+    bool mod_scor;
 
 public:
-    Grila() : dim(0), matrice(), indicii(), greseli(0) {}
+    Grila() : dim(0), matrice(), indicii(), greseli(0), scor(1000), mod_scor(false) {}
 
-    Grila(int dimensiune, const std::vector<std::vector<bool>>& pattern) : dim(dimensiune), greseli(0) {
+    Grila(int dimensiune, const std::vector<std::vector<bool>>& pattern, bool use_mod_scor = false)
+        : dim(dimensiune), greseli(0), scor(1000), mod_scor(use_mod_scor) {
         matrice.resize(dim);
         for (int i = 0; i < dim; i++) {
             matrice[i].reserve(dim);
@@ -155,7 +157,8 @@ public:
         indicii = IndiciiPicross(matrice);
     }
 
-    Grila(const Grila& other) : dim(other.dim), matrice(other.matrice), indicii(other.indicii), greseli(other.greseli) {}
+    Grila(const Grila& other) : dim(other.dim), matrice(other.matrice), indicii(other.indicii),
+                               greseli(other.greseli), scor(other.scor), mod_scor(other.mod_scor) {}
 
     Grila& operator=(const Grila& other) {
         if (this != &other) {
@@ -163,13 +166,15 @@ public:
             matrice = other.matrice;
             indicii = other.indicii;
             greseli = other.greseli;
+            scor = other.scor;
+            mod_scor = other.mod_scor;
         }
         return *this;
     }
 
     ~Grila() {}
 
-    void citeste_din_fisier(const std::string& nume_fisier) {
+    void citeste_din_fisier(const std::string& nume_fisier, bool use_mod_scor = false) {
         std::ifstream fin(nume_fisier);
         if (!fin) {
             std::cout << "Eroare la deschiderea fisierului " << nume_fisier << "\n";
@@ -192,10 +197,12 @@ public:
         fin.close();
         indicii = IndiciiPicross(matrice);
         greseli = 0;
+        scor = 1000;
+        mod_scor = use_mod_scor;
         std::cout << "Grila incarcata (dim = " << dim << ")\n";
     }
 
-    void genereaza_random(int dimensiune, double densitate = 0.3) {
+    void genereaza_random(int dimensiune, bool use_mod_scor = false, double densitate = 0.3) {
         dim = dimensiune;
         matrice.clear();
         matrice.resize(dim);
@@ -213,6 +220,8 @@ public:
 
         indicii = IndiciiPicross(matrice);
         greseli = 0;
+        scor = 1000;
+        mod_scor = use_mod_scor;
         std::cout << "Grila random generata (dim = " << dim << ")\n";
     }
 
@@ -228,9 +237,26 @@ public:
 
         bool nou_completat = matrice[x][y].este_completat();
 
-        if ((nou_completat && !bloc_corect) || (!nou_completat && bloc_corect)) {
-            greseli++;
-            std::cout << "Gresit! Eroare " << greseli << "/3\n";
+        if (mod_scor) {
+            if (nou_completat && bloc_corect) {
+                scor += 200;
+                std::cout << "Corect! +200 puncte\n";
+            } else if (nou_completat && !bloc_corect) {
+                scor -= 100;
+                std::cout << "Gresit! -100 puncte\n";
+            } else if (!nou_completat && !bloc_corect) {
+                scor += 100;
+                std::cout << "Corect! +100 puncte\n";
+            } else {
+                scor -= 200;
+                std::cout << "Gresit! -200 puncte\n";
+            }
+            if (scor < 0) scor = 0;
+        } else {
+            if ((nou_completat && !bloc_corect) || (!nou_completat && bloc_corect)) {
+                greseli++;
+                std::cout << "Gresit! Eroare " << greseli << "/3\n";
+            }
         }
     }
 
@@ -247,11 +273,20 @@ public:
     }
 
     [[nodiscard]] bool este_pierdut() const {
-        return greseli >= 3;
+        return !mod_scor && greseli >= 3;
     }
 
+    [[nodiscard]] int get_scor() const { return scor; }
+    [[nodiscard]] int get_greseli() const { return greseli; }
+    [[nodiscard]] bool get_mod_scor() const { return mod_scor; }
+
     friend std::ostream& operator<<(std::ostream& os, const Grila& g) {
-        os << "Greseli: " << g.greseli << "/3\n";
+        if (g.mod_scor) {
+            os << "Scor: " << g.scor << "\n";
+        } else {
+            os << "Greseli: " << g.greseli << "/3\n";
+        }
+
         const auto& indicii_linii = g.indicii.get_indicii_linii();
         const auto& indicii_coloane = g.indicii.get_indicii_coloane();
 
@@ -316,7 +351,11 @@ public:
 
     void ruleaza() {
         std::cout << "=== PICTOCRAFT ===\n";
-        std::cout << "Ai voie 3 greseli. Succes!\n";
+        if (grila.get_mod_scor()) {
+            std::cout << "Mod: SCOR - Incepi cu 1000 puncte\n";
+        } else {
+            std::cout << "Mod: GRESELI - Ai voie 3 greseli\n";
+        }
         std::cout << grila;
 
         while (true) {
@@ -331,7 +370,11 @@ public:
             std::cout << grila;
 
             if (grila.este_castigata()) {
-                std::cout << "\nBravo, ai castigat!\n";
+                if (grila.get_mod_scor()) {
+                    std::cout << "\nBravo, ai castigat! Scor final: " << grila.get_scor() << "\n";
+                } else {
+                    std::cout << "\nBravo, ai castigat!\n";
+                }
                 break;
             }
 
@@ -363,18 +406,28 @@ int main() {
     int optiune;
     std::cin >> optiune;
 
-    if (optiune == 1) {
+    if (optiune == 1 || optiune == 2) {
+        std::cout << "\nAlege modul de joc:\n";
+        std::cout << "1. Mod scor (punctaj)\n";
+        std::cout << "2. Mod greseli (3 greseli = game over)\n";
+        std::cout << "Alege modul (1 sau 2): ";
+
+        int mod_joc;
+        std::cin >> mod_joc;
+        bool mod_scor = (mod_joc == 1);
+
         Grila g;
-        g.citeste_din_fisier("item.txt");
-        Joc joc(g);
-        joc.ruleaza();
-    } else if (optiune == 2) {
-        Grila g;
-        int dim;
-        std::cout << "Introdu dimensiunea grilei (5-15): ";
-        std::cin >> dim;
-        dim = std::max(5, std::min(15, dim));
-        g.genereaza_random(dim);
+
+        if (optiune == 1) {
+            g.citeste_din_fisier("item.txt", mod_scor);
+        } else {
+            int dim;
+            std::cout << "Introdu dimensiunea grilei (5-15): ";
+            std::cin >> dim;
+            dim = std::max(5, std::min(15, dim));
+            g.genereaza_random(dim, mod_scor);
+        }
+
         Joc joc(g);
         joc.ruleaza();
     }
