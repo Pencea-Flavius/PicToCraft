@@ -355,27 +355,31 @@ public:
 };
 
 int main() {
-    std::cout << "=== PICTOCRAFT ===\n";
-    std::cout << "1. Joc din fisier\n";
-    std::cout << "2. Joc random\n";
-    std::cout << "Alege optiunea (1 sau 2): ";
-
-    int optiune;
-    std::cin >> optiune;
-
     Grila g;
+    bool optiune_valida = false;
 
-    if (optiune == 1) {
-        g.citeste_din_fisier("item.txt");
-    } else if (optiune == 2) {
-        int dim;
-        std::cout << "Introdu dimensiunea grilei (5-15): ";
-        std::cin >> dim;
-        dim = std::max(5, std::min(15, dim));
-        g.genereaza_random(dim);
-    } else {
-        std::cout << "Optiune invalida. Iesire.\n";
-        return 1;
+    while (!optiune_valida) {
+        std::cout << "=== PICTOCRAFT ===\n";
+        std::cout << "1. Joc din fisier\n";
+        std::cout << "2. Joc random\n";
+        std::cout << "Alege optiunea (1 sau 2): ";
+
+        int optiune;
+        std::cin >> optiune;
+
+        if (optiune == 1) {
+            g.citeste_din_fisier("item.txt");
+            optiune_valida = true;
+        } else if (optiune == 2) {
+            int dim;
+            std::cout << "Introdu dimensiunea grilei (5-15): ";
+            std::cin >> dim;
+            dim = std::max(5, std::min(15, dim));
+            g.genereaza_random(dim);
+            optiune_valida = true;
+        } else {
+            std::cout << "Optiune invalida! Incearca din nou.\n\n";
+        }
     }
 
     Joc joc(g);
