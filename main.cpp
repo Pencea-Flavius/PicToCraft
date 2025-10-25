@@ -11,10 +11,8 @@ class Block {
 public:
     explicit Block(bool corect_val) : corect(corect_val), completat(false) {}
 
-    // Constructor de copiere manual
     Block(const Block& other) : corect(other.corect), completat(other.completat) {}
 
-    // Operator= manual
     Block& operator=(const Block& other) {
         if (this != &other) {
             corect = other.corect;
@@ -23,7 +21,6 @@ public:
         return *this;
     }
 
-    // Destructor manual
     ~Block() {}
 
     void inverseaza() { completat = !completat; }
@@ -41,17 +38,15 @@ class IndiciiPicross {
     std::vector<std::vector<int>> indicii_coloane;
 
 public:
-    IndiciiPicross() {}
+    IndiciiPicross() : indicii_linii(), indicii_coloane() {}
 
     explicit IndiciiPicross(const std::vector<std::vector<Block>>& matrice) {
         calculeaza_indicii(matrice);
     }
 
-    // Constructor de copiere manual
     IndiciiPicross(const IndiciiPicross& other)
         : indicii_linii(other.indicii_linii), indicii_coloane(other.indicii_coloane) {}
 
-    // Operator= manual
     IndiciiPicross& operator=(const IndiciiPicross& other) {
         if (this != &other) {
             indicii_linii = other.indicii_linii;
@@ -60,7 +55,6 @@ public:
         return *this;
     }
 
-    // Destructor manual
     ~IndiciiPicross() {}
 
     void calculeaza_indicii(const std::vector<std::vector<Block>>& matrice) {
@@ -68,7 +62,6 @@ public:
         indicii_linii.clear();
         indicii_coloane.clear();
 
-        // Calculează indicii pentru linii
         for (size_t i = 0; i < dim; i++) {
             std::vector<int> indicii_linie;
             int contor = 0;
@@ -93,7 +86,6 @@ public:
             indicii_linii.push_back(indicii_linie);
         }
 
-        // Calculează indicii pentru coloane
         for (size_t j = 0; j < dim; j++) {
             std::vector<int> indicii_coloana;
             int contor = 0;
@@ -137,44 +129,18 @@ public:
         }
         return max_latime;
     }
-
-    friend std::ostream& operator<<(std::ostream& os, const IndiciiPicross& ind) {
-        os << "=== INDICII PICROSS ===\n";
-
-        os << "Indicii linii:\n";
-        for (size_t i = 0; i < ind.indicii_linii.size(); ++i) {
-            os << "Linia " << i << ": ";
-            for (size_t j = 0; j < ind.indicii_linii[i].size(); ++j) {
-                os << ind.indicii_linii[i][j];
-                if (j < ind.indicii_linii[i].size() - 1) os << " ";
-            }
-            os << "\n";
-        }
-
-        os << "Indicii coloane:\n";
-        for (size_t i = 0; i < ind.indicii_coloane.size(); ++i) {
-            os << "Coloana " << i << ": ";
-            for (size_t j = 0; j < ind.indicii_coloane[i].size(); ++j) {
-                os << ind.indicii_coloane[i][j];
-                if (j < ind.indicii_coloane[i].size() - 1) os << " ";
-            }
-            os << "\n";
-        }
-
-        return os;
-    }
 };
 
 class Grila {
-    int dim{};
+    int dim;
     std::vector<std::vector<Block>> matrice;
     IndiciiPicross indicii;
+    int greseli;
 
 public:
-    Grila() : dim(0) {}
+    Grila() : dim(0), matrice(), indicii(), greseli(0) {}
 
-    // Constructor cu parametri
-    Grila(int dimensiune, const std::vector<std::vector<bool>>& pattern) : dim(dimensiune) {
+    Grila(int dimensiune, const std::vector<std::vector<bool>>& pattern) : dim(dimensiune), greseli(0) {
         matrice.resize(dim);
         for (int i = 0; i < dim; i++) {
             matrice[i].reserve(dim);
@@ -187,20 +153,18 @@ public:
         indicii = IndiciiPicross(matrice);
     }
 
-    // Constructor de copiere manual
-    Grila(const Grila& other) : dim(other.dim), matrice(other.matrice), indicii(other.indicii) {}
+    Grila(const Grila& other) : dim(other.dim), matrice(other.matrice), indicii(other.indicii), greseli(other.greseli) {}
 
-    // Operator= manual
     Grila& operator=(const Grila& other) {
         if (this != &other) {
             dim = other.dim;
             matrice = other.matrice;
             indicii = other.indicii;
+            greseli = other.greseli;
         }
         return *this;
     }
 
-    // Destructor manual
     ~Grila() {}
 
     void citeste_din_fisier(const std::string& nume_fisier) {
@@ -225,6 +189,7 @@ public:
         }
         fin.close();
         indicii = IndiciiPicross(matrice);
+        greseli = 0;
         std::cout << "Grila incarcata (dim = " << dim << ")\n";
     }
 
@@ -233,7 +198,17 @@ public:
             std::cout << "Coordonate invalide!\n";
             return;
         }
+
+        bool bloc_corect = matrice[x][y].este_corect();
+
         matrice[x][y].inverseaza();
+
+        bool nou_completat = matrice[x][y].este_completat();
+
+        if ((nou_completat && !bloc_corect) || (!nou_completat && bloc_corect)) {
+            greseli++;
+            std::cout << "Gresit! Eroare " << greseli << "/3\n";
+        }
     }
 
     [[nodiscard]] bool este_castigata() const {
@@ -248,18 +223,20 @@ public:
         return true;
     }
 
-    void afiseaza_indicii() const {
-        std::cout << indicii;
+    [[nodiscard]] bool este_pierdut() const {
+        return greseli >= 3;
     }
 
+    [[nodiscard]] int get_greseli() const { return greseli; }
+
     friend std::ostream& operator<<(std::ostream& os, const Grila& g) {
+        os << "Greseli: " << g.greseli << "/3\n";
         const auto& indicii_linii = g.indicii.get_indicii_linii();
         const auto& indicii_coloane = g.indicii.get_indicii_coloane();
 
         size_t inaltime_maxima = g.indicii.get_inaltime_maxima_coloane();
         size_t latime_maxima = g.indicii.get_latime_maxima_linii();
 
-        // Afișează indicii coloanelor
         for (size_t nivel = 0; nivel < inaltime_maxima; nivel++) {
             for (size_t s = 0; s < latime_maxima; s++) {
                 os << "  ";
@@ -279,11 +256,8 @@ public:
             os << "\n";
         }
 
-        // Afișează grila cu indicii liniilor
         for (int i = 0; i < g.dim; i++) {
             const auto& linie = indicii_linii[i];
-
-            // Afișează indicii liniei
             for (size_t s = 0; s < latime_maxima - linie.size(); s++) {
                 os << "  ";
             }
@@ -292,7 +266,6 @@ public:
                 if (k < linie.size() - 1) os << " ";
             }
 
-            // Afișează blocurile
             for (int j = 0; j < g.dim; j++) {
                 os << " " << g.matrice[i][j];
             }
@@ -309,10 +282,8 @@ class Joc {
 public:
     explicit Joc(const Grila& g) : grila(g) {}
 
-    // Constructor de copiere manual
     Joc(const Joc& other) : grila(other.grila) {}
 
-    // Operator= manual
     Joc& operator=(const Joc& other) {
         if (this != &other) {
             grila = other.grila;
@@ -320,24 +291,20 @@ public:
         return *this;
     }
 
-    // Destructor manual
     ~Joc() {}
 
     void ruleaza() {
         std::cout << "=== PICTOCRAFT ===\n";
-        std::cout << "Indicii puzzle-ului:\n";
-        grila.afiseaza_indicii();
-        std::cout << "\nGrila:\n";
+        std::cout << "Ai voie 3 greseli. Succes!\n";
         std::cout << grila;
 
         while (true) {
             int x, y;
-            std::cout << "\nIntrodu coordonatele x y sau -1 -1 ca sa iesi: ";
+            std::cout << "\nIntrodu coordonatele x y: ";
             if (!(std::cin >> x >> y)) {
-                std::cout << "Input invalid sau EOF, ies din joc.\n";
+                std::cout << "Input invalid, ies din joc.\n";
                 break;
             }
-            if (x == -1 && y == -1) break;
 
             grila.toggle_bloc(x, y);
             std::cout << grila;
@@ -346,13 +313,22 @@ public:
                 std::cout << "\nBravo, ai castigat!\n";
                 break;
             }
+
+            if (grila.este_pierdut()) {
+                std::cout << "\nGAME OVER! Ai facut 3 greseli.\n";
+                break;
+            }
         }
     }
 
     friend std::ostream& operator<<(std::ostream& os, const Joc& j) {
         os << "=== STARE JOC ===\n";
         os << j.grila;
-        os << "Status: " << (j.grila.este_castigata() ? "CASTIGAT" : "IN DESFASURARE") << "\n";
+        os << "Status: ";
+        if (j.grila.este_castigata()) os << "CASTIGAT";
+        else if (j.grila.este_pierdut()) os << "PIERDUT";
+        else os << "IN DESFASURARE";
+        os << "\n";
         return os;
     }
 };
