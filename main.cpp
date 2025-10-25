@@ -227,8 +227,6 @@ public:
         return greseli >= 3;
     }
 
-    [[nodiscard]] int get_greseli() const { return greseli; }
-
     friend std::ostream& operator<<(std::ostream& os, const Grila& g) {
         os << "Greseli: " << g.greseli << "/3\n";
         const auto& indicii_linii = g.indicii.get_indicii_linii();
