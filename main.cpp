@@ -3,6 +3,8 @@
 #include <vector>
 #include <string>
 #include <algorithm>
+#include <random>
+#include <memory>
 
 class Block {
     bool corect;
@@ -193,6 +195,27 @@ public:
         std::cout << "Grila incarcata (dim = " << dim << ")\n";
     }
 
+    void genereaza_random(int dimensiune, double densitate = 0.3) {
+        dim = dimensiune;
+        matrice.clear();
+        matrice.resize(dim);
+
+        std::random_device rd;
+        std::mt19937 gen(rd());
+        std::uniform_real_distribution<> dis(0.0, 1.0);
+
+        for (int i = 0; i < dim; i++) {
+            for (int j = 0; j < dim; j++) {
+                bool val = dis(gen) < densitate;
+                matrice[i].emplace_back(val);
+            }
+        }
+
+        indicii = IndiciiPicross(matrice);
+        greseli = 0;
+        std::cout << "Grila random generata (dim = " << dim << ")\n";
+    }
+
     void toggle_bloc(int x, int y) {
         if (x < 0 || y < 0 || x >= dim || y >= dim) {
             std::cout << "Coordonate invalide!\n";
@@ -332,8 +355,28 @@ public:
 };
 
 int main() {
+    std::cout << "=== PICTOCRAFT ===\n";
+    std::cout << "1. Joc din fisier\n";
+    std::cout << "2. Joc random\n";
+    std::cout << "Alege optiunea (1 sau 2): ";
+
+    int optiune;
+    std::cin >> optiune;
+
     Grila g;
-    g.citeste_din_fisier("item.txt");
+
+    if (optiune == 1) {
+        g.citeste_din_fisier("item.txt");
+    } else if (optiune == 2) {
+        int dim;
+        std::cout << "Introdu dimensiunea grilei (5-15): ";
+        std::cin >> dim;
+        dim = std::max(5, std::min(15, dim));
+        g.genereaza_random(dim);
+    } else {
+        std::cout << "Optiune invalida. Iesire.\n";
+        return 1;
+    }
 
     Joc joc(g);
     joc.ruleaza();
