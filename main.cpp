@@ -277,7 +277,6 @@ public:
     }
 
     [[nodiscard]] int get_scor() const { return scor; }
-    [[nodiscard]] int get_greseli() const { return greseli; }
     [[nodiscard]] bool get_mod_scor() const { return mod_scor; }
 
     friend std::ostream& operator<<(std::ostream& os, const Grila& g) {
