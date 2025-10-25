@@ -244,10 +244,7 @@ public:
             } else if (nou_completat && !bloc_corect) {
                 scor -= 100;
                 std::cout << "Gresit! -100 puncte\n";
-            } else if (!nou_completat && !bloc_corect) {
-                scor += 100;
-                std::cout << "Corect! +100 puncte\n";
-            } else {
+            } else if (bloc_corect) {
                 scor -= 200;
                 std::cout << "Gresit! -200 puncte\n";
             }
