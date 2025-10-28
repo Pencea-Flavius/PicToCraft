@@ -4,355 +4,373 @@
 #include <string>
 #include <algorithm>
 #include <random>
+#include <chrono>
 
 class Block {
-    bool corect;
-    bool completat;
+    bool correct;
+    bool completed;
 
 public:
-    explicit Block(bool corect_val) : corect(corect_val), completat(false) {}
+    explicit Block(bool correct_val) : correct(correct_val), completed(false) {}
 
-    Block(const Block& other) : corect(other.corect), completat(other.completat) {}
+    Block(const Block& other) : correct(other.correct), completed(other.completed) {}
 
     Block& operator=(const Block& other) {
         if (this != &other) {
-            corect = other.corect;
-            completat = other.completat;
+            correct = other.correct;
+            completed = other.completed;
         }
         return *this;
     }
 
     ~Block() {}
 
-    void inverseaza() { completat = !completat; }
-    [[nodiscard]] bool este_corect() const { return corect; }
-    [[nodiscard]] bool este_completat() const { return completat; }
+    void toggle() { completed = !completed; }
+    [[nodiscard]] bool is_correct() const { return correct; }
+    [[nodiscard]] bool is_completed() const { return completed; }
 
     friend std::ostream& operator<<(std::ostream& os, const Block& b) {
-        os << (b.completat ? "#" : ".");
+        os << (b.completed ? "#" : ".");
         return os;
     }
 };
 
-class IndiciiPicross {
-    std::vector<std::vector<int>> indicii_linii;
-    std::vector<std::vector<int>> indicii_coloane;
+class PicrossHints {
+    std::vector<std::vector<int>> row_hints;
+    std::vector<std::vector<int>> col_hints;
 
 public:
-    IndiciiPicross() : indicii_linii(), indicii_coloane() {}
+    PicrossHints() : row_hints(), col_hints() {}
 
-    explicit IndiciiPicross(const std::vector<std::vector<Block>>& matrice) {
-        calculeaza_indicii(matrice);
+    explicit PicrossHints(const std::vector<std::vector<Block>>& grid) {
+        calculate_hints(grid);
     }
 
-    IndiciiPicross(const IndiciiPicross& other)
-        : indicii_linii(other.indicii_linii), indicii_coloane(other.indicii_coloane) {}
+    PicrossHints(const PicrossHints& other)
+        : row_hints(other.row_hints), col_hints(other.col_hints) {}
 
-    IndiciiPicross& operator=(const IndiciiPicross& other) {
+    PicrossHints& operator=(const PicrossHints& other) {
         if (this != &other) {
-            indicii_linii = other.indicii_linii;
-            indicii_coloane = other.indicii_coloane;
+            row_hints = other.row_hints;
+            col_hints = other.col_hints;
         }
         return *this;
     }
 
-    ~IndiciiPicross() {}
+    ~PicrossHints() {}
 
-    void calculeaza_indicii(const std::vector<std::vector<Block>>& matrice) {
-        size_t dim = matrice.size();
-        indicii_linii.clear();
-        indicii_coloane.clear();
+    void calculate_hints(const std::vector<std::vector<Block>>& grid) {
+        size_t size = grid.size();
+        row_hints.clear();
+        col_hints.clear();
 
-        for (size_t i = 0; i < dim; i++) {
-            std::vector<int> indicii_linie;
-            int contor = 0;
+        for (size_t i = 0; i < size; i++) {
+            std::vector<int> row_hint;
+            int count = 0;
 
-            for (size_t j = 0; j < dim; j++) {
-                if (matrice[i][j].este_corect()) {
-                    contor++;
-                } else if (contor > 0) {
-                    indicii_linie.push_back(contor);
-                    contor = 0;
+            for (size_t j = 0; j < size; j++) {
+                if (grid[i][j].is_correct()) {
+                    count++;
+                } else if (count > 0) {
+                    row_hint.push_back(count);
+                    count = 0;
                 }
             }
 
-            if (contor > 0) {
-                indicii_linie.push_back(contor);
+            if (count > 0) {
+                row_hint.push_back(count);
             }
 
-            if (indicii_linie.empty()) {
-                indicii_linie.push_back(0);
+            if (row_hint.empty()) {
+                row_hint.push_back(0);
             }
 
-            indicii_linii.push_back(indicii_linie);
+            row_hints.push_back(row_hint);
         }
 
-        for (size_t j = 0; j < dim; j++) {
-            std::vector<int> indicii_coloana;
-            int contor = 0;
+        for (size_t j = 0; j < size; j++) {
+            std::vector<int> col_hint;
+            int count = 0;
 
-            for (size_t i = 0; i < dim; i++) {
-                if (matrice[i][j].este_corect()) {
-                    contor++;
-                } else if (contor > 0) {
-                    indicii_coloana.push_back(contor);
-                    contor = 0;
+            for (size_t i = 0; i < size; i++) {
+                if (grid[i][j].is_correct()) {
+                    count++;
+                } else if (count > 0) {
+                    col_hint.push_back(count);
+                    count = 0;
                 }
             }
 
-            if (contor > 0) {
-                indicii_coloana.push_back(contor);
+            if (count > 0) {
+                col_hint.push_back(count);
             }
 
-            if (indicii_coloana.empty()) {
-                indicii_coloana.push_back(0);
+            if (col_hint.empty()) {
+                col_hint.push_back(0);
             }
 
-            indicii_coloane.push_back(indicii_coloana);
+            col_hints.push_back(col_hint);
         }
     }
 
-    [[nodiscard]] const std::vector<std::vector<int>>& get_indicii_linii() const { return indicii_linii; }
-    [[nodiscard]] const std::vector<std::vector<int>>& get_indicii_coloane() const { return indicii_coloane; }
+    [[nodiscard]] const std::vector<std::vector<int>>& get_row_hints() const { return row_hints; }
+    [[nodiscard]] const std::vector<std::vector<int>>& get_col_hints() const { return col_hints; }
 
-    [[nodiscard]] size_t get_inaltime_maxima_coloane() const {
-        size_t max_inaltime = 0;
-        for (const auto& coloana : indicii_coloane) {
-            max_inaltime = std::max(max_inaltime, coloana.size());
+    [[nodiscard]] size_t get_max_col_height() const {
+        size_t max_height = 0;
+        for (const auto& col : col_hints) {
+            max_height = std::max(max_height, col.size());
         }
-        return max_inaltime;
+        return max_height;
     }
 
-    [[nodiscard]] size_t get_latime_maxima_linii() const {
-        size_t max_latime = 0;
-        for (const auto& linie : indicii_linii) {
-            max_latime = std::max(max_latime, linie.size());
+    [[nodiscard]] size_t get_max_row_width() const {
+        size_t max_width = 0;
+        for (const auto& row : row_hints) {
+            max_width = std::max(max_width, row.size());
         }
-        return max_latime;
+        return max_width;
     }
 };
 
-class Grila {
-    int dim;
-    std::vector<std::vector<Block>> matrice;
-    IndiciiPicross indicii;
-    int greseli;
-    int scor;
-    bool mod_scor;
+class Grid {
+    int size;
+    std::vector<std::vector<Block>> blocks;
+    PicrossHints hints;
+    int mistakes;
+    int score;
+    bool score_mode;
 
 public:
-    Grila() : dim(0), matrice(), indicii(), greseli(0), scor(1000), mod_scor(false) {}
+    Grid() : size(0), blocks(), hints(), mistakes(0), score(1000), score_mode(false) {}
 
-    Grila(int dimensiune, const std::vector<std::vector<bool>>& pattern, bool use_mod_scor = false)
-        : dim(dimensiune), greseli(0), scor(1000), mod_scor(use_mod_scor) {
-        matrice.resize(dim);
-        for (int i = 0; i < dim; i++) {
-            matrice[i].reserve(dim);
-            for (int j = 0; j < dim; j++) {
+    Grid(int grid_size, const std::vector<std::vector<bool>>& pattern, bool use_score_mode = false)
+        : size(grid_size), mistakes(0), score(1000), score_mode(use_score_mode) {
+        blocks.resize(size);
+        for (int i = 0; i < size; i++) {
+            blocks[i].reserve(size);
+            for (int j = 0; j < size; j++) {
                 bool val = (i < static_cast<int>(pattern.size()) &&
                            j < static_cast<int>(pattern[i].size())) ? pattern[i][j] : false;
-                matrice[i].emplace_back(val);
+                blocks[i].emplace_back(val);
             }
         }
-        indicii = IndiciiPicross(matrice);
+        hints = PicrossHints(blocks);
     }
 
-    Grila(const Grila& other) : dim(other.dim), matrice(other.matrice), indicii(other.indicii),
-                               greseli(other.greseli), scor(other.scor), mod_scor(other.mod_scor) {}
+    Grid(const Grid& other) : size(other.size), blocks(other.blocks), hints(other.hints),
+                             mistakes(other.mistakes), score(other.score), score_mode(other.score_mode) {}
 
-    Grila& operator=(const Grila& other) {
+    Grid& operator=(const Grid& other) {
         if (this != &other) {
-            dim = other.dim;
-            matrice = other.matrice;
-            indicii = other.indicii;
-            greseli = other.greseli;
-            scor = other.scor;
-            mod_scor = other.mod_scor;
+            size = other.size;
+            blocks = other.blocks;
+            hints = other.hints;
+            mistakes = other.mistakes;
+            score = other.score;
+            score_mode = other.score_mode;
         }
         return *this;
     }
 
-    ~Grila() {}
+    ~Grid() {}
 
-    void citeste_din_fisier(const std::string& nume_fisier, bool use_mod_scor = false) {
-        std::ifstream fin(nume_fisier);
-        if (!fin) {
-            std::cout << "Eroare la deschiderea fisierului " << nume_fisier << "\n";
+    void load_from_file(const std::string& filename, bool use_score_mode = false) {
+        std::ifstream file(filename);
+        if (!file) {
+            std::cout << "Eroare la deschiderea fisierului " << filename << "\n";
             return;
         }
 
-        fin >> dim;
-        matrice.clear();
-        matrice.resize(dim);
+        file >> size;
+        blocks.clear();
+        blocks.resize(size);
 
-        std::string linie;
-        for (int i = 0; i < dim; i++) {
-            fin >> linie;
-            matrice[i].clear();
-            for (int j = 0; j < dim; j++) {
-                bool val = (j < static_cast<int>(linie.size()) && linie[j] == '1');
-                matrice[i].emplace_back(val);
+        std::string line;
+        for (int i = 0; i < size; i++) {
+            file >> line;
+            blocks[i].clear();
+            for (int j = 0; j < size; j++) {
+                bool val = (j < static_cast<int>(line.size()) && line[j] == '1');
+                blocks[i].emplace_back(val);
             }
         }
-        fin.close();
-        indicii = IndiciiPicross(matrice);
-        greseli = 0;
-        scor = 1000;
-        mod_scor = use_mod_scor;
-        std::cout << "Grila incarcata (dim = " << dim << ")\n";
+        file.close();
+        hints = PicrossHints(blocks);
+        mistakes = 0;
+        score = 1000;
+        score_mode = use_score_mode;
+        std::cout << "Grila incarcata (dim = " << size << ")\n";
     }
 
-    void genereaza_random(int dimensiune, bool use_mod_scor = false, double densitate = 0.3) {
-        dim = dimensiune;
-        matrice.clear();
-        matrice.resize(dim);
+    void generate_random(int grid_size, bool use_score_mode = false, double density = 0.3) {
+        size = grid_size;
+        blocks.clear();
+        blocks.resize(size);
 
         std::random_device rd;
         std::mt19937 gen(rd());
         std::uniform_real_distribution<> dis(0.0, 1.0);
 
-        for (int i = 0; i < dim; i++) {
-            for (int j = 0; j < dim; j++) {
-                bool val = dis(gen) < densitate;
-                matrice[i].emplace_back(val);
+        for (int i = 0; i < size; i++) {
+            for (int j = 0; j < size; j++) {
+                bool val = dis(gen) < density;
+                blocks[i].emplace_back(val);
             }
         }
 
-        indicii = IndiciiPicross(matrice);
-        greseli = 0;
-        scor = 1000;
-        mod_scor = use_mod_scor;
-        std::cout << "Grila random generata (dim = " << dim << ")\n";
+        hints = PicrossHints(blocks);
+        mistakes = 0;
+        score = 1000;
+        score_mode = use_score_mode;
+        std::cout << "Grila random generata (dim = " << size << ")\n";
     }
 
-    void toggle_bloc(int x, int y) {
-        if (x < 0 || y < 0 || x >= dim || y >= dim) {
+    void toggle_block(int x, int y) {
+        if (x < 0 || y < 0 || x >= size || y >= size) {
             std::cout << "Coordonate invalide!\n";
             return;
         }
 
-        bool bloc_corect = matrice[x][y].este_corect();
+        bool block_correct = blocks[x][y].is_correct();
 
-        matrice[x][y].inverseaza();
+        blocks[x][y].toggle();
 
-        bool nou_completat = matrice[x][y].este_completat();
+        bool now_completed = blocks[x][y].is_completed();
 
-        if (mod_scor) {
-            if (nou_completat && bloc_corect) {
-                scor += 200;
+        if (score_mode) {
+            if (now_completed && block_correct) {
+                score += 200;
                 std::cout << "Corect! +200 puncte\n";
-            } else if (nou_completat && !bloc_corect) {
-                scor -= 100;
+            } else if (now_completed && !block_correct) {
+                score -= 100;
                 std::cout << "Gresit! -100 puncte\n";
-            } else if (bloc_corect) {
-                scor -= 200;
+            } else if (block_correct) {
+                score -= 200;
                 std::cout << "Gresit! -200 puncte\n";
             }
-            if (scor < 0) scor = 0;
+            if (score < 0) score = 0;
         } else {
-            if ((nou_completat && !bloc_corect) || (!nou_completat && bloc_corect)) {
-                greseli++;
-                std::cout << "Gresit! Eroare " << greseli << "/3\n";
+            if ((now_completed && !block_correct) || (!now_completed && block_correct)) {
+                mistakes++;
+                std::cout << "Gresit! Eroare " << mistakes << "/3\n";
             }
         }
     }
 
-    [[nodiscard]] bool este_castigata() const {
-        for (int i = 0; i < dim; i++) {
-            for (int j = 0; j < dim; j++) {
-                if (matrice[i][j].este_corect() && !matrice[i][j].este_completat())
+    [[nodiscard]] bool is_solved() const {
+        for (int i = 0; i < size; i++) {
+            for (int j = 0; j < size; j++) {
+                if (blocks[i][j].is_correct() && !blocks[i][j].is_completed())
                     return false;
-                if (!matrice[i][j].este_corect() && matrice[i][j].este_completat())
+                if (!blocks[i][j].is_correct() && blocks[i][j].is_completed())
                     return false;
             }
         }
         return true;
     }
 
-    [[nodiscard]] bool este_pierdut() const {
-        return !mod_scor && greseli >= 3;
+    [[nodiscard]] bool is_lost() const {
+        return !score_mode && mistakes >= 3;
     }
 
-    [[nodiscard]] int get_scor() const { return scor; }
-    [[nodiscard]] bool get_mod_scor() const { return mod_scor; }
+    [[nodiscard]] int get_score() const { return score; }
+    [[nodiscard]] int get_mistakes() const { return mistakes; }
+    [[nodiscard]] bool get_score_mode() const { return score_mode; }
+    [[nodiscard]] int get_size() const { return size; }
 
-    friend std::ostream& operator<<(std::ostream& os, const Grila& g) {
-        if (g.mod_scor) {
-            os << "Scor: " << g.scor << "\n";
+    [[nodiscard]] std::string to_string() const {
+        std::string output;
+
+        if (score_mode) {
+            output += "Scor: " + std::to_string(score) + "\n";
         } else {
-            os << "Greseli: " << g.greseli << "/3\n";
+            output += "Greseli: " + std::to_string(mistakes) + "/3\n";
         }
 
-        const auto& indicii_linii = g.indicii.get_indicii_linii();
-        const auto& indicii_coloane = g.indicii.get_indicii_coloane();
+        const auto& row_hints = hints.get_row_hints();
+        const auto& col_hints = hints.get_col_hints();
 
-        size_t inaltime_maxima = g.indicii.get_inaltime_maxima_coloane();
-        size_t latime_maxima = g.indicii.get_latime_maxima_linii();
+        size_t max_col_height = hints.get_max_col_height();
+        size_t max_row_width = hints.get_max_row_width();
 
-        for (size_t nivel = 0; nivel < inaltime_maxima; nivel++) {
-            for (size_t s = 0; s < latime_maxima; s++) {
-                os << "  ";
+        for (size_t level = 0; level < max_col_height; level++) {
+            for (size_t s = 0; s < max_row_width; s++) {
+                output += "  ";
             }
-            os << " ";
+            output += " ";
 
-            for (int j = 0; j < g.dim; j++) {
-                const auto& coloana = indicii_coloane[j];
-                int index = static_cast<int>(coloana.size()) - static_cast<int>(inaltime_maxima) + static_cast<int>(nivel);
+            for (int j = 0; j < size; j++) {
+                const auto& col = col_hints[j];
+                int index = static_cast<int>(col.size()) - static_cast<int>(max_col_height) + static_cast<int>(level);
 
                 if (index >= 0) {
-                    os << coloana[index] << " ";
+                    output += std::to_string(col[index]) + " ";
                 } else {
-                    os << "  ";
+                    output += "  ";
                 }
             }
-            os << "\n";
+            output += "\n";
         }
 
-        for (int i = 0; i < g.dim; i++) {
-            const auto& linie = indicii_linii[i];
-            for (size_t s = 0; s < latime_maxima - linie.size(); s++) {
-                os << "  ";
+        for (int i = 0; i < size; i++) {
+            const auto& row = row_hints[i];
+            for (size_t s = 0; s < max_row_width - row.size(); s++) {
+                output += "  ";
             }
-            for (size_t k = 0; k < linie.size(); k++) {
-                os << linie[k];
-                if (k < linie.size() - 1) os << " ";
+            for (size_t k = 0; k < row.size(); k++) {
+                output += std::to_string(row[k]);
+                if (k < row.size() - 1) output += " ";
             }
 
-            for (int j = 0; j < g.dim; j++) {
-                os << " " << g.matrice[i][j];
+            for (int j = 0; j < size; j++) {
+                output += " ";
+                output += (blocks[i][j].is_completed() ? "#" : ".");
             }
-            os << "\n";
+            output += "\n";
         }
 
+        return output;
+    }
+
+    friend std::ostream& operator<<(std::ostream& os, const Grid& g) {
+        os << g.to_string();
         return os;
     }
 };
 
-class Joc {
-    Grila grila;
+class Game {
+    Grid grid;
+    std::chrono::steady_clock::time_point start_time;
 
 public:
-    explicit Joc(const Grila& g) : grila(g) {}
+    explicit Game(const Grid& g) : grid(g) {
+        start_time = std::chrono::steady_clock::now();
+    }
 
-    Joc(const Joc& other) : grila(other.grila) {}
+    Game(const Game& other) : grid(other.grid), start_time(other.start_time) {}
 
-    Joc& operator=(const Joc& other) {
+    Game& operator=(const Game& other) {
         if (this != &other) {
-            grila = other.grila;
+            grid = other.grid;
+            start_time = other.start_time;
         }
         return *this;
     }
 
-    ~Joc() {}
+    ~Game() {}
 
-    void ruleaza() {
-        std::cout << "=== PICTOCRAFT ===\n";
-        if (grila.get_mod_scor()) {
-            std::cout << "Mod: SCOR - Incepi cu 1000 puncte\n";
-        } else {
-            std::cout << "Mod: GRESELI - Ai voie 3 greseli\n";
-        }
-        std::cout << grila;
+    [[nodiscard]] long get_elapsed_time() const {
+        auto end_time = std::chrono::steady_clock::now();
+        return std::chrono::duration_cast<std::chrono::seconds>(end_time - start_time).count();
+    }
+
+    void run() {
+        std::string output = "=== PICTOCRAFT ===\n";
+        output += grid.get_score_mode() ? "Mod: SCOR - Incepi cu 1000 puncte\n" : "Mod: GRESELI - Ai voie 3 greseli\n";
+        output += "Dimensiune: " + std::to_string(grid.get_size()) + "x" + std::to_string(grid.get_size()) + "\n";
+        output += grid.to_string();
+        std::cout << output;
 
         while (true) {
             int x, y;
@@ -362,71 +380,72 @@ public:
                 break;
             }
 
-            grila.toggle_bloc(x, y);
-            std::cout << grila;
+            grid.toggle_block(x, y);
 
-            if (grila.este_castigata()) {
-                if (grila.get_mod_scor()) {
-                    std::cout << "\nBravo, ai castigat! Scor final: " << grila.get_scor() << "\n";
-                } else {
-                    std::cout << "\nBravo, ai castigat!\n";
+            std::string state = "\n";
+            if (grid.get_score_mode()) {
+                state += "Scor: " + std::to_string(grid.get_score()) + " | ";
+            } else {
+                state += "Greseli: " + std::to_string(grid.get_mistakes()) + "/3 | ";
+            }
+            state += "Timp: " + std::to_string(get_elapsed_time()) + "s\n";
+            state += grid.to_string();
+            std::cout << state;
+
+            if (grid.is_solved()) {
+                std::string final_msg = "\n=== BRAVO AI CASTIGAT! ===\n";
+                if (grid.get_score_mode()) {
+                    final_msg += "Scor final: " + std::to_string(grid.get_score()) + "\n";
                 }
+                final_msg += "Timp total: " + std::to_string(get_elapsed_time()) + " secunde\n";
+                std::cout << final_msg;
                 break;
             }
 
-            if (grila.este_pierdut()) {
-                std::cout << "\nGAME OVER! Ai facut 3 greseli.\n";
+            if (grid.is_lost()) {
+                std::cout << "\n=== GAME OVER! Ai facut 3 greseli. ===\n";
                 break;
             }
         }
-    }
-
-    friend std::ostream& operator<<(std::ostream& os, const Joc& j) {
-        os << "=== STARE JOC ===\n";
-        os << j.grila;
-        os << "Status: ";
-        if (j.grila.este_castigata()) os << "CASTIGAT";
-        else if (j.grila.este_pierdut()) os << "PIERDUT";
-        else os << "IN DESFASURARE";
-        os << "\n";
-        return os;
     }
 };
 
 int main() {
-    std::cout << "=== PICTOCRAFT ===\n";
-    std::cout << "1. Joc din fisier\n";
-    std::cout << "2. Joc random\n";
-    std::cout << "Alege optiunea (1 sau 2): ";
+    auto start_main = std::chrono::steady_clock::now();
 
-    int optiune;
-    std::cin >> optiune;
+    std::string menu = "=== PICTOCRAFT ===\n1. Joc din fisier\n2. Joc random\nAlege optiunea (1 sau 2): ";
+    std::cout << menu;
 
-    if (optiune == 1 || optiune == 2) {
-        std::cout << "\nAlege modul de joc:\n";
-        std::cout << "1. Mod scor (punctaj)\n";
-        std::cout << "2. Mod greseli (3 greseli = game over)\n";
-        std::cout << "Alege modul (1 sau 2): ";
+    int option;
+    std::cin >> option;
 
-        int mod_joc;
-        std::cin >> mod_joc;
-        bool mod_scor = (mod_joc == 1);
+    if (option == 1 || option == 2) {
+        std::string mode_menu = "\nAlege modul de joc:\n1. Mod scor (punctaj)\n2. Mod greseli (3 greseli = game over)\nAlege modul (1 sau 2): ";
+        std::cout << mode_menu;
 
-        Grila g;
+        int mode_choice;
+        std::cin >> mode_choice;
+        bool score_mode = (mode_choice == 1);
 
-        if (optiune == 1) {
-            g.citeste_din_fisier("item.txt", mod_scor);
+        Grid grid;
+
+        if (option == 1) {
+            grid.load_from_file("item.txt", score_mode);
         } else {
-            int dim;
+            int size;
             std::cout << "Introdu dimensiunea grilei (5-15): ";
-            std::cin >> dim;
-            dim = std::max(5, std::min(15, dim));
-            g.genereaza_random(dim, mod_scor);
+            std::cin >> size;
+            size = std::max(5, std::min(15, size));
+            grid.generate_random(size, score_mode);
         }
 
-        Joc joc(g);
-        joc.ruleaza();
+        Game game(grid);
+        game.run();
     }
+
+    auto end_main = std::chrono::steady_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::seconds>(end_main - start_main);
+    std::cout << "\nTimp total in program: " << duration.count() << " secunde\n";
 
     return 0;
 }
