@@ -344,9 +344,7 @@ class Game {
     std::chrono::steady_clock::time_point start_time;
 
 public:
-    explicit Game(const Grid& g) : grid(g) {
-        start_time = std::chrono::steady_clock::now();
-    }
+    explicit Game(const Grid& g) : grid(g), start_time(std::chrono::steady_clock::now()) {}
 
     Game(const Game& other) : grid(other.grid), start_time(other.start_time) {}
 
