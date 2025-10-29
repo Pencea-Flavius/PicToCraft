@@ -142,10 +142,10 @@ class Grid {
     bool score_mode;
 
 public:
-    Grid() : size(0), blocks(), hints(), mistakes(0), score(1000), score_mode(false) {}
+    Grid() : size(), blocks(), hints(), mistakes(), score(), score_mode(false) {}
 
     Grid(int grid_size, const std::vector<std::vector<bool>>& pattern, bool use_score_mode = false)
-        : size(grid_size), mistakes(0), score(1000), score_mode(use_score_mode) {
+        : size(grid_size), mistakes(), score(), score_mode(use_score_mode) {
         blocks.resize(size);
         for (int i = 0; i < size; i++) {
             blocks[i].reserve(size);
@@ -246,8 +246,8 @@ public:
                 score -= 100;
                 std::cout << "Gresit! -100 puncte\n";
             } else if (block_correct) {
-                score -= 200;
-                std::cout << "Gresit! -200 puncte\n";
+                score -= 300;
+                std::cout << "Gresit! -300 puncte\n";
             }
             if (score < 0) score = 0;
         } else {
