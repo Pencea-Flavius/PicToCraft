@@ -11,9 +11,9 @@ class Block {
     bool completed;
 
 public:
-    explicit Block(bool correct_val) : correct(correct_val), completed(false) {}
+    explicit Block(bool correct_val) : correct{correct_val}, completed{false} {}
 
-    Block(const Block& other) : correct(other.correct), completed(other.completed) {}
+    Block(const Block& other) : correct{other.correct}, completed{other.completed} {}
 
     Block& operator=(const Block& other) {
         if (this != &other) {
@@ -40,14 +40,14 @@ class PicrossHints {
     std::vector<std::vector<int>> col_hints;
 
 public:
-    PicrossHints() : row_hints(), col_hints() {}
+    PicrossHints() : row_hints{}, col_hints{} {}
 
     explicit PicrossHints(const std::vector<std::vector<Block>>& grid) {
         calculate_hints(grid);
     }
 
     PicrossHints(const PicrossHints& other)
-        : row_hints(other.row_hints), col_hints(other.col_hints) {}
+        : row_hints{other.row_hints}, col_hints{other.col_hints} {}
 
     PicrossHints& operator=(const PicrossHints& other) {
         if (this != &other) {
@@ -148,7 +148,7 @@ public:
     Grid() : size{}, blocks{}, total_correct_blocks{}, completed_blocks{}, correct_completed_blocks{}, hints{}, mistakes{}, score{}, score_mode{false} {}
 
     Grid(int grid_size, const std::vector<std::vector<bool>>& pattern, bool use_score_mode = false)
-        : size(grid_size), total_correct_blocks(0), completed_blocks(0), correct_completed_blocks(0), mistakes(0), score(1000), score_mode(use_score_mode) {
+        : size{grid_size}, total_correct_blocks{0}, completed_blocks{0}, correct_completed_blocks{0}, mistakes{0}, score{1000}, score_mode{use_score_mode} {
         blocks.resize(size);
         for (int i = 0; i < size; i++) {
             blocks[i].reserve(size);
@@ -363,9 +363,9 @@ class Game {
     std::chrono::steady_clock::time_point start_time;
 
 public:
-    explicit Game(const Grid& g) : grid(g), start_time(std::chrono::steady_clock::now()) {}
+    explicit Game(const Grid& g) : grid{g}, start_time{std::chrono::steady_clock::now()} {}
 
-    Game(const Game& other) : grid(other.grid), start_time(other.start_time) {}
+    Game(const Game& other) : grid{other.grid}, start_time{other.start_time} {}
 
     Game& operator=(const Game& other) {
         if (this != &other) {
