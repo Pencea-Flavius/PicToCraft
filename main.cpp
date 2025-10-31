@@ -136,35 +136,42 @@ public:
 class Grid {
     int size;
     std::vector<std::vector<Block>> blocks;
+    int total_correct_blocks;
+    int completed_blocks;               // number of blocks currently marked as completed
+    int correct_completed_blocks;       // number of completed blocks that are actually correct
     PicrossHints hints;
     int mistakes;
     int score;
     bool score_mode;
 
 public:
-    Grid() : size(), blocks(), hints(), mistakes(), score(), score_mode(false) {}
+    Grid() : size{}, blocks{}, total_correct_blocks{}, completed_blocks{}, correct_completed_blocks{}, hints{}, mistakes{}, score{}, score_mode{false} {}
 
     Grid(int grid_size, const std::vector<std::vector<bool>>& pattern, bool use_score_mode = false)
-        : size(grid_size), mistakes(), score(), score_mode(use_score_mode) {
+        : size(grid_size), total_correct_blocks(0), completed_blocks(0), correct_completed_blocks(0), mistakes(0), score(1000), score_mode(use_score_mode) {
         blocks.resize(size);
         for (int i = 0; i < size; i++) {
             blocks[i].reserve(size);
             for (int j = 0; j < size; j++) {
                 bool val = (i < static_cast<int>(pattern.size()) &&
                            j < static_cast<int>(pattern[i].size())) ? pattern[i][j] : false;
+                if (val) total_correct_blocks++;
                 blocks[i].emplace_back(val);
             }
         }
         hints = PicrossHints(blocks);
     }
 
-    Grid(const Grid& other) : size(other.size), blocks(other.blocks), hints(other.hints),
+    Grid(const Grid& other) : size(other.size), blocks(other.blocks), total_correct_blocks(other.total_correct_blocks), completed_blocks(other.completed_blocks), correct_completed_blocks(other.correct_completed_blocks), hints(other.hints),
                              mistakes(other.mistakes), score(other.score), score_mode(other.score_mode) {}
 
     Grid& operator=(const Grid& other) {
         if (this != &other) {
             size = other.size;
             blocks = other.blocks;
+            total_correct_blocks = other.total_correct_blocks;
+            completed_blocks = other.completed_blocks;
+            correct_completed_blocks = other.correct_completed_blocks;
             hints = other.hints;
             mistakes = other.mistakes;
             score = other.score;
@@ -185,6 +192,9 @@ public:
         file >> size;
         blocks.clear();
         blocks.resize(size);
+        total_correct_blocks = 0;
+        completed_blocks = 0;
+        correct_completed_blocks = 0;
 
         std::string line;
         for (int i = 0; i < size; i++) {
@@ -192,6 +202,7 @@ public:
             blocks[i].clear();
             for (int j = 0; j < size; j++) {
                 bool val = (j < static_cast<int>(line.size()) && line[j] == '1');
+                if (val) total_correct_blocks++;
                 blocks[i].emplace_back(val);
             }
         }
@@ -203,10 +214,13 @@ public:
         std::cout << "Grila incarcata (dim = " << size << ")\n";
     }
 
-    void generate_random(int grid_size, bool use_score_mode = false, double density = 0.3) {
+    void generate_random(int grid_size, bool use_score_mode = false, double density = 0.5) {
         size = grid_size;
         blocks.clear();
         blocks.resize(size);
+        total_correct_blocks = 0;
+        completed_blocks = 0;
+        correct_completed_blocks = 0;
 
         std::random_device rd;
         std::mt19937 gen(rd());
@@ -215,6 +229,7 @@ public:
         for (int i = 0; i < size; i++) {
             for (int j = 0; j < size; j++) {
                 bool val = dis(gen) < density;
+                if (val) total_correct_blocks++;
                 blocks[i].emplace_back(val);
             }
         }
@@ -232,11 +247,21 @@ public:
             return;
         }
 
+        bool was_completed = blocks[x][y].is_completed();
         bool block_correct = blocks[x][y].is_correct();
+
 
         blocks[x][y].toggle();
 
         bool now_completed = blocks[x][y].is_completed();
+
+        if (!was_completed && now_completed) {
+            completed_blocks++;
+            if (block_correct) correct_completed_blocks++;
+        } else if (was_completed && !now_completed) {
+            completed_blocks--;
+            if (block_correct) correct_completed_blocks--;
+        }
 
         if (score_mode) {
             if (now_completed && block_correct) {
@@ -259,15 +284,9 @@ public:
     }
 
     [[nodiscard]] bool is_solved() const {
-        for (int i = 0; i < size; i++) {
-            for (int j = 0; j < size; j++) {
-                if (blocks[i][j].is_correct() && !blocks[i][j].is_completed())
-                    return false;
-                if (!blocks[i][j].is_correct() && blocks[i][j].is_completed())
-                    return false;
-            }
-        }
-        return true;
+        // Update to only make 2 comparisons, not checking the hole matrix every time
+        return completed_blocks == total_correct_blocks &&
+               correct_completed_blocks == total_correct_blocks;
     }
 
     [[nodiscard]] bool is_lost() const {
@@ -431,9 +450,9 @@ int main() {
             grid.load_from_file("item.txt", score_mode);
         } else {
             int size;
-            std::cout << "Introdu dimensiunea grilei (5-15): ";
+            std::cout << "Introdu dimensiunea grilei (5-1000): ";
             std::cin >> size;
-            size = std::max(5, std::min(15, size));
+            size = std::max(5, std::min(1000, size)); // Overkill - yes, Unplayable - yes, but still wanted to show how fast the new check algorith is; You will probably want to tune the max down to something usable
             grid.generate_random(size, score_mode);
         }
 
