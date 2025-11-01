@@ -131,6 +131,20 @@ public:
         }
         return max_width;
     }
+    friend std::ostream& operator<<(std::ostream& os, const PicrossHints& h) {
+        os << "=== HINTS ===\n";
+        os << "Linii:\n";
+        for (const auto& row : h.row_hints) {
+            for (int val : row) os << val << " ";
+            os << "\n";
+        }
+        os << "Coloane:\n";
+        for (const auto& col : h.col_hints) {
+            for (int val : col) os << val << " ";
+            os << "\n";
+        }
+        return os;
+    }
 };
 
 class Grid {
@@ -377,7 +391,7 @@ public:
 
     ~Game() {}
 
-    [[nodiscard]] long get_elapsed_time() const {
+    [[nodiscard]] long long get_elapsed_time() const {
         auto end_time = std::chrono::steady_clock::now();
         return std::chrono::duration_cast<std::chrono::seconds>(end_time - start_time).count();
     }
@@ -424,6 +438,12 @@ public:
                 break;
             }
         }
+    }
+    friend std::ostream& operator<<(std::ostream& os, const Game& g) {
+        os << "=== STARE JOC ===\n";
+        os << g.grid;
+        os << "Timp scurs: " << g.get_elapsed_time() << " secunde\n";
+        return os;
     }
 };
 
