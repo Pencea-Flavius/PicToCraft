@@ -447,12 +447,25 @@ int main() {
         Grid grid;
 
         if (option == 1) {
-            grid.load_from_file("item.txt", score_mode);
+            std::string file_menu = "\nAlege fisierul:\n1. item.txt\n2. mob.txt\nAlege fisierul (1 sau 2): ";
+            std::cout << file_menu;
+
+            int file_choice;
+            std::cin >> file_choice;
+
+            if (file_choice == 1) {
+                grid.load_from_file("item.txt", score_mode);
+            } else if (file_choice == 2) {
+                grid.load_from_file("mob.txt", score_mode);
+            } else {
+                std::cout << "Optiune invalida. Iesire.\n";
+                return 0;
+            }
         } else {
             int size;
-            std::cout << "Introdu dimensiunea grilei (5-1000): ";
+            std::cout << "Introdu dimensiunea grilei (5-15): ";
             std::cin >> size;
-            size = std::max(5, std::min(1000, size)); // Overkill - yes, Unplayable - yes, but still wanted to show how fast the new check algorith is; You will probably want to tune the max down to something usable
+            size = std::max(5, std::min(15, size));
             grid.generate_random(size, score_mode);
         }
 
