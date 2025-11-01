@@ -26,7 +26,7 @@ Indiciile pe coloane:
 0  
 
 Rezolvarea logică duce la următorul rezultat (unde „#” reprezintă o celulă colorată, iar „.” una goală):  
-&ZeroWidthSpace; &ZeroWidthSpace; &ZeroWidthSpace; &ZeroWidthSpace; &ZeroWidthSpace; &ZeroWidthSpace; &ZeroWidthSpace;   1 &ZeroWidthSpace; &ZeroWidthSpace; &ZeroWidthSpace; 1  
+&ZeroWidthSpace; &ZeroWidthSpace; &ZeroWidthSpace; &ZeroWidthSpace; &ZeroWidthSpace; &ZeroWidthSpace; &ZeroWidthSpace; &ZeroWidthSpace; &ZeroWidthSpace; &ZeroWidthSpace;   1 &ZeroWidthSpace; &ZeroWidthSpace; &ZeroWidthSpace; 1  
 &ZeroWidthSpace; &ZeroWidthSpace; &ZeroWidthSpace; &ZeroWidthSpace; &ZeroWidthSpace; &ZeroWidthSpace; &ZeroWidthSpace;  0 2 1 2 0  
   0&ZeroWidthSpace; &ZeroWidthSpace; &ZeroWidthSpace; &ZeroWidthSpace; &ZeroWidthSpace; . &ZeroWidthSpace; . &ZeroWidthSpace; . &ZeroWidthSpace; . &ZeroWidthSpace; .  
 1 1 &ZeroWidthSpace; . # &ZeroWidthSpace; . &ZeroWidthSpace; # .  
