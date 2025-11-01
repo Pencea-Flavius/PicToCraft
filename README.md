@@ -1,19 +1,41 @@
 # PicToCraft
 
 ### Descriere
-PictoCraft este un joc de tip puzzle inspirat din seria Picross, dar reinterpretat într-un stil grafic și tematic asemănător universului Minecraft. Jocul combină logica matematică a nonogramelor cu elemente vizuale de tip „voxel art”, oferind o experiență relaxantă, dar totodată provocatoare.
+PictoCraft este un joc de tip puzzle logic inspirat din seria Picross (Nonogram), reinterpretat într-un stil vizual și tematic asemănător universului Minecraft. Jocul combină logica matematică a nonogramelor cu estetica blocurilor cubice din Minecraft, oferind o experiență relaxantă, dar totodată provocatoare.
 
-În PictoCraft, jucătorul primește o grilă de pătrate — fiecare rând și coloană având indici numerici care arată câte celule trebuie completate. Scopul este să folosești aceste indicii pentru a descoperi o imagine ascunsă, formată din blocuri asemănătoare celor din Minecraft.
+În PictoCraft, jucătorul primește o grilă pătrată alcătuită din celule goale. Scopul este să descopere o imagine ascunsă completând celulele corect, pe baza indiciilor numerice afișate pe fiecare rând și coloană. Fiecare număr reprezintă un grup de celule care trebuie colorate consecutiv. Între două grupuri de celule colorate trebuie să existe cel puțin o celulă goală.
 
-De exemplu, un indiciu precum „3 1 4” pe un rând înseamnă că trebuie să colorezi trei pătrate consecutive, apoi să lași cel puțin un spațiu liber, apoi unul singur, din nou un spațiu liber, și la final patru pătrate consecutive. Când toate rândurile și coloanele sunt rezolvate corect, grila dezvăluie o imagine completă — o sabie, o cască, un diamant sau alte elemente iconice din Minecraft.
+De exemplu, dacă un rând are indiciul „3 1 4”, înseamnă că trebuie colorate trei pătrate consecutive, apoi se lasă cel puțin un pătrat gol, apoi unul singur colorat, din nou un spațiu gol, și în final patru pătrate consecutive colorate. Poziționarea exactă a acestor grupuri se deduce logic, ținând cont și de indiciile de pe coloane.
 
-PictoCraft adaugă un aer creativ și familiar puzzle-ului clasic Picross, transformând fiecare rezolvare într-o mică „construcție” vizuală, ca și cum ai crea o operă pixel-art.
+Jocul nu se bazează pe noroc, ci pe raționament logic. Pe măsură ce jucătorul completează grila, poate deduce tot mai multe celule folosind relațiile dintre indiciile rândurilor și coloanelor. Când toate indiciile sunt respectate, imaginea ascunsă se dezvăluie complet – o sabie, un diamant, o torță sau alte obiecte inspirate din Minecraft.
 
-### Important!
+Un exemplu simplu de puzzle ar putea fi o grilă de 5x5:
 
-Aveți voie cu cod generat de modele de limbaj la care nu ați contribuit semnificativ doar dacă documentați riguros acest proces.
-Codul generat pus "ca să fie"/pe care nu îl înțelegeți se punctează doar pentru puncte bonus, doar în contextul
-în care oferă funcționalități ajutătoare și doar dacă are sens.
+Indiciile pe rânduri:
+2
+1 1
+3
+1 1
+2
+
+Indiciile pe coloane:
+1
+3
+1 1
+5
+2
+
+Rezolvarea logică duce la următorul rezultat (unde „#” reprezintă o celulă colorată, iar „.” una goală):
+
+##...
+#.#..
+###..
+#.#..
+.##..
+
+Această imagine finală poate reprezenta, de exemplu, o mică sabie pixel-art.
+
+PictoCraft păstrează esența jocurilor de tip Nonogram, dar îi adaugă o notă creativă și familiară inspirată din Minecraft. Fiecare puzzle completat se simte ca o construcție pixel-art pe care jucătorul o descoperă bloc cu bloc, folosindu-și doar logica și răbdarea.
 
 Codul din proiect trebuie să poată fi ușor de înțeles și de modificat de către altcineva. Pentru detalii, veniți la ore.
 
