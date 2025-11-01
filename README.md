@@ -11,31 +11,32 @@ Jocul nu se bazează pe noroc, ci pe raționament logic. Pe măsură ce jucător
 
 Un exemplu simplu de puzzle ar putea fi o grilă de 5x5:
 
-Indiciile pe rânduri:
-2
-1 1
-3
-1 1
-2
+Indiciile pe rânduri:  
+0  
+1 1  
+0  
+3  
+1 1  
 
-Indiciile pe coloane:
-1
-3
-1 1
-5
-2
+Indiciile pe coloane:  
+0  
+1 2  
+1  
+1 2  
+0  
 
-Rezolvarea logică duce la următorul rezultat (unde „#” reprezintă o celulă colorată, iar „.” una goală):
+Rezolvarea logică duce la următorul rezultat (unde „#” reprezintă o celulă colorată, iar „.” una goală):  
+&ZeroWidthSpace; &ZeroWidthSpace; &ZeroWidthSpace; &ZeroWidthSpace; &ZeroWidthSpace; &ZeroWidthSpace; &ZeroWidthSpace;   1 &ZeroWidthSpace; &ZeroWidthSpace; &ZeroWidthSpace; 1  
+&ZeroWidthSpace; &ZeroWidthSpace; &ZeroWidthSpace; &ZeroWidthSpace; &ZeroWidthSpace; &ZeroWidthSpace; &ZeroWidthSpace;  0 2 1 2 0  
+  0&ZeroWidthSpace; &ZeroWidthSpace; &ZeroWidthSpace; &ZeroWidthSpace; &ZeroWidthSpace; . &ZeroWidthSpace; . &ZeroWidthSpace; . &ZeroWidthSpace; . &ZeroWidthSpace; .  
+1 1 &ZeroWidthSpace; . # &ZeroWidthSpace; . &ZeroWidthSpace; # .  
+  0&ZeroWidthSpace; &ZeroWidthSpace; &ZeroWidthSpace; &ZeroWidthSpace; &ZeroWidthSpace; . &ZeroWidthSpace; . &ZeroWidthSpace; . &ZeroWidthSpace; . &ZeroWidthSpace; .  
+  3&ZeroWidthSpace; &ZeroWidthSpace; &ZeroWidthSpace; &ZeroWidthSpace; &ZeroWidthSpace; . # # # .  
+1 1 &ZeroWidthSpace; . # &ZeroWidthSpace; . &ZeroWidthSpace; # .  
 
-##...
-#.#..
-###..
-#.#..
-.##..
+Această imagine finală poate reprezenta, de exemplu, o față de creeper.
 
-Această imagine finală poate reprezenta, de exemplu, o mică sabie pixel-art.
-
-PictoCraft păstrează esența jocurilor de tip Nonogram, dar îi adaugă o notă creativă și familiară inspirată din Minecraft. Fiecare puzzle completat se simte ca o construcție pixel-art pe care jucătorul o descoperă bloc cu bloc, folosindu-și doar logica și răbdarea.
+PictoCraft păstrează esența jocurilor de tip Nonogram, dar îi adaugă o notă creativă și familiară inspirată din Minecraft.
 
 Codul din proiect trebuie să poată fi ușor de înțeles și de modificat de către altcineva. Pentru detalii, veniți la ore.
 
