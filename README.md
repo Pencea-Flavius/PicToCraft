@@ -9,7 +9,22 @@ De exemplu, dacă un rând are indiciul „3 1 4”, înseamnă că trebuie colo
 
 Jocul nu se bazează pe noroc, ci pe raționament logic. Pe măsură ce jucătorul completează grila, poate deduce tot mai multe celule folosind relațiile dintre indiciile rândurilor și coloanelor. Când toate indiciile sunt respectate, imaginea ascunsă se dezvăluie complet – o sabie, un diamant, o torță sau alte obiecte inspirate din Minecraft.
 
-Un exemplu simplu de puzzle ar putea fi o grilă de 5x5:
+
+## Cum se joacă
+Jocul începe cu un meniu principal, unde jucătorul poate alege modul de joc dorit.
+Există două opțiuni principale:
+
+Alege un puzzle din fișierele existente, unde jucătorul poate selecta manual imaginea pe care vrea să o rezolve.
+
+Generează un puzzle aleatoriu, unde jocul creează automat o grilă unică de fiecare dată
+
+De asemenea, există două moduri de dificultate:
+
+Mod Scor – jucătorul trebuie să rezolve cât mai multe puzzle-uri pentru a obține un scor cât mai mare, fără limită de vieți.
+
+Mod 3 Greșeli – jucătorul are voie să greșească de cel mult trei ori; după a treia eroare, jocul se încheie.
+
+### Un exemplu simplu de puzzle ar putea fi o grilă de 5x5:
 
 Indiciile pe rânduri:  
 0  
