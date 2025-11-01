@@ -1,30 +1,43 @@
-# PicToCraft
+# PictoCraft
 
-### Descriere
-PictoCraft este un joc de tip puzzle logic inspirat din seria Picross (Nonogram), reinterpretat într-un stil vizual și tematic asemănător universului Minecraft. Jocul combină logica matematică a nonogramelor cu estetica blocurilor cubice din Minecraft, oferind o experiență relaxantă, dar totodată provocatoare.
+PictoCraft este un joc de tip puzzle logic inspirat din seria Picross (Nonogram), dar cu un stil vizual inspirat din Minecraft.
+Scopul jocului este să descoperi o imagine ascunsă completând corect o grilă de celule pătrate, folosind indiciile numerice de pe rânduri și coloane.
 
-În PictoCraft, jucătorul primește o grilă pătrată alcătuită din celule goale. Scopul este să descopere o imagine ascunsă completând celulele corect, pe baza indiciilor numerice afișate pe fiecare rând și coloană. Fiecare număr reprezintă un grup de celule care trebuie colorate consecutiv. Între două grupuri de celule colorate trebuie să existe cel puțin o celulă goală.
+## Cum funcționează
 
-De exemplu, dacă un rând are indiciul „3 1 4”, înseamnă că trebuie colorate trei pătrate consecutive, apoi se lasă cel puțin un pătrat gol, apoi unul singur colorat, din nou un spațiu gol, și în final patru pătrate consecutive colorate. Poziționarea exactă a acestor grupuri se deduce logic, ținând cont și de indiciile de pe coloane.
+Fiecare rând și fiecare coloană are un set de indici numerici.
 
-Jocul nu se bazează pe noroc, ci pe raționament logic. Pe măsură ce jucătorul completează grila, poate deduce tot mai multe celule folosind relațiile dintre indiciile rândurilor și coloanelor. Când toate indiciile sunt respectate, imaginea ascunsă se dezvăluie complet – o sabie, un diamant, o torță sau alte obiecte inspirate din Minecraft.
+Un număr indică câte celule consecutive trebuie colorate în acel rând sau coloană.
 
+Dacă sunt mai multe numere, fiecare grup de celule colorate trebuie separat prin cel puțin o celulă goală.
 
-## Cum se joacă
+Jucătorul trebuie să folosească logica pentru a deduce ce celule sunt colorate și ce celule rămân goale.
+
+Jocul nu se bazează pe noroc. Completarea corectă a grilei depinde de atenție, răbdare și raționament logic
+
+## Meniu și moduri de joc
+
 Jocul începe cu un meniu principal, unde jucătorul poate alege modul de joc dorit.
-Există două opțiuni principale:
 
-Alege un puzzle din fișierele existente, unde jucătorul poate selecta manual imaginea pe care vrea să o rezolve.
+Opțiuni principale
 
-Generează un puzzle aleatoriu, unde jocul creează automat o grilă unică de fiecare dată
+Alege un puzzle din fișierele existente
+Jucătorul poate selecta manual imaginea pe care vrea să o rezolve.
 
-De asemenea, există două moduri de dificultate:
+Generează un puzzle aleatoriu
+Jocul creează automat o grilă unică de fiecare dată, folosind reguli logice de construcție.
 
-Mod Scor – jucătorul trebuie să rezolve cât mai multe puzzle-uri pentru a obține un scor cât mai mare, fără limită de vieți.
+## Moduri de dificultate
 
-Mod 3 Greșeli – jucătorul are voie să greșească de cel mult trei ori; după a treia eroare, jocul se încheie.
+### Mod-Scor  
+Jucătorul trebuie să rezolve cât mai multe puzzle-uri pentru a obține un scor cât mai mare, fără limită de vieți.
 
-### Un exemplu simplu de puzzle ar putea fi o grilă de 5x5:
+### Mod-3 Greșeli  
+Jucătorul are voie să greșească de cel mult trei ori; după a treia eroare, jocul se încheie.
+
+Aceste moduri oferă varietate și motive de rejucare, combinând logica nonogramelor cu un sistem de progres și provocare.
+
+## Exemplu de puzzle 5x5
 
 Indiciile pe rânduri:  
 0  
@@ -50,8 +63,6 @@ Rezolvarea logică duce la următorul rezultat (unde „#” reprezintă o celul
 1 1 &ZeroWidthSpace; . # &ZeroWidthSpace; . &ZeroWidthSpace; # .  
 
 Această imagine finală poate reprezenta, de exemplu, o față de creeper.
-
-PictoCraft păstrează esența jocurilor de tip Nonogram, dar îi adaugă o notă creativă și familiară inspirată din Minecraft.
 
 Codul din proiect trebuie să poată fi ușor de înțeles și de modificat de către altcineva. Pentru detalii, veniți la ore.
 
