@@ -1,19 +1,68 @@
-# PicToCraft
+# PictoCraft
 
-### Descriere
-PictoCraft este un joc de tip puzzle inspirat din seria Picross, dar reinterpretat într-un stil grafic și tematic asemănător universului Minecraft. Jocul combină logica matematică a nonogramelor cu elemente vizuale de tip „voxel art”, oferind o experiență relaxantă, dar totodată provocatoare.
+PictoCraft este un joc de tip puzzle logic inspirat din seria Picross (Nonogram), dar cu un stil vizual inspirat din Minecraft.
+Scopul jocului este să descoperi o imagine ascunsă completând corect o grilă de celule pătrate, folosind indiciile numerice de pe rânduri și coloane.
 
-În PictoCraft, jucătorul primește o grilă de pătrate — fiecare rând și coloană având indici numerici care arată câte celule trebuie completate. Scopul este să folosești aceste indicii pentru a descoperi o imagine ascunsă, formată din blocuri asemănătoare celor din Minecraft.
+## Cum funcționează
 
-De exemplu, un indiciu precum „3 1 4” pe un rând înseamnă că trebuie să colorezi trei pătrate consecutive, apoi să lași cel puțin un spațiu liber, apoi unul singur, din nou un spațiu liber, și la final patru pătrate consecutive. Când toate rândurile și coloanele sunt rezolvate corect, grila dezvăluie o imagine completă — o sabie, o cască, un diamant sau alte elemente iconice din Minecraft.
+Fiecare rând și fiecare coloană are un set de indici numerici.
 
-PictoCraft adaugă un aer creativ și familiar puzzle-ului clasic Picross, transformând fiecare rezolvare într-o mică „construcție” vizuală, ca și cum ai crea o operă pixel-art.
+Un număr indică câte celule consecutive trebuie colorate în acel rând sau coloană.
 
-### Important!
+Dacă sunt mai multe numere, fiecare grup de celule colorate trebuie separat prin cel puțin o celulă goală.
 
-Aveți voie cu cod generat de modele de limbaj la care nu ați contribuit semnificativ doar dacă documentați riguros acest proces.
-Codul generat pus "ca să fie"/pe care nu îl înțelegeți se punctează doar pentru puncte bonus, doar în contextul
-în care oferă funcționalități ajutătoare și doar dacă are sens.
+Jucătorul trebuie să folosească logica pentru a deduce ce celule sunt colorate și ce celule rămân goale.
+
+Jocul nu se bazează pe noroc. Completarea corectă a grilei depinde de atenție, răbdare și raționament logic
+
+## Meniu și moduri de joc
+
+Jocul începe cu un meniu principal, unde jucătorul poate alege modul de joc dorit.
+
+Opțiuni principale
+
+Alege un puzzle din fișierele existente
+Jucătorul poate selecta manual imaginea pe care vrea să o rezolve.
+
+Generează un puzzle aleatoriu
+Jocul creează automat o grilă unică de fiecare dată, folosind reguli logice de construcție.
+
+## Moduri de dificultate
+
+### Mod-Scor  
+Jucătorul trebuie să rezolve cât mai multe puzzle-uri pentru a obține un scor cât mai mare, fără limită de vieți.
+
+### Mod-3 Greșeli  
+Jucătorul are voie să greșească de cel mult trei ori, după a treia eroare, jocul se încheie.
+
+Aceste moduri oferă varietate și motive de rejucare, combinând logica nonogramelor cu un sistem de progres și provocare.
+
+## Exemplu de puzzle 5x5
+
+Indiciile pe rânduri:  
+0  
+1 1  
+0  
+3  
+1 1  
+
+Indiciile pe coloane:  
+0  
+1 2  
+1  
+1 2  
+0  
+
+Rezolvarea logică duce la următorul rezultat (unde „#” reprezintă o celulă colorată, iar „.” una goală):  
+&ZeroWidthSpace; &ZeroWidthSpace; &ZeroWidthSpace; &ZeroWidthSpace; &ZeroWidthSpace; &ZeroWidthSpace; &ZeroWidthSpace; &ZeroWidthSpace; &ZeroWidthSpace; &ZeroWidthSpace;   1 &ZeroWidthSpace; &ZeroWidthSpace; &ZeroWidthSpace; 1  
+&ZeroWidthSpace; &ZeroWidthSpace; &ZeroWidthSpace; &ZeroWidthSpace; &ZeroWidthSpace; &ZeroWidthSpace; &ZeroWidthSpace;  0 2 1 2 0  
+  0&ZeroWidthSpace; &ZeroWidthSpace; &ZeroWidthSpace; &ZeroWidthSpace; &ZeroWidthSpace; . &ZeroWidthSpace; . &ZeroWidthSpace; . &ZeroWidthSpace; . &ZeroWidthSpace; .  
+1 1 &ZeroWidthSpace; . # &ZeroWidthSpace; . &ZeroWidthSpace; # .  
+  0&ZeroWidthSpace; &ZeroWidthSpace; &ZeroWidthSpace; &ZeroWidthSpace; &ZeroWidthSpace; . &ZeroWidthSpace; . &ZeroWidthSpace; . &ZeroWidthSpace; . &ZeroWidthSpace; .  
+  3&ZeroWidthSpace; &ZeroWidthSpace; &ZeroWidthSpace; &ZeroWidthSpace; &ZeroWidthSpace; . # # # .  
+1 1 &ZeroWidthSpace; . # &ZeroWidthSpace; . &ZeroWidthSpace; # .  
+
+Această imagine finală poate reprezenta, de exemplu, o față de creeper.
 
 Codul din proiect trebuie să poată fi ușor de înțeles și de modificat de către altcineva. Pentru detalii, veniți la ore.
 
