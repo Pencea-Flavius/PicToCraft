@@ -131,16 +131,17 @@ public:
         }
         return max_width;
     }
-    friend std::ostream& operator<<(std::ostream& os, const PicrossHints& h) {
+
+    friend std::ostream &operator<<(std::ostream &os, const PicrossHints &h) {
         os << "=== HINTS ===\n";
         os << "Linii:\n";
-        for (const auto& row : h.row_hints) {
-            for (int val : row) os << val << " ";
+        for (const auto &row: h.row_hints) {
+            for (int val: row) os << val << " ";
             os << "\n";
         }
         os << "Coloane:\n";
-        for (const auto& col : h.col_hints) {
-            for (int val : col) os << val << " ";
+        for (const auto &col: h.col_hints) {
+            for (int val: col) os << val << " ";
             os << "\n";
         }
         return os;
@@ -331,7 +332,6 @@ public:
             for (size_t s = 0; s < max_row_width; s++) {
                 output += "  ";
             }
-            output += " ";
 
             for (int j = 0; j < size; j++) {
                 const auto& col = col_hints[j];
@@ -439,7 +439,8 @@ public:
             }
         }
     }
-    friend std::ostream& operator<<(std::ostream& os, const Game& g) {
+
+    friend std::ostream &operator<<(std::ostream &os, const Game &g) {
         os << "=== STARE JOC ===\n";
         os << g.grid;
         os << "Timp scurs: " << g.get_elapsed_time() << " secunde\n";
