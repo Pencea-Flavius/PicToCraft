@@ -30,7 +30,7 @@ Jocul creează automat o grilă unică de fiecare dată, folosind reguli logice 
 ## Moduri de dificultate
 
 ### Mod-Scor  
-Jucătorul trebuie să rezolve cât mai multe puzzle-uri pentru a obține un scor cât mai mare, fără limită de vieți.
+Jucătorul trebuie să rezolve cât mai corect pentru a obține un scor cât mai mare, fără limită de vieți.
 
 ### Mod-3 Greșeli  
 Jucătorul are voie să greșească de cel mult trei ori, după a treia eroare, jocul se încheie.
