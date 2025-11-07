@@ -1,42 +1,48 @@
-include(cmake/CustomStdlibAndSanitizers.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/DetectLibcpp.cmake)
 
-# target definitions
-
-function(set_compiler_flags)
-    set(multiValueArgs TARGET_NAMES)
-    set(oneValueArgs RUN_SANITIZERS)
-    cmake_parse_arguments(PARSE_ARGV 0 ARG "" "${oneValueArgs}" "${multiValueArgs}")
-
-    if(NOT DEFINED ARG_RUN_SANITIZERS)
-        set(ARG_RUN_SANITIZERS TRUE)
+function(set_custom_stdlib_and_sanitizers target add_apple_asan)
+    if(MSVC)
+        # see https://gitlab.kitware.com/cmake/cmake/-/issues/24922
+        set_target_properties(${target} PROPERTIES VS_USER_PROPS "${CMAKE_SOURCE_DIR}/disable_modules.props")
+        target_compile_options(${target} PRIVATE /experimental:module-)
+        if(USE_ASAN)
+            target_compile_options(${target} PRIVATE "$<${debug_mode}:/fsanitize=address>")
+        endif()
+        return()
     endif()
 
-    # iterate over all specified targets
-    foreach (TARGET_NAME IN LISTS ARG_TARGET_NAMES)
-        if(GITHUB_ACTIONS)
-            message("NOTE: GITHUB_ACTIONS defined")
-            target_compile_definitions(${TARGET_NAME} PRIVATE GITHUB_ACTIONS)
-        endif()
-
-        ###############################################################################
-
-        if(PROJECT_WARNINGS_AS_ERRORS)
-            set_property(TARGET ${TARGET_NAME} PROPERTY COMPILE_WARNING_AS_ERROR ON)
-        endif()
-
-        # custom compiler flags
-        message("Compiler: ${CMAKE_CXX_COMPILER_ID} version ${CMAKE_CXX_COMPILER_VERSION}")
-        if(MSVC)
-            target_compile_options(${TARGET_NAME} PRIVATE /W4 /permissive- /wd4244 /wd4267 /wd4996 /external:anglebrackets /external:W0 /utf-8 /MP)
+    if("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang" AND NOT WIN32)
+        detect_libcpp()
+        if(HAS_LIBCPP)
+            # see also https://stackoverflow.com/a/70382484
+            target_compile_options(${target} PRIVATE -stdlib=libc++)
+            target_link_options(${target} PRIVATE -stdlib=libc++)
         else()
-            target_compile_options(${TARGET_NAME} PRIVATE -Wall -Wextra -pedantic)
+            # fall back to libstdc++
+            target_compile_options(${target} PRIVATE -stdlib=libstdc++)
+            target_link_options(${target} PRIVATE -stdlib=libstdc++)
         endif()
+    endif()
 
-        ###############################################################################
-
-        # sanitizers
-        if("${ARG_RUN_SANITIZERS}" STREQUAL "TRUE")
-            set_custom_stdlib_and_sanitizers(${TARGET_NAME} true)
-        endif ()
-    endforeach ()
+    if(APPLE)
+        # first check Apple since Apple is also a kind of Unix
+        if("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang" AND add_apple_asan MATCHES true)
+            if(USE_ASAN)
+                target_compile_options(${target} PRIVATE "$<${debug_mode}:-fsanitize=address,undefined>")
+                target_link_options(${target} PRIVATE "$<${debug_mode}:-fsanitize=address,undefined>")
+            endif()
+        endif()
+    elseif(UNIX)
+        if(USE_ASAN)
+            # check leaks on Linux since macOS does not support the leaks sanitizer yet
+            # leaks sanitizer is enabled by default on Linux, so we do not need to enable it explicitly
+            target_compile_options(${target} PRIVATE "$<${debug_mode}:-fsanitize=address,undefined>")
+            target_link_options(${target} PRIVATE "$<${debug_mode}:-fsanitize=address,undefined>")
+        elseif(USE_MSAN)
+            # use semi-colons instead of spaces to separate arguments
+            # it is recommended to quote generator expressions in order to avoid unintentional splitting
+            target_compile_options(${target} PRIVATE "$<${debug_mode}:-fsanitize=memory,undefined;-fsanitize-recover=memory,undefined;-fsanitize-memory-track-origins>")
+            target_link_options(${target} PRIVATE "$<${debug_mode}:-fsanitize=memory,undefined;-fsanitize-recover=memory,undefined;-fsanitize-memory-track-origins;-Wl,-rpath,tools/llvm-project/build/lib>")
+        endif()
+    endif()
 endfunction()
