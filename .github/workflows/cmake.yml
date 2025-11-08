@@ -124,7 +124,7 @@ jobs:
           #   # This env runs memory sanitizers
           #   runs_msan: true
 
-          # renovate: depName=ubuntu
+            # renovate: depName=ubuntu
           - os: ubuntu-22.04
             c: gcc-12
             cxx: g++-12
@@ -159,13 +159,13 @@ jobs:
             # This env runs address sanitizers
             # runs_asan: false
 
-            #   # renovate: depName=macos
-            # - os: macos-14
-            #   c: gcc-13
-            #   cxx: g++-13
-            #   name: "macOS 14 GCC 13"
-            #   cmake_flags:
-            #   cmake_generator: Ninja
+          #   # renovate: depName=macos
+          # - os: macos-14
+          #   c: gcc-13
+          #   cxx: g++-13
+          #   name: "macOS 14 GCC 13"
+          #   cmake_flags:
+          #   cmake_generator: Ninja
 
             # renovate: depName=windows
           - os: windows-2022
