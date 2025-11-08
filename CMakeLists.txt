@@ -42,6 +42,16 @@ endif()
 # NOTE: update executable name in .github/workflows/cmake.yml:25 when changing name here
 add_executable(${MAIN_EXECUTABLE_NAME}
         main.cpp
+        src/MenuResolution.cpp
+        src/MenuResolution.h
+        src/GameManager.cpp
+        src/GameManager.h
+        src/Block.cpp
+        src/Block.h
+        src/PicrossHints.cpp
+        src/PicrossHints.h
+        src/Grid.cpp
+        src/Grid.h
 )
 
 target_include_directories(${MAIN_EXECUTABLE_NAME} SYSTEM PRIVATE ${SFML_SOURCE_DIR}/include)
@@ -56,3 +66,4 @@ if(APPLE)
     install(FILES launcher.command DESTINATION ${DESTINATION_DIR})
 endif()
 copy_files(FILES tastatura.txt item.txt mob.txt TARGET_NAME ${MAIN_EXECUTABLE_NAME})
+copy_files(DIRECTORY assets COPY_TO_DESTINATION TARGET_NAME ${MAIN_EXECUTABLE_NAME})
