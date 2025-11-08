@@ -1,50 +1,60 @@
-//
-// Created by zzfla on 11/8/2025.
-//
-
 #include "GameManager.h"
-
-#include <ostream>
 #include <iostream>
+#include <optional>
 
-GameManager::GameManager(const Grid& g)
-    : grid{g}, start_time{std::chrono::steady_clock::now()} {}
+GameManager::GameManager()
+    : grid()
+{
 
-GameManager::GameManager(const GameManager& other)
-    : grid{other.grid}, start_time{other.start_time} {}
+    auto &menu = MenuResolution::getInstance();
+    sf::VideoMode mode = menu.selectResolution();
 
-GameManager& GameManager::operator=(const GameManager& other) {
-    if (this != &other) {
-        grid = other.grid;
-        start_time = other.start_time;
-    }
-    return *this;
-}
+    if (menu.wasFullscreenChosen())
+        window.create(mode, "Pictocross", sf::State::Fullscreen);
+    else
+        window.create(mode, "Pictocross",  sf::Style::Close , sf::State::Windowed);
 
-GameManager::~GameManager() = default;
+    window.setFramerateLimit(60);
 
-long long GameManager::get_elapsed_time() const {
-    auto end_time = std::chrono::steady_clock::now();
-    return std::chrono::duration_cast<std::chrono::seconds>(end_time - start_time).count();
+    grid.load_from_file("item.txt");
+
+    auto winSize = window.getSize();
+    int n = grid.get_size();
+    float gridDisplaySize = std::min(winSize.x, winSize.y) * 0.7f;
+    float cellSize = gridDisplaySize / static_cast<float>(n);
+
+    float offsetX = (winSize.x - gridDisplaySize) / 2.f;
+    float offsetY = (winSize.y - gridDisplaySize) / 2.f;
+
+    renderer = std::make_unique<GridRenderer>(grid, cellSize, sf::Vector2f(offsetX, offsetY));
 }
 
 void GameManager::run() {
-    while (true) {
-        int x, y;
-        if (!(std::cin >> x >> y)) {
-            break;
+    while (window.isOpen()) {
+        while (const std::optional<sf::Event> event = window.pollEvent()) {
+            if (event->is<sf::Event::Closed>()) {
+                window.close();
+                break;
+            }
+
+            if (event->is<sf::Event::MouseButtonPressed>()) {
+                auto m = event->getIf<sf::Event::MouseButtonPressed>();
+                if (m && m->button == sf::Mouse::Button::Left) {
+                    renderer->handleClick(sf::Mouse::getPosition(window));
+
+                    if (grid.is_solved()) {
+                        std::cout << "Puzzle rezolvat! Felicitari!\n";
+                        window.close();
+                    } else if (grid.is_lost()) {
+                        std::cout << "Ai pierdut jocul!\n";
+                        window.close();
+                    }
+                }
+            }
         }
 
-        grid.toggle_block(x, y);
-
-        if (grid.is_solved() || grid.is_lost()) {
-            break;
-        }
+        window.clear(sf::Color::White);
+        renderer->draw(window);
+        window.display();
     }
-}
-
-std::ostream &operator<<(std::ostream &os, const GameManager &g) {
-    os << g.grid;
-    os << "Timp scurs: " << g.get_elapsed_time() << " secunde\n";
-    return os;
 }

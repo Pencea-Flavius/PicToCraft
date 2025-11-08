@@ -36,7 +36,7 @@ sf::VideoMode MenuResolution::selectResolution() {
 
     std::size_t current = 0;
 
-    sf::RenderWindow window(sf::VideoMode({1100, 450}), "Selecteaza rezolutia");
+    sf::RenderWindow window( sf::VideoMode({1100, 450}), "Selecteaza rezolutia");
     window.setVerticalSyncEnabled(true);
 
     sf::Font font;

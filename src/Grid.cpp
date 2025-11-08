@@ -170,6 +170,14 @@ int Grid::get_score() const { return score; }
 int Grid::get_mistakes() const { return mistakes; }
 bool Grid::get_score_mode() const { return score_mode; }
 int Grid::get_size() const { return size; }
+const Block& Grid::get_block(int x, int y) const {
+    return blocks[x][y];
+}
+
+const PicrossHints& Grid::get_hints() const {
+    return hints;
+}
+
 
 // Stream output
 std::ostream& operator<<(std::ostream& os, const Grid& g) {

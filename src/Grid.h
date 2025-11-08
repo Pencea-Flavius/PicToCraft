@@ -46,6 +46,8 @@ public:
     [[nodiscard]] int get_mistakes() const;
     [[nodiscard]] bool get_score_mode() const;
     [[nodiscard]] int get_size() const;
+    [[nodiscard]] const Block& get_block(int x, int y) const;
+    [[nodiscard]] const PicrossHints& get_hints() const;
 
     friend std::ostream& operator<<(std::ostream& os, const Grid& g);
 };

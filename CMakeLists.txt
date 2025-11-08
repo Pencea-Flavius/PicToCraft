@@ -52,6 +52,8 @@ add_executable(${MAIN_EXECUTABLE_NAME}
         src/PicrossHints.h
         src/Grid.cpp
         src/Grid.h
+        src/GridRenderer.cpp
+        src/GridRenderer.h
 )
 
 target_include_directories(${MAIN_EXECUTABLE_NAME} SYSTEM PRIVATE ${SFML_SOURCE_DIR}/include)
