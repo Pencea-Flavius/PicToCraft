@@ -39,7 +39,7 @@ public:
     bool isGameReady() const { return menuState == MenuState::Starting; }
     GameMode getGameMode() const { return selectedGameMode; }
     SourceMode getSourceMode() const { return selectedSourceMode; }
-    std::string getSelectedFile() const { return selectedFile; }
+    const std::string& getSelectedFile() const { return selectedFile; }
     int getGridSize() const { return gridSize; }
 
 private:
