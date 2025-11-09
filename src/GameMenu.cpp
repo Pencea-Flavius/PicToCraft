@@ -156,13 +156,8 @@ void GameMenu::setupFileSelectionScreen() {
         }
 
         if (fontLoaded) {
-            // Extrage doar numele fișierului fără path
             std::filesystem::path p(filePath);
-            std::string displayName = p.filename().string();
-            // Elimină extensia .txt
-            if (displayName.ends_with(".txt")) {
-                displayName = displayName.substr(0, displayName.length() - 4);
-            }
+            std::string displayName = p.stem().string();
 
             sf::Text text(font, displayName);
             text.setCharacterSize(18);
