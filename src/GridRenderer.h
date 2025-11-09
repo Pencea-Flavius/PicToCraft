@@ -5,7 +5,6 @@
 #ifndef OOP_GRIDRENDERER_H
 #define OOP_GRIDRENDERER_H
 
-
 #include <SFML/Graphics.hpp>
 #include "Grid.h"
 
@@ -13,13 +12,16 @@ class GridRenderer {
     Grid& grid;
     float cellSize;
     sf::Vector2f offset;
+    sf::Font font;
+    bool fontLoaded;
 
 public:
     explicit GridRenderer(Grid& g, float size = 40.f, sf::Vector2f offset = {50.f, 50.f});
-
     void draw(sf::RenderWindow& window) const;
     void handleClick(const sf::Vector2i& mousePos) const;
     void zoom(float delta);
+    void setOffset(sf::Vector2f newOffset);
+    void setCellSize(float size);
 };
 
 #endif //OOP_GRIDRENDERER_H

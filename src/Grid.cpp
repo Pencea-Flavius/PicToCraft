@@ -11,7 +11,6 @@
 #include <random>
 #include <ostream>
 
-// Default constructor
 Grid::Grid()
     : size{}, blocks{}, total_correct_blocks{}, completed_blocks{}, correct_completed_blocks{},
       hints{}, mistakes{}, score{}, score_mode{false} {}

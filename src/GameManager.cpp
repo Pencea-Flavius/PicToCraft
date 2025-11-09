@@ -5,26 +5,37 @@
 GameManager::GameManager()
     : grid()
 {
-
     auto &menu = MenuResolution::getInstance();
     sf::VideoMode mode = menu.selectResolution();
 
     if (menu.wasFullscreenChosen())
         window.create(mode, "Pictocross", sf::State::Fullscreen);
     else
-        window.create(mode, "Pictocross",  sf::Style::Close , sf::State::Windowed);
+        window.create(mode, "Pictocross", sf::Style::Close, sf::State::Windowed);
 
     window.setFramerateLimit(60);
 
-    grid.load_from_file("item.txt");
+    grid.load_from_file("mob.txt");
 
     auto winSize = window.getSize();
     int n = grid.get_size();
-    float gridDisplaySize = std::min(winSize.x, winSize.y) * 0.7f;
-    float cellSize = gridDisplaySize / static_cast<float>(n);
 
-    float offsetX = (winSize.x - gridDisplaySize) / 2.f;
-    float offsetY = (winSize.y - gridDisplaySize) / 2.f;
+    const auto& hints = grid.get_hints();
+    size_t maxRowWidth = hints.get_max_row_width();
+    size_t maxColHeight = hints.get_max_col_height();
+
+    float availableWidth = winSize.x * 0.85f;
+    float availableHeight = winSize.y * 0.85f;
+
+    float cellSizeByWidth = availableWidth / (n + maxRowWidth * 0.8f);
+    float cellSizeByHeight = availableHeight / (n + maxColHeight * 0.8f);
+    float cellSize = std::min(cellSizeByWidth, cellSizeByHeight);
+
+    float totalWidth = (n + maxRowWidth * 0.8f) * cellSize;
+    float totalHeight = (n + maxColHeight * 0.8f) * cellSize;
+
+    float offsetX = (winSize.x - totalWidth) / 2.f;
+    float offsetY = (winSize.y - totalHeight) / 2.f;
 
     renderer = std::make_unique<GridRenderer>(grid, cellSize, sf::Vector2f(offsetX, offsetY));
 }
@@ -53,7 +64,7 @@ void GameManager::run() {
             }
         }
 
-        window.clear(sf::Color::White);
+        window.clear(sf::Color(240, 240, 240));
         renderer->draw(window);
         window.display();
     }

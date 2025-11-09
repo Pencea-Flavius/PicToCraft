@@ -10,7 +10,8 @@
 class GameManager {
     sf::RenderWindow window;
     Grid grid;
-    std::unique_ptr<GridRenderer> renderer;  // pointer pentru reconstrucție
+    sf::Font font;
+    std::unique_ptr<GridRenderer> renderer;
 
 public:
     GameManager();
