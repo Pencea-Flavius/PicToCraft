@@ -11,7 +11,8 @@ enum class MenuState {
     SourceSelection,
     FileSelection,
     RandomConfig,
-    Starting
+    Starting,
+    Quitting
 };
 
 enum class GameMode {
@@ -37,6 +38,7 @@ public:
     void draw(sf::RenderWindow& window);
 
     bool isGameReady() const { return menuState == MenuState::Starting; }
+    bool shouldQuit() const { return menuState == MenuState::Quitting; }
     GameMode getGameMode() const { return selectedGameMode; }
     SourceMode getSourceMode() const { return selectedSourceMode; }
     const std::string& getSelectedFile() const { return selectedFile; }

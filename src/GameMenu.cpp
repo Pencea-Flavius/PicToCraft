@@ -97,7 +97,7 @@ void GameMenu::createButtons(const std::vector<std::string>& labels, unsigned in
 
 void GameMenu::setupModeSelectionScreen() {
     subtitleText.reset();
-    createButtons({"Mod Scor", "Mod Greseli"}, 20);
+    createButtons({"Mod Scor", "Mod Greseli", "Quit"}, 20);
 }
 
 void GameMenu::setupSourceSelectionScreen() {
@@ -110,7 +110,7 @@ void GameMenu::setupSourceSelectionScreen() {
         subtitleText->setOutlineColor(sf::Color::Black);
     }
 
-    createButtons({"Joc din Fisier", "Joc Random"}, 20);
+    createButtons({"Joc din Fisier", "Joc Random", "Back"}, 20);
 }
 
 void GameMenu::setupFileSelectionScreen() {
@@ -127,6 +127,7 @@ void GameMenu::setupFileSelectionScreen() {
         std::filesystem::path p(filePath);
         fileNames.push_back(p.stem().string());
     }
+    fileNames.push_back("Back");
 
     createButtons(fileNames, 18);
 }
@@ -144,6 +145,7 @@ void GameMenu::setupRandomConfigScreen() {
     for (const auto& difficulty : difficultyOptions) {
         difficultyNames.push_back(difficulty.name);
     }
+    difficultyNames.push_back("Back");
 
     createButtons(difficultyNames, 20);
 }
@@ -188,9 +190,13 @@ void GameMenu::handleEvent(const sf::Event& event, const sf::RenderWindow& windo
 void GameMenu::handleModeSelectionClick(const sf::Vector2f& mousePos) {
     for (size_t i = 0; i < buttonSprites.size(); i++) {
         if (buttonSprites[i].getGlobalBounds().contains(mousePos)) {
-            selectedGameMode = (i == 0) ? GameMode::Score : GameMode::Mistakes;
-            menuState = MenuState::SourceSelection;
-            setupSourceSelectionScreen();
+            if (i == 2) { // Quit button
+                menuState = MenuState::Quitting;
+            } else {
+                selectedGameMode = (i == 0) ? GameMode::Score : GameMode::Mistakes;
+                menuState = MenuState::SourceSelection;
+                setupSourceSelectionScreen();
+            }
             break;
         }
     }
@@ -199,14 +205,19 @@ void GameMenu::handleModeSelectionClick(const sf::Vector2f& mousePos) {
 void GameMenu::handleSourceSelectionClick(const sf::Vector2f& mousePos) {
     for (size_t i = 0; i < buttonSprites.size(); i++) {
         if (buttonSprites[i].getGlobalBounds().contains(mousePos)) {
-            selectedSourceMode = (i == 0) ? SourceMode::File : SourceMode::Random;
-
-            if (selectedSourceMode == SourceMode::File) {
-                menuState = MenuState::FileSelection;
-                setupFileSelectionScreen();
+            if (i == 2) { // Back button
+                menuState = MenuState::ModeSelection;
+                setupModeSelectionScreen();
             } else {
-                menuState = MenuState::RandomConfig;
-                setupRandomConfigScreen();
+                selectedSourceMode = (i == 0) ? SourceMode::File : SourceMode::Random;
+
+                if (selectedSourceMode == SourceMode::File) {
+                    menuState = MenuState::FileSelection;
+                    setupFileSelectionScreen();
+                } else {
+                    menuState = MenuState::RandomConfig;
+                    setupRandomConfigScreen();
+                }
             }
             break;
         }
@@ -216,8 +227,14 @@ void GameMenu::handleSourceSelectionClick(const sf::Vector2f& mousePos) {
 void GameMenu::handleFileSelectionClick(const sf::Vector2f& mousePos) {
     for (size_t i = 0; i < buttonSprites.size(); i++) {
         if (buttonSprites[i].getGlobalBounds().contains(mousePos)) {
-            selectedFile = availableFiles[i];
-            menuState = MenuState::Starting;
+            // Ultimul buton este Back
+            if (i == buttonSprites.size() - 1) {
+                menuState = MenuState::SourceSelection;
+                setupSourceSelectionScreen();
+            } else {
+                selectedFile = availableFiles[i];
+                menuState = MenuState::Starting;
+            }
             break;
         }
     }
@@ -226,8 +243,14 @@ void GameMenu::handleFileSelectionClick(const sf::Vector2f& mousePos) {
 void GameMenu::handleRandomConfigClick(const sf::Vector2f& mousePos) {
     for (size_t i = 0; i < buttonSprites.size(); i++) {
         if (buttonSprites[i].getGlobalBounds().contains(mousePos)) {
-            gridSize = difficultyOptions[i].gridSize;
-            menuState = MenuState::Starting;
+            // Ultimul buton este Back
+            if (i == buttonSprites.size() - 1) {
+                menuState = MenuState::SourceSelection;
+                setupSourceSelectionScreen();
+            } else {
+                gridSize = difficultyOptions[i].gridSize;
+                menuState = MenuState::Starting;
+            }
             break;
         }
     }
