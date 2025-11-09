@@ -1,13 +1,49 @@
-//
-// Created by zzfla on 11/8/2025.
-//
-
 #include "GridRenderer.h"
 #include <algorithm>
+#include <sstream>
 
 GridRenderer::GridRenderer(Grid& g, float size, sf::Vector2f off)
     : grid(g), cellSize(size), offset(off), fontLoaded(false) {
     fontLoaded = font.openFromFile("assets/Monocraft.ttf");
+}
+
+void GridRenderer::drawGameInfo(sf::RenderWindow& window) const {
+    if (!fontLoaded) return;
+
+    auto winSize = window.getSize();
+
+    unsigned int fontSize = static_cast<unsigned int>(winSize.y * 0.035f);
+    fontSize = std::max(18u, std::min(fontSize, 40u));
+
+    sf::Text infoText(font, "");
+    infoText.setCharacterSize(fontSize);
+    infoText.setFillColor(sf::Color::Black);
+
+    if (grid.get_score_mode()) {
+        std::ostringstream oss;
+        oss << "Scor: " << grid.get_score();
+        infoText.setString(oss.str());
+    } else {
+        std::ostringstream oss;
+        oss << "Greseli: " << grid.get_mistakes() << " / 3";
+        infoText.setString(oss.str());
+
+        if (grid.get_mistakes() >= 2)
+            infoText.setFillColor(sf::Color::Red);
+        else if (grid.get_mistakes() >= 1)
+            infoText.setFillColor(sf::Color(200, 100, 0));
+    }
+
+    float padding = winSize.x * 0.015f;
+    padding = std::max(10.f, std::min(padding, 30.f));
+
+    auto bounds = infoText.getLocalBounds();
+    infoText.setPosition({
+        winSize.x - bounds.size.x - bounds.position.x - padding,
+        padding - bounds.position.y
+    });
+
+    window.draw(infoText);
 }
 
 void GridRenderer::draw(sf::RenderWindow& window) const {
@@ -114,10 +150,3 @@ void GridRenderer::zoom(float delta) {
     cellSize = std::max(10.f, cellSize + delta);
 }
 
-void GridRenderer::setOffset(sf::Vector2f newOffset) {
-    offset = newOffset;
-}
-
-void GridRenderer::setCellSize(float size) {
-    cellSize = size;
-}

@@ -2,20 +2,28 @@
 #include <iostream>
 #include <optional>
 
-GameManager::GameManager()
-    : grid()
-{
-    auto &menu = MenuResolution::getInstance();
-    sf::VideoMode mode = menu.selectResolution();
+GameManager::GameManager() : grid(), inMenu(true) {
+    auto &menuRes = MenuResolution::getInstance();
+    sf::VideoMode mode = menuRes.selectResolution();
 
-    if (menu.wasFullscreenChosen())
+    if (menuRes.wasFullscreenChosen())
         window.create(mode, "Pictocross", sf::State::Fullscreen);
     else
         window.create(mode, "Pictocross", sf::Style::Close, sf::State::Windowed);
 
     window.setFramerateLimit(60);
 
-    grid.load_from_file("mob.txt");
+    menu = std::make_unique<GameMenu>();
+}
+
+void GameManager::startGame() {
+    bool useScoreMode = (menu->getGameMode() == GameMode::Score);
+
+    if (menu->getSourceMode() == SourceMode::File) {
+        grid.load_from_file(menu->getSelectedFile(), useScoreMode);
+    } else {
+        grid.generate_random(menu->getGridSize(), useScoreMode, 0.6);
+    }
 
     auto winSize = window.getSize();
     int n = grid.get_size();
@@ -38,6 +46,7 @@ GameManager::GameManager()
     float offsetY = (winSize.y - totalHeight) / 2.f;
 
     renderer = std::make_unique<GridRenderer>(grid, cellSize, sf::Vector2f(offsetX, offsetY));
+    inMenu = false;
 }
 
 void GameManager::run() {
@@ -48,24 +57,38 @@ void GameManager::run() {
                 break;
             }
 
-            if (event->is<sf::Event::MouseButtonPressed>()) {
-                auto m = event->getIf<sf::Event::MouseButtonPressed>();
-                if (m && m->button == sf::Mouse::Button::Left) {
-                    renderer->handleClick(sf::Mouse::getPosition(window));
+            if (inMenu) {
+                menu->handleEvent(*event, window);
 
-                    if (grid.is_solved()) {
-                        std::cout << "Puzzle rezolvat! Felicitari!\n";
-                        window.close();
-                    } else if (grid.is_lost()) {
-                        std::cout << "Ai pierdut jocul!\n";
-                        window.close();
+                if (menu->isGameReady()) {
+                    startGame();
+                }
+            } else {
+                if (event->is<sf::Event::MouseButtonPressed>()) {
+                    auto m = event->getIf<sf::Event::MouseButtonPressed>();
+                    if (m && m->button == sf::Mouse::Button::Left) {
+                        renderer->handleClick(sf::Mouse::getPosition(window));
+
+                        if (grid.is_solved()) {
+                            std::cout << "Puzzle rezolvat! Felicitari!\n";
+                            window.close();
+                        } else if (grid.is_lost()) {
+                            std::cout << "Ai pierdut jocul!\n";
+                            window.close();
+                        }
                     }
                 }
             }
         }
 
-        window.clear(sf::Color(240, 240, 240));
-        renderer->draw(window);
+        if (inMenu) {
+            menu->draw(window);
+        } else {
+            window.clear(sf::Color(240, 240, 240));
+            renderer->draw(window);
+            renderer->drawGameInfo(window);
+        }
+
         window.display();
     }
 }

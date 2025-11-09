@@ -54,6 +54,8 @@ add_executable(${MAIN_EXECUTABLE_NAME}
         src/Grid.h
         src/GridRenderer.cpp
         src/GridRenderer.h
+        src/GameMenu.cpp
+        src/GameMenu.h
 )
 
 target_include_directories(${MAIN_EXECUTABLE_NAME} SYSTEM PRIVATE ${SFML_SOURCE_DIR}/include)

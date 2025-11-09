@@ -6,16 +6,21 @@
 #include "Grid.h"
 #include "GridRenderer.h"
 #include "MenuResolution.h"
+#include "GameMenu.h"
 
 class GameManager {
     sf::RenderWindow window;
     Grid grid;
-    sf::Font font;
     std::unique_ptr<GridRenderer> renderer;
+    std::unique_ptr<GameMenu> menu;
+    bool inMenu;
 
 public:
     GameManager();
     void run();
+
+private:
+    void startGame();
 };
 
 #endif // OOP_GAMEMANAGER_H
