@@ -20,7 +20,6 @@ public:
     void draw(sf::RenderWindow& window) const;
     void drawGameInfo(sf::RenderWindow& window) const;
     void handleClick(const sf::Vector2i& mousePos) const;
-    void zoom(float delta);
 };
 
 #endif //OOP_GRIDRENDERER_H

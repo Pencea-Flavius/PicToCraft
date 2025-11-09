@@ -146,7 +146,4 @@ void GridRenderer::handleClick(const sf::Vector2i& mousePos) const {
         grid.toggle_block(x, y);
 }
 
-void GridRenderer::zoom(float delta) {
-    cellSize = std::max(10.f, cellSize + delta);
-}
 
