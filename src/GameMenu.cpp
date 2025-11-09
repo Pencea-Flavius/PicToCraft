@@ -1,9 +1,13 @@
 #include "GameMenu.h"
 #include <filesystem>
 #include <algorithm>
+#include <iostream>
 
 GameMenu::GameMenu()
     : fontLoaded(false),
+      titleLoaded(false),
+      buttonLoaded(false),
+      backgroundLoaded(false),
       menuState(MenuState::ModeSelection),
       selectedGameMode(GameMode::Mistakes),
       selectedSourceMode(SourceMode::File),
@@ -11,168 +15,191 @@ GameMenu::GameMenu()
       gridSize(10),
       hoveredButton(-1),
       selectedFileIndex(0),
-      selectedSizeIndex(1)
+      selectedDifficultyIndex(1)
 {
-    loadFont();
+    loadAssets();
 
-    // Grid size options
-    gridSizeOptions = {5, 10, 15, 20, 25};
+    // Difficulty options cu nume și dimensiuni
+    difficultyOptions = {
+        {"Peaceful", 5},
+        {"Normal", 8},
+        {"Hard", 12},
+        {"Hardcore", 16}
+    };
 
-    // Scan for available files
+    // Scan for available files DOAR din folderul "nivele"
     try {
-        for (const auto& entry : std::filesystem::directory_iterator(".")) {
-            if (entry.is_regular_file()) {
-                std::string filename = entry.path().filename().string();
-                if (filename.ends_with(".txt") && filename != "CMakeLists.txt") {
-                    availableFiles.push_back(filename);
+        std::filesystem::path levelDir("nivele");
+        if (std::filesystem::exists(levelDir) && std::filesystem::is_directory(levelDir)) {
+            for (const auto& entry : std::filesystem::directory_iterator(levelDir)) {
+                if (entry.is_regular_file()) {
+                    std::string filename = entry.path().filename().string();
+                    if (filename.ends_with(".txt")) {
+                        availableFiles.push_back(entry.path().string());
+                    }
                 }
             }
         }
-    } catch (...) {
-        // Fallback files
-        availableFiles = {"mob.txt", "item.txt", "puzzle.txt"};
+    } catch (const std::exception& e) {
+        std::cerr << "Eroare la citirea folderului nivele: " << e.what() << "\n";
     }
 
     if (availableFiles.empty()) {
-        availableFiles.push_back("puzzle.txt");
+        std::cerr << "Nici un fisier gasit in folderul nivele!\n";
+        availableFiles.push_back("nivele/default.txt");
     }
 
     setupModeSelectionScreen();
 }
 
-void GameMenu::loadFont() {
+void GameMenu::loadAssets() {
     fontLoaded = font.openFromFile("assets/Monocraft.ttf");
+
+    titleLoaded = titleTexture.loadFromFile("assets/pictocraft.png");
+    if (titleLoaded) {
+        titleSprite = sf::Sprite(titleTexture);
+        auto bounds = titleSprite->getLocalBounds();
+        titleSprite->setOrigin({bounds.size.x / 2.f, bounds.size.y / 2.f});
+    }
+
+    buttonLoaded = buttonTexture.loadFromFile("assets/button.png");
+
+    backgroundLoaded = backgroundTexture.loadFromFile("assets/background.png");
+    if (backgroundLoaded) {
+        backgroundSprite = sf::Sprite(backgroundTexture);
+        backgroundTexture.setRepeated(true);
+    }
 }
 
 void GameMenu::setupModeSelectionScreen() {
-    buttons.clear();
+    buttonSprites.clear();
     buttonTexts.clear();
-    buttonHovers.clear();
 
-    // Title
-    if (fontLoaded) {
-        titleText = sf::Text(font, "PICTOCROSS");
-        titleText->setCharacterSize(72);
-        titleText->setFillColor(sf::Color::White);
-        titleText->setOutlineThickness(3);
-        titleText->setOutlineColor(sf::Color::Black);
-
-        subtitleText = sf::Text(font, "Alege modul de joc");
-        subtitleText->setCharacterSize(28);
-        subtitleText->setFillColor(sf::Color(200, 200, 200));
-    }
+    // NU mai avem subtitle pentru primul ecran
+    subtitleText.reset();
 
     // Create buttons
     std::vector<std::string> labels = {"Mod Scor", "Mod Greseli"};
 
     for (size_t i = 0; i < labels.size(); i++) {
-        sf::RectangleShape button({400.f, 60.f});
-        button.setFillColor(sf::Color(80, 80, 80, 200));
-        button.setOutlineThickness(2);
-        button.setOutlineColor(sf::Color(150, 150, 150));
-        buttons.push_back(button);
-
-        sf::RectangleShape hover({400.f, 60.f});
-        hover.setFillColor(sf::Color(120, 120, 255, 100));
-        buttonHovers.push_back(hover);
+        if (buttonLoaded) {
+            sf::Sprite buttonSprite(buttonTexture);
+            auto bounds = buttonSprite.getLocalBounds();
+            buttonSprite.setOrigin({bounds.size.x / 2.f, bounds.size.y / 2.f});
+            buttonSprites.push_back(buttonSprite);
+        }
 
         if (fontLoaded) {
             sf::Text text(font, labels[i]);
-            text.setCharacterSize(24);
+            text.setCharacterSize(20);
             text.setFillColor(sf::Color::White);
+            text.setOutlineThickness(1);
+            text.setOutlineColor(sf::Color::Black);
             buttonTexts.push_back(text);
         }
     }
 }
 
 void GameMenu::setupSourceSelectionScreen() {
-    buttons.clear();
+    buttonSprites.clear();
     buttonTexts.clear();
-    buttonHovers.clear();
 
-    if (fontLoaded && titleText) {
-        titleText->setString("Selecteaza sursa");
-        subtitleText->setString(selectedGameMode == GameMode::Score ?
+    // Subtitle pentru celelalte ecrane
+    if (fontLoaded) {
+        subtitleText = sf::Text(font, selectedGameMode == GameMode::Score ?
             "Mod: Scor" : "Mod: Greseli (3 maxim)");
+        subtitleText->setCharacterSize(24);
+        subtitleText->setFillColor(sf::Color(200, 200, 200));
+        subtitleText->setOutlineThickness(1);
+        subtitleText->setOutlineColor(sf::Color::Black);
     }
 
     std::vector<std::string> labels = {"Joc din Fisier", "Joc Random"};
 
     for (size_t i = 0; i < labels.size(); i++) {
-        sf::RectangleShape button({400.f, 60.f});
-        button.setFillColor(sf::Color(80, 80, 80, 200));
-        button.setOutlineThickness(2);
-        button.setOutlineColor(sf::Color(150, 150, 150));
-        buttons.push_back(button);
-
-        sf::RectangleShape hover({400.f, 60.f});
-        hover.setFillColor(sf::Color(120, 120, 255, 100));
-        buttonHovers.push_back(hover);
+        if (buttonLoaded) {
+            sf::Sprite buttonSprite(buttonTexture);
+            auto bounds = buttonSprite.getLocalBounds();
+            buttonSprite.setOrigin({bounds.size.x / 2.f, bounds.size.y / 2.f});
+            buttonSprites.push_back(buttonSprite);
+        }
 
         if (fontLoaded) {
             sf::Text text(font, labels[i]);
-            text.setCharacterSize(24);
+            text.setCharacterSize(20);
             text.setFillColor(sf::Color::White);
+            text.setOutlineThickness(1);
+            text.setOutlineColor(sf::Color::Black);
             buttonTexts.push_back(text);
         }
     }
 }
 
 void GameMenu::setupFileSelectionScreen() {
-    buttons.clear();
+    buttonSprites.clear();
     buttonTexts.clear();
-    buttonHovers.clear();
 
-    if (fontLoaded && titleText) {
-        titleText->setString("Alege fisierul");
-        subtitleText->setString("Fisiere disponibile");
+    if (fontLoaded) {
+        subtitleText = sf::Text(font, "Alege nivelul");
+        subtitleText->setCharacterSize(24);
+        subtitleText->setFillColor(sf::Color(200, 200, 200));
+        subtitleText->setOutlineThickness(1);
+        subtitleText->setOutlineColor(sf::Color::Black);
     }
 
-    for (const auto& file : availableFiles) {
-        sf::RectangleShape button({500.f, 50.f});
-        button.setFillColor(sf::Color(80, 80, 80, 200));
-        button.setOutlineThickness(2);
-        button.setOutlineColor(sf::Color(150, 150, 150));
-        buttons.push_back(button);
-
-        sf::RectangleShape hover({500.f, 50.f});
-        hover.setFillColor(sf::Color(120, 255, 120, 100));
-        buttonHovers.push_back(hover);
+    for (const auto& filePath : availableFiles) {
+        if (buttonLoaded) {
+            sf::Sprite buttonSprite(buttonTexture);
+            auto bounds = buttonSprite.getLocalBounds();
+            buttonSprite.setOrigin({bounds.size.x / 2.f, bounds.size.y / 2.f});
+            buttonSprites.push_back(buttonSprite);
+        }
 
         if (fontLoaded) {
-            sf::Text text(font, file);
-            text.setCharacterSize(20);
+            // Extrage doar numele fișierului fără path
+            std::filesystem::path p(filePath);
+            std::string displayName = p.filename().string();
+            // Elimină extensia .txt
+            if (displayName.ends_with(".txt")) {
+                displayName = displayName.substr(0, displayName.length() - 4);
+            }
+
+            sf::Text text(font, displayName);
+            text.setCharacterSize(18);
             text.setFillColor(sf::Color::White);
+            text.setOutlineThickness(1);
+            text.setOutlineColor(sf::Color::Black);
             buttonTexts.push_back(text);
         }
     }
 }
 
 void GameMenu::setupRandomConfigScreen() {
-    buttons.clear();
+    buttonSprites.clear();
     buttonTexts.clear();
-    buttonHovers.clear();
 
-    if (fontLoaded && titleText) {
-        titleText->setString("Configurare Random");
-        subtitleText->setString("Alege dimensiunea grilei");
+    if (fontLoaded) {
+        subtitleText = sf::Text(font, "Alege dificultatea");
+        subtitleText->setCharacterSize(24);
+        subtitleText->setFillColor(sf::Color(200, 200, 200));
+        subtitleText->setOutlineThickness(1);
+        subtitleText->setOutlineColor(sf::Color::Black);
     }
 
-    for (int size : gridSizeOptions) {
-        sf::RectangleShape button({150.f, 60.f});
-        button.setFillColor(sf::Color(80, 80, 80, 200));
-        button.setOutlineThickness(2);
-        button.setOutlineColor(sf::Color(150, 150, 150));
-        buttons.push_back(button);
-
-        sf::RectangleShape hover({150.f, 60.f});
-        hover.setFillColor(sf::Color(255, 120, 120, 100));
-        buttonHovers.push_back(hover);
+    for (const auto& difficulty : difficultyOptions) {
+        if (buttonLoaded) {
+            sf::Sprite buttonSprite(buttonTexture);
+            auto bounds = buttonSprite.getLocalBounds();
+            buttonSprite.setOrigin({bounds.size.x / 2.f, bounds.size.y / 2.f});
+            buttonSprites.push_back(buttonSprite);
+        }
 
         if (fontLoaded) {
-            sf::Text text(font, std::to_string(size) + "x" + std::to_string(size));
-            text.setCharacterSize(22);
+            sf::Text text(font, difficulty.name);
+            text.setCharacterSize(20);
             text.setFillColor(sf::Color::White);
+            text.setOutlineThickness(1);
+            text.setOutlineColor(sf::Color::Black);
             buttonTexts.push_back(text);
         }
     }
@@ -183,8 +210,8 @@ void GameMenu::handleEvent(const sf::Event& event, const sf::RenderWindow& windo
         sf::Vector2f mousePos = window.mapPixelToCoords({mouseMoved->position.x, mouseMoved->position.y});
         hoveredButton = -1;
 
-        for (size_t i = 0; i < buttons.size(); i++) {
-            if (buttons[i].getGlobalBounds().contains(mousePos)) {
+        for (size_t i = 0; i < buttonSprites.size(); i++) {
+            if (buttonSprites[i].getGlobalBounds().contains(mousePos)) {
                 hoveredButton = static_cast<int>(i);
                 break;
             }
@@ -216,8 +243,8 @@ void GameMenu::handleEvent(const sf::Event& event, const sf::RenderWindow& windo
 }
 
 void GameMenu::handleModeSelectionClick(const sf::Vector2f& mousePos) {
-    for (size_t i = 0; i < buttons.size(); i++) {
-        if (buttons[i].getGlobalBounds().contains(mousePos)) {
+    for (size_t i = 0; i < buttonSprites.size(); i++) {
+        if (buttonSprites[i].getGlobalBounds().contains(mousePos)) {
             selectedGameMode = (i == 0) ? GameMode::Score : GameMode::Mistakes;
             menuState = MenuState::SourceSelection;
             setupSourceSelectionScreen();
@@ -227,8 +254,8 @@ void GameMenu::handleModeSelectionClick(const sf::Vector2f& mousePos) {
 }
 
 void GameMenu::handleSourceSelectionClick(const sf::Vector2f& mousePos) {
-    for (size_t i = 0; i < buttons.size(); i++) {
-        if (buttons[i].getGlobalBounds().contains(mousePos)) {
+    for (size_t i = 0; i < buttonSprites.size(); i++) {
+        if (buttonSprites[i].getGlobalBounds().contains(mousePos)) {
             selectedSourceMode = (i == 0) ? SourceMode::File : SourceMode::Random;
 
             if (selectedSourceMode == SourceMode::File) {
@@ -244,8 +271,8 @@ void GameMenu::handleSourceSelectionClick(const sf::Vector2f& mousePos) {
 }
 
 void GameMenu::handleFileSelectionClick(const sf::Vector2f& mousePos) {
-    for (size_t i = 0; i < buttons.size(); i++) {
-        if (buttons[i].getGlobalBounds().contains(mousePos)) {
+    for (size_t i = 0; i < buttonSprites.size(); i++) {
+        if (buttonSprites[i].getGlobalBounds().contains(mousePos)) {
             selectedFile = availableFiles[i];
             menuState = MenuState::Starting;
             break;
@@ -254,9 +281,9 @@ void GameMenu::handleFileSelectionClick(const sf::Vector2f& mousePos) {
 }
 
 void GameMenu::handleRandomConfigClick(const sf::Vector2f& mousePos) {
-    for (size_t i = 0; i < buttons.size(); i++) {
-        if (buttons[i].getGlobalBounds().contains(mousePos)) {
-            gridSize = gridSizeOptions[i];
+    for (size_t i = 0; i < buttonSprites.size(); i++) {
+        if (buttonSprites[i].getGlobalBounds().contains(mousePos)) {
+            gridSize = difficultyOptions[i].gridSize;
             menuState = MenuState::Starting;
             break;
         }
@@ -285,43 +312,61 @@ void GameMenu::draw(sf::RenderWindow& window) {
 void GameMenu::drawModeSelection(sf::RenderWindow& window) {
     window.clear(sf::Color(40, 40, 40));
 
-    if (fontLoaded && titleText) {
-        // Center title
-        auto titleBounds = titleText->getLocalBounds();
-        titleText->setPosition({
-            window.getSize().x / 2.f - titleBounds.size.x / 2.f - titleBounds.position.x,
-            80.f
-        });
-        window.draw(*titleText);
+    float scaleX = window.getSize().x / baseWidth;
+    float scaleY = window.getSize().y / baseHeight;
+    float scale = std::min(scaleX, scaleY);
 
-        auto subtitleBounds = subtitleText->getLocalBounds();
-        subtitleText->setPosition({
-            window.getSize().x / 2.f - subtitleBounds.size.x / 2.f - subtitleBounds.position.x,
-            180.f
+    // Draw background
+    if (backgroundLoaded && backgroundSprite) {
+        backgroundSprite->setScale({
+            static_cast<float>(window.getSize().x) / backgroundTexture.getSize().x,
+            static_cast<float>(window.getSize().y) / backgroundTexture.getSize().y
         });
-        window.draw(*subtitleText);
+        window.draw(*backgroundSprite);
     }
 
-    // Draw buttons
-    float startY = 280.f;
-    for (size_t i = 0; i < buttons.size(); i++) {
-        buttons[i].setPosition({
-            window.getSize().x / 2.f - buttons[i].getSize().x / 2.f,
-            startY + i * 80.f
-        });
+    // Draw logo - scalat corect pentru dimensiunile 1003x162
+    if (titleLoaded && titleSprite) {
+        // Calculează scalarea pentru logo
+        float logoScale = scale * 0.5f; // Ajustează acest factor pentru dimensiunea dorită
+        titleSprite->setScale({logoScale, logoScale});
+        titleSprite->setPosition({window.getSize().x / 2.f, 100.f * scaleY});
+        window.draw(*titleSprite);
+    }
 
+    // NU desenăm subtitle pe primul ecran
+
+    // Draw buttons
+    float startY = 280.f * scaleY;
+    float spacing = 80.f * scaleY;
+
+    for (size_t i = 0; i < buttonSprites.size(); i++) {
+        buttonSprites[i].setScale({scale * 1.2f, scale * 1.2f});
+        buttonSprites[i].setPosition({window.getSize().x / 2.f, startY + i * spacing});
+
+        // Butonul devine albastru când e hover
         if (hoveredButton == static_cast<int>(i)) {
-            buttonHovers[i].setPosition(buttons[i].getPosition());
-            window.draw(buttonHovers[i]);
+            buttonSprites[i].setColor(sf::Color(100, 150, 255)); // Albastru deschis
+        } else {
+            buttonSprites[i].setColor(sf::Color::White);
         }
 
-        window.draw(buttons[i]);
+        window.draw(buttonSprites[i]);
 
+        // Textul devine galben când e hover
         if (fontLoaded && i < buttonTexts.size()) {
+            buttonTexts[i].setCharacterSize(static_cast<unsigned int>(20 * scale));
+
+            if (hoveredButton == static_cast<int>(i)) {
+                buttonTexts[i].setFillColor(sf::Color(255, 255, 100)); // Galben
+            } else {
+                buttonTexts[i].setFillColor(sf::Color::White);
+            }
+
             auto textBounds = buttonTexts[i].getLocalBounds();
             buttonTexts[i].setPosition({
-                buttons[i].getPosition().x + buttons[i].getSize().x / 2.f - textBounds.size.x / 2.f - textBounds.position.x,
-                buttons[i].getPosition().y + buttons[i].getSize().y / 2.f - textBounds.size.y / 2.f - textBounds.position.y
+                window.getSize().x / 2.f - textBounds.size.x / 2.f - textBounds.position.x,
+                startY + i * spacing - textBounds.size.y / 2.f - textBounds.position.y
             });
             window.draw(buttonTexts[i]);
         }
@@ -329,47 +374,118 @@ void GameMenu::drawModeSelection(sf::RenderWindow& window) {
 }
 
 void GameMenu::drawSourceSelection(sf::RenderWindow& window) {
-    drawModeSelection(window); // Same layout
+    window.clear(sf::Color(40, 40, 40));
+
+    float scaleX = window.getSize().x / baseWidth;
+    float scaleY = window.getSize().y / baseHeight;
+    float scale = std::min(scaleX, scaleY);
+
+    if (backgroundLoaded && backgroundSprite) {
+        backgroundSprite->setScale({
+            static_cast<float>(window.getSize().x) / backgroundTexture.getSize().x,
+            static_cast<float>(window.getSize().y) / backgroundTexture.getSize().y
+        });
+        window.draw(*backgroundSprite);
+    }
+
+    // Draw subtitle (NU logo)
+    if (fontLoaded && subtitleText) {
+        subtitleText->setCharacterSize(static_cast<unsigned int>(28 * scale));
+        auto subtitleBounds = subtitleText->getLocalBounds();
+        subtitleText->setPosition({
+            window.getSize().x / 2.f - subtitleBounds.size.x / 2.f - subtitleBounds.position.x,
+            80.f * scaleY
+        });
+        window.draw(*subtitleText);
+    }
+
+    float startY = 200.f * scaleY;
+    float spacing = 80.f * scaleY;
+
+    for (size_t i = 0; i < buttonSprites.size(); i++) {
+        buttonSprites[i].setScale({scale * 1.2f, scale * 1.2f});
+        buttonSprites[i].setPosition({window.getSize().x / 2.f, startY + i * spacing});
+
+        if (hoveredButton == static_cast<int>(i)) {
+            buttonSprites[i].setColor(sf::Color(100, 150, 255));
+        } else {
+            buttonSprites[i].setColor(sf::Color::White);
+        }
+
+        window.draw(buttonSprites[i]);
+
+        if (fontLoaded && i < buttonTexts.size()) {
+            buttonTexts[i].setCharacterSize(static_cast<unsigned int>(20 * scale));
+
+            if (hoveredButton == static_cast<int>(i)) {
+                buttonTexts[i].setFillColor(sf::Color(255, 255, 100));
+            } else {
+                buttonTexts[i].setFillColor(sf::Color::White);
+            }
+
+            auto textBounds = buttonTexts[i].getLocalBounds();
+            buttonTexts[i].setPosition({
+                window.getSize().x / 2.f - textBounds.size.x / 2.f - textBounds.position.x,
+                startY + i * spacing - textBounds.size.y / 2.f - textBounds.position.y
+            });
+            window.draw(buttonTexts[i]);
+        }
+    }
 }
 
 void GameMenu::drawFileSelection(sf::RenderWindow& window) {
     window.clear(sf::Color(40, 40, 40));
 
-    if (fontLoaded && titleText) {
-        auto titleBounds = titleText->getLocalBounds();
-        titleText->setPosition({
-            window.getSize().x / 2.f - titleBounds.size.x / 2.f - titleBounds.position.x,
-            60.f
-        });
-        window.draw(*titleText);
+    float scaleX = window.getSize().x / baseWidth;
+    float scaleY = window.getSize().y / baseHeight;
+    float scale = std::min(scaleX, scaleY);
 
+    if (backgroundLoaded && backgroundSprite) {
+        backgroundSprite->setScale({
+            static_cast<float>(window.getSize().x) / backgroundTexture.getSize().x,
+            static_cast<float>(window.getSize().y) / backgroundTexture.getSize().y
+        });
+        window.draw(*backgroundSprite);
+    }
+
+    if (fontLoaded && subtitleText) {
+        subtitleText->setCharacterSize(static_cast<unsigned int>(28 * scale));
         auto subtitleBounds = subtitleText->getLocalBounds();
         subtitleText->setPosition({
             window.getSize().x / 2.f - subtitleBounds.size.x / 2.f - subtitleBounds.position.x,
-            140.f
+            60.f * scaleY
         });
         window.draw(*subtitleText);
     }
 
-    float startY = 200.f;
-    for (size_t i = 0; i < buttons.size(); i++) {
-        buttons[i].setPosition({
-            window.getSize().x / 2.f - buttons[i].getSize().x / 2.f,
-            startY + i * 65.f
-        });
+    float startY = 160.f * scaleY;
+    float spacing = 70.f * scaleY;
+
+    for (size_t i = 0; i < buttonSprites.size(); i++) {
+        buttonSprites[i].setScale({scale * 1.4f, scale});
+        buttonSprites[i].setPosition({window.getSize().x / 2.f, startY + i * spacing});
 
         if (hoveredButton == static_cast<int>(i)) {
-            buttonHovers[i].setPosition(buttons[i].getPosition());
-            window.draw(buttonHovers[i]);
+            buttonSprites[i].setColor(sf::Color(100, 150, 255));
+        } else {
+            buttonSprites[i].setColor(sf::Color::White);
         }
 
-        window.draw(buttons[i]);
+        window.draw(buttonSprites[i]);
 
         if (fontLoaded && i < buttonTexts.size()) {
+            buttonTexts[i].setCharacterSize(static_cast<unsigned int>(18 * scale));
+
+            if (hoveredButton == static_cast<int>(i)) {
+                buttonTexts[i].setFillColor(sf::Color(255, 255, 100));
+            } else {
+                buttonTexts[i].setFillColor(sf::Color::White);
+            }
+
             auto textBounds = buttonTexts[i].getLocalBounds();
             buttonTexts[i].setPosition({
-                buttons[i].getPosition().x + buttons[i].getSize().x / 2.f - textBounds.size.x / 2.f - textBounds.position.x,
-                buttons[i].getPosition().y + buttons[i].getSize().y / 2.f - textBounds.size.y / 2.f - textBounds.position.y
+                window.getSize().x / 2.f - textBounds.size.x / 2.f - textBounds.position.x,
+                startY + i * spacing - textBounds.size.y / 2.f - textBounds.position.y
             });
             window.draw(buttonTexts[i]);
         }
@@ -379,42 +495,57 @@ void GameMenu::drawFileSelection(sf::RenderWindow& window) {
 void GameMenu::drawRandomConfig(sf::RenderWindow& window) {
     window.clear(sf::Color(40, 40, 40));
 
-    if (fontLoaded && titleText) {
-        auto titleBounds = titleText->getLocalBounds();
-        titleText->setPosition({
-            window.getSize().x / 2.f - titleBounds.size.x / 2.f - titleBounds.position.x,
-            80.f
-        });
-        window.draw(*titleText);
+    float scaleX = window.getSize().x / baseWidth;
+    float scaleY = window.getSize().y / baseHeight;
+    float scale = std::min(scaleX, scaleY);
 
+    if (backgroundLoaded && backgroundSprite) {
+        backgroundSprite->setScale({
+            static_cast<float>(window.getSize().x) / backgroundTexture.getSize().x,
+            static_cast<float>(window.getSize().y) / backgroundTexture.getSize().y
+        });
+        window.draw(*backgroundSprite);
+    }
+
+    if (fontLoaded && subtitleText) {
+        subtitleText->setCharacterSize(static_cast<unsigned int>(28 * scale));
         auto subtitleBounds = subtitleText->getLocalBounds();
         subtitleText->setPosition({
             window.getSize().x / 2.f - subtitleBounds.size.x / 2.f - subtitleBounds.position.x,
-            160.f
+            80.f * scaleY
         });
         window.draw(*subtitleText);
     }
 
-    // Draw size buttons in a row
-    float totalWidth = buttons.size() * 170.f - 20.f;
-    float startX = window.getSize().x / 2.f - totalWidth / 2.f;
-    float y = 280.f;
+    // Butoane în coloană pentru mai mult spațiu
+    float startY = 200.f * scaleY;
+    float spacing = 85.f * scaleY;
 
-    for (size_t i = 0; i < buttons.size(); i++) {
-        buttons[i].setPosition({startX + i * 170.f, y});
+    for (size_t i = 0; i < buttonSprites.size(); i++) {
+        buttonSprites[i].setScale({scale * 1.2f, scale});
+        buttonSprites[i].setPosition({window.getSize().x / 2.f, startY + i * spacing});
 
         if (hoveredButton == static_cast<int>(i)) {
-            buttonHovers[i].setPosition(buttons[i].getPosition());
-            window.draw(buttonHovers[i]);
+            buttonSprites[i].setColor(sf::Color(100, 150, 255));
+        } else {
+            buttonSprites[i].setColor(sf::Color::White);
         }
 
-        window.draw(buttons[i]);
+        window.draw(buttonSprites[i]);
 
         if (fontLoaded && i < buttonTexts.size()) {
+            buttonTexts[i].setCharacterSize(static_cast<unsigned int>(20 * scale));
+
+            if (hoveredButton == static_cast<int>(i)) {
+                buttonTexts[i].setFillColor(sf::Color(255, 255, 100));
+            } else {
+                buttonTexts[i].setFillColor(sf::Color::White);
+            }
+
             auto textBounds = buttonTexts[i].getLocalBounds();
             buttonTexts[i].setPosition({
-                buttons[i].getPosition().x + buttons[i].getSize().x / 2.f - textBounds.size.x / 2.f - textBounds.position.x,
-                buttons[i].getPosition().y + buttons[i].getSize().y / 2.f - textBounds.size.y / 2.f - textBounds.position.y
+                window.getSize().x / 2.f - textBounds.size.x / 2.f - textBounds.position.x,
+                startY + i * spacing - textBounds.size.y / 2.f - textBounds.position.y
             });
             window.draw(buttonTexts[i]);
         }

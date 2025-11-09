@@ -24,6 +24,11 @@ enum class SourceMode {
     Random
 };
 
+struct DifficultyOption {
+    std::string name;
+    int gridSize;
+};
+
 class GameMenu {
 public:
     GameMenu();
@@ -38,7 +43,7 @@ public:
     int getGridSize() const { return gridSize; }
 
 private:
-    void loadFont();
+    void loadAssets();
     void setupModeSelectionScreen();
     void setupSourceSelectionScreen();
     void setupFileSelectionScreen();
@@ -54,8 +59,15 @@ private:
     void handleFileSelectionClick(const sf::Vector2f& mousePos);
     void handleRandomConfigClick(const sf::Vector2f& mousePos);
 
+    // Assets
     sf::Font font;
+    sf::Texture titleTexture;
+    sf::Texture buttonTexture;
+    sf::Texture backgroundTexture;
     bool fontLoaded;
+    bool titleLoaded;
+    bool buttonLoaded;
+    bool backgroundLoaded;
 
     MenuState menuState;
     GameMode selectedGameMode;
@@ -63,21 +75,32 @@ private:
     std::string selectedFile;
     int gridSize;
 
-    std::optional<sf::Text> titleText;
+    // UI Elements
+    std::optional<sf::Sprite> titleSprite;
+    std::optional<sf::Sprite> backgroundSprite;
     std::optional<sf::Text> subtitleText;
 
-    std::vector<sf::RectangleShape> buttons;
+    // Buttons
+    std::vector<sf::Sprite> buttonSprites;
     std::vector<sf::Text> buttonTexts;
-    std::vector<sf::RectangleShape> buttonHovers;
 
     int hoveredButton;
 
+    // Available files
     std::vector<std::string> availableFiles;
     int selectedFileIndex;
 
-    // Random config
-    std::vector<int> gridSizeOptions;
-    int selectedSizeIndex;
+    // Difficulty options
+    std::vector<DifficultyOption> difficultyOptions;
+    int selectedDifficultyIndex;
+
+    // Pentru scalare
+    float baseWidth = 1280.f;
+    float baseHeight = 720.f;
+
+    // Dimensiuni logo
+    float logoOriginalWidth = 1003.f;
+    float logoOriginalHeight = 162.f;
 };
 
 #endif //OOP_GAMEMENU_H
