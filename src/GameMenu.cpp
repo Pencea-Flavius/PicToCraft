@@ -11,7 +11,7 @@ GameMenu::GameMenu()
       menuState(MenuState::ModeSelection),
       selectedGameMode(GameMode::Mistakes),
       selectedSourceMode(SourceMode::File),
-      selectedFile(""),
+      selectedFile(),
       gridSize(10),
       hoveredButton(-1),
       selectedFileIndex(0),
@@ -59,7 +59,7 @@ void GameMenu::loadAssets() {
     if (titleLoaded) {
         titleSprite = sf::Sprite(titleTexture);
         auto bounds = titleSprite->getLocalBounds();
-        titleSprite->setOrigin({bounds.size.x / 2.f, bounds.size.y / 2.f});
+        titleSprite->setOrigin({bounds.size.x / 2.0f, bounds.size.y / 2.0f});
     }
 
     buttonLoaded = buttonTexture.loadFromFile("assets/button.png");
@@ -71,133 +71,81 @@ void GameMenu::loadAssets() {
     }
 }
 
-void GameMenu::setupModeSelectionScreen() {
+// Helper function pentru a crea butoane
+void GameMenu::createButtons(const std::vector<std::string>& labels, unsigned int fontSize) {
     buttonSprites.clear();
     buttonTexts.clear();
 
-    // NU mai avem subtitle pentru primul ecran
-    subtitleText.reset();
-
-    // Create buttons
-    std::vector<std::string> labels = {"Mod Scor", "Mod Greseli"};
-
-    for (size_t i = 0; i < labels.size(); i++) {
+    for (const auto& label : labels) {
         if (buttonLoaded) {
             sf::Sprite buttonSprite(buttonTexture);
             auto bounds = buttonSprite.getLocalBounds();
-            buttonSprite.setOrigin({bounds.size.x / 2.f, bounds.size.y / 2.f});
+            buttonSprite.setOrigin({bounds.size.x / 2.0f, bounds.size.y / 2.0f});
             buttonSprites.push_back(buttonSprite);
         }
 
         if (fontLoaded) {
-            sf::Text text(font, labels[i]);
-            text.setCharacterSize(20);
+            sf::Text text(font, label);
+            text.setCharacterSize(fontSize);
             text.setFillColor(sf::Color::White);
-            text.setOutlineThickness(1);
+            text.setOutlineThickness(1.0f);
             text.setOutlineColor(sf::Color::Black);
             buttonTexts.push_back(text);
         }
     }
 }
 
-void GameMenu::setupSourceSelectionScreen() {
-    buttonSprites.clear();
-    buttonTexts.clear();
+void GameMenu::setupModeSelectionScreen() {
+    subtitleText.reset();
+    createButtons({"Mod Scor", "Mod Greseli"}, 20);
+}
 
-    // Subtitle pentru celelalte ecrane
+void GameMenu::setupSourceSelectionScreen() {
     if (fontLoaded) {
         subtitleText = sf::Text(font, selectedGameMode == GameMode::Score ?
             "Mod: Scor" : "Mod: Greseli (3 maxim)");
         subtitleText->setCharacterSize(24);
         subtitleText->setFillColor(sf::Color(200, 200, 200));
-        subtitleText->setOutlineThickness(1);
+        subtitleText->setOutlineThickness(1.0f);
         subtitleText->setOutlineColor(sf::Color::Black);
     }
 
-    std::vector<std::string> labels = {"Joc din Fisier", "Joc Random"};
-
-    for (size_t i = 0; i < labels.size(); i++) {
-        if (buttonLoaded) {
-            sf::Sprite buttonSprite(buttonTexture);
-            auto bounds = buttonSprite.getLocalBounds();
-            buttonSprite.setOrigin({bounds.size.x / 2.f, bounds.size.y / 2.f});
-            buttonSprites.push_back(buttonSprite);
-        }
-
-        if (fontLoaded) {
-            sf::Text text(font, labels[i]);
-            text.setCharacterSize(20);
-            text.setFillColor(sf::Color::White);
-            text.setOutlineThickness(1);
-            text.setOutlineColor(sf::Color::Black);
-            buttonTexts.push_back(text);
-        }
-    }
+    createButtons({"Joc din Fisier", "Joc Random"}, 20);
 }
 
 void GameMenu::setupFileSelectionScreen() {
-    buttonSprites.clear();
-    buttonTexts.clear();
-
     if (fontLoaded) {
         subtitleText = sf::Text(font, "Alege nivelul");
         subtitleText->setCharacterSize(24);
         subtitleText->setFillColor(sf::Color(200, 200, 200));
-        subtitleText->setOutlineThickness(1);
+        subtitleText->setOutlineThickness(1.0f);
         subtitleText->setOutlineColor(sf::Color::Black);
     }
 
+    std::vector<std::string> fileNames;
     for (const auto& filePath : availableFiles) {
-        if (buttonLoaded) {
-            sf::Sprite buttonSprite(buttonTexture);
-            auto bounds = buttonSprite.getLocalBounds();
-            buttonSprite.setOrigin({bounds.size.x / 2.f, bounds.size.y / 2.f});
-            buttonSprites.push_back(buttonSprite);
-        }
-
-        if (fontLoaded) {
-            std::filesystem::path p(filePath);
-            std::string displayName = p.stem().string();
-
-            sf::Text text(font, displayName);
-            text.setCharacterSize(18);
-            text.setFillColor(sf::Color::White);
-            text.setOutlineThickness(1);
-            text.setOutlineColor(sf::Color::Black);
-            buttonTexts.push_back(text);
-        }
+        std::filesystem::path p(filePath);
+        fileNames.push_back(p.stem().string());
     }
+
+    createButtons(fileNames, 18);
 }
 
 void GameMenu::setupRandomConfigScreen() {
-    buttonSprites.clear();
-    buttonTexts.clear();
-
     if (fontLoaded) {
         subtitleText = sf::Text(font, "Alege dificultatea");
         subtitleText->setCharacterSize(24);
         subtitleText->setFillColor(sf::Color(200, 200, 200));
-        subtitleText->setOutlineThickness(1);
+        subtitleText->setOutlineThickness(1.0f);
         subtitleText->setOutlineColor(sf::Color::Black);
     }
 
+    std::vector<std::string> difficultyNames;
     for (const auto& difficulty : difficultyOptions) {
-        if (buttonLoaded) {
-            sf::Sprite buttonSprite(buttonTexture);
-            auto bounds = buttonSprite.getLocalBounds();
-            buttonSprite.setOrigin({bounds.size.x / 2.f, bounds.size.y / 2.f});
-            buttonSprites.push_back(buttonSprite);
-        }
-
-        if (fontLoaded) {
-            sf::Text text(font, difficulty.name);
-            text.setCharacterSize(20);
-            text.setFillColor(sf::Color::White);
-            text.setOutlineThickness(1);
-            text.setOutlineColor(sf::Color::Black);
-            buttonTexts.push_back(text);
-        }
+        difficultyNames.push_back(difficulty.name);
     }
+
+    createButtons(difficultyNames, 20);
 }
 
 void GameMenu::handleEvent(const sf::Event& event, const sf::RenderWindow& window) {
@@ -304,53 +252,49 @@ void GameMenu::draw(sf::RenderWindow& window) {
     }
 }
 
-void GameMenu::drawModeSelection(sf::RenderWindow& window) {
-    window.clear(sf::Color(40, 40, 40));
-
-    float scaleX = window.getSize().x / baseWidth;
-    float scaleY = window.getSize().y / baseHeight;
-    float scale = std::min(scaleX, scaleY);
-
-    // Draw background
+// Helper function pentru desenarea background-ului
+void GameMenu::drawBackground(sf::RenderWindow& window) {
     if (backgroundLoaded && backgroundSprite) {
         backgroundSprite->setScale({
-            static_cast<float>(window.getSize().x) / backgroundTexture.getSize().x,
-            static_cast<float>(window.getSize().y) / backgroundTexture.getSize().y
+            static_cast<float>(window.getSize().x) / static_cast<float>(backgroundTexture.getSize().x),
+            static_cast<float>(window.getSize().y) / static_cast<float>(backgroundTexture.getSize().y)
         });
         window.draw(*backgroundSprite);
     }
+}
 
-    // Draw logo - scalat corect pentru dimensiunile 1003x162
-    if (titleLoaded && titleSprite) {
-        // Calculează scalarea pentru logo
-        float logoScale = scale * 0.5f; // Ajustează acest factor pentru dimensiunea dorită
-        titleSprite->setScale({logoScale, logoScale});
-        titleSprite->setPosition({window.getSize().x / 2.f, 100.f * scaleY});
-        window.draw(*titleSprite);
-    }
+// Helper function pentru calcularea scalării
+sf::Vector2f GameMenu::calculateScale(const sf::RenderWindow& window) const {
+    float scaleX = static_cast<float>(window.getSize().x) / baseWidth;
+    float scaleY = static_cast<float>(window.getSize().y) / baseHeight;
+    float scale = std::min(scaleX, scaleY);
+    return {scale, scaleY};
+}
 
-    // NU desenăm subtitle pe primul ecran
-
-    // Draw buttons
-    float startY = 280.f * scaleY;
-    float spacing = 80.f * scaleY;
+// Helper function pentru desenarea butoanelor
+void GameMenu::drawButtons(sf::RenderWindow& window, float startY, float spacing,
+                           float buttonScaleX, float buttonScaleY, float textSize) {
+    auto [scale, scaleY] = calculateScale(window);
 
     for (size_t i = 0; i < buttonSprites.size(); i++) {
-        buttonSprites[i].setScale({scale * 1.2f, scale * 1.2f});
-        buttonSprites[i].setPosition({window.getSize().x / 2.f, startY + i * spacing});
+        buttonSprites[i].setScale({scale * buttonScaleX, scale * buttonScaleY});
+        buttonSprites[i].setPosition({
+            static_cast<float>(window.getSize().x) / 2.0f,
+            startY + static_cast<float>(i) * spacing
+        });
 
-        // Butonul devine albastru când e hover
+        // Culoarea butonului - AICI schimbi culoarea hover!
         if (hoveredButton == static_cast<int>(i)) {
-            buttonSprites[i].setColor(sf::Color(100, 150, 255)); // Albastru deschis
+            buttonSprites[i].setColor(sf::Color(160, 190, 240)); // Albastru mai subtil
         } else {
             buttonSprites[i].setColor(sf::Color::White);
         }
 
         window.draw(buttonSprites[i]);
 
-        // Textul devine galben când e hover
+        // Desenarea textului
         if (fontLoaded && i < buttonTexts.size()) {
-            buttonTexts[i].setCharacterSize(static_cast<unsigned int>(20 * scale));
+            buttonTexts[i].setCharacterSize(static_cast<unsigned int>(textSize * scale));
 
             if (hoveredButton == static_cast<int>(i)) {
                 buttonTexts[i].setFillColor(sf::Color(255, 255, 100)); // Galben
@@ -360,189 +304,87 @@ void GameMenu::drawModeSelection(sf::RenderWindow& window) {
 
             auto textBounds = buttonTexts[i].getLocalBounds();
             buttonTexts[i].setPosition({
-                window.getSize().x / 2.f - textBounds.size.x / 2.f - textBounds.position.x,
-                startY + i * spacing - textBounds.size.y / 2.f - textBounds.position.y
+                static_cast<float>(window.getSize().x) / 2.0f - textBounds.size.x / 2.0f - textBounds.position.x,
+                startY + static_cast<float>(i) * spacing - textBounds.size.y / 2.0f - textBounds.position.y
             });
             window.draw(buttonTexts[i]);
         }
     }
+}
+
+void GameMenu::drawModeSelection(sf::RenderWindow& window) {
+    window.clear(sf::Color(40, 40, 40));
+    auto [scale, scaleY] = calculateScale(window);
+
+    drawBackground(window);
+
+    // Draw logo
+    if (titleLoaded && titleSprite) {
+        float logoScale = scale * 0.5f;
+        titleSprite->setScale({logoScale, logoScale});
+        titleSprite->setPosition({static_cast<float>(window.getSize().x) / 2.0f, 100.0f * scaleY});
+        window.draw(*titleSprite);
+    }
+
+    drawButtons(window, 280.0f * scaleY, 80.0f * scaleY, 1.2f, 1.2f, 20.0f);
 }
 
 void GameMenu::drawSourceSelection(sf::RenderWindow& window) {
     window.clear(sf::Color(40, 40, 40));
+    auto [scale, scaleY] = calculateScale(window);
 
-    float scaleX = window.getSize().x / baseWidth;
-    float scaleY = window.getSize().y / baseHeight;
-    float scale = std::min(scaleX, scaleY);
+    drawBackground(window);
 
-    if (backgroundLoaded && backgroundSprite) {
-        backgroundSprite->setScale({
-            static_cast<float>(window.getSize().x) / backgroundTexture.getSize().x,
-            static_cast<float>(window.getSize().y) / backgroundTexture.getSize().y
-        });
-        window.draw(*backgroundSprite);
-    }
-
-    // Draw subtitle (NU logo)
+    // Draw subtitle
     if (fontLoaded && subtitleText) {
-        subtitleText->setCharacterSize(static_cast<unsigned int>(28 * scale));
+        subtitleText->setCharacterSize(static_cast<unsigned int>(28.0f * scale));
         auto subtitleBounds = subtitleText->getLocalBounds();
         subtitleText->setPosition({
-            window.getSize().x / 2.f - subtitleBounds.size.x / 2.f - subtitleBounds.position.x,
-            80.f * scaleY
+            static_cast<float>(window.getSize().x) / 2.0f - subtitleBounds.size.x / 2.0f - subtitleBounds.position.x,
+            80.0f * scaleY
         });
         window.draw(*subtitleText);
     }
 
-    float startY = 200.f * scaleY;
-    float spacing = 80.f * scaleY;
-
-    for (size_t i = 0; i < buttonSprites.size(); i++) {
-        buttonSprites[i].setScale({scale * 1.2f, scale * 1.2f});
-        buttonSprites[i].setPosition({window.getSize().x / 2.f, startY + i * spacing});
-
-        if (hoveredButton == static_cast<int>(i)) {
-            buttonSprites[i].setColor(sf::Color(100, 150, 255));
-        } else {
-            buttonSprites[i].setColor(sf::Color::White);
-        }
-
-        window.draw(buttonSprites[i]);
-
-        if (fontLoaded && i < buttonTexts.size()) {
-            buttonTexts[i].setCharacterSize(static_cast<unsigned int>(20 * scale));
-
-            if (hoveredButton == static_cast<int>(i)) {
-                buttonTexts[i].setFillColor(sf::Color(255, 255, 100));
-            } else {
-                buttonTexts[i].setFillColor(sf::Color::White);
-            }
-
-            auto textBounds = buttonTexts[i].getLocalBounds();
-            buttonTexts[i].setPosition({
-                window.getSize().x / 2.f - textBounds.size.x / 2.f - textBounds.position.x,
-                startY + i * spacing - textBounds.size.y / 2.f - textBounds.position.y
-            });
-            window.draw(buttonTexts[i]);
-        }
-    }
+    drawButtons(window, 200.0f * scaleY, 80.0f * scaleY, 1.2f, 1.2f, 20.0f);
 }
 
 void GameMenu::drawFileSelection(sf::RenderWindow& window) {
     window.clear(sf::Color(40, 40, 40));
+    auto [scale, scaleY] = calculateScale(window);
 
-    float scaleX = window.getSize().x / baseWidth;
-    float scaleY = window.getSize().y / baseHeight;
-    float scale = std::min(scaleX, scaleY);
+    drawBackground(window);
 
-    if (backgroundLoaded && backgroundSprite) {
-        backgroundSprite->setScale({
-            static_cast<float>(window.getSize().x) / backgroundTexture.getSize().x,
-            static_cast<float>(window.getSize().y) / backgroundTexture.getSize().y
-        });
-        window.draw(*backgroundSprite);
-    }
-
+    // Draw subtitle
     if (fontLoaded && subtitleText) {
-        subtitleText->setCharacterSize(static_cast<unsigned int>(28 * scale));
+        subtitleText->setCharacterSize(static_cast<unsigned int>(28.0f * scale));
         auto subtitleBounds = subtitleText->getLocalBounds();
         subtitleText->setPosition({
-            window.getSize().x / 2.f - subtitleBounds.size.x / 2.f - subtitleBounds.position.x,
-            60.f * scaleY
+            static_cast<float>(window.getSize().x) / 2.0f - subtitleBounds.size.x / 2.0f - subtitleBounds.position.x,
+            60.0f * scaleY
         });
         window.draw(*subtitleText);
     }
 
-    float startY = 160.f * scaleY;
-    float spacing = 70.f * scaleY;
-
-    for (size_t i = 0; i < buttonSprites.size(); i++) {
-        buttonSprites[i].setScale({scale * 1.4f, scale});
-        buttonSprites[i].setPosition({window.getSize().x / 2.f, startY + i * spacing});
-
-        if (hoveredButton == static_cast<int>(i)) {
-            buttonSprites[i].setColor(sf::Color(100, 150, 255));
-        } else {
-            buttonSprites[i].setColor(sf::Color::White);
-        }
-
-        window.draw(buttonSprites[i]);
-
-        if (fontLoaded && i < buttonTexts.size()) {
-            buttonTexts[i].setCharacterSize(static_cast<unsigned int>(18 * scale));
-
-            if (hoveredButton == static_cast<int>(i)) {
-                buttonTexts[i].setFillColor(sf::Color(255, 255, 100));
-            } else {
-                buttonTexts[i].setFillColor(sf::Color::White);
-            }
-
-            auto textBounds = buttonTexts[i].getLocalBounds();
-            buttonTexts[i].setPosition({
-                window.getSize().x / 2.f - textBounds.size.x / 2.f - textBounds.position.x,
-                startY + i * spacing - textBounds.size.y / 2.f - textBounds.position.y
-            });
-            window.draw(buttonTexts[i]);
-        }
-    }
+    drawButtons(window, 160.0f * scaleY, 70.0f * scaleY, 1.4f, 1.0f, 18.0f);
 }
 
 void GameMenu::drawRandomConfig(sf::RenderWindow& window) {
     window.clear(sf::Color(40, 40, 40));
+    auto [scale, scaleY] = calculateScale(window);
 
-    float scaleX = window.getSize().x / baseWidth;
-    float scaleY = window.getSize().y / baseHeight;
-    float scale = std::min(scaleX, scaleY);
+    drawBackground(window);
 
-    if (backgroundLoaded && backgroundSprite) {
-        backgroundSprite->setScale({
-            static_cast<float>(window.getSize().x) / backgroundTexture.getSize().x,
-            static_cast<float>(window.getSize().y) / backgroundTexture.getSize().y
-        });
-        window.draw(*backgroundSprite);
-    }
-
+    // Draw subtitle
     if (fontLoaded && subtitleText) {
-        subtitleText->setCharacterSize(static_cast<unsigned int>(28 * scale));
+        subtitleText->setCharacterSize(static_cast<unsigned int>(28.0f * scale));
         auto subtitleBounds = subtitleText->getLocalBounds();
         subtitleText->setPosition({
-            window.getSize().x / 2.f - subtitleBounds.size.x / 2.f - subtitleBounds.position.x,
-            80.f * scaleY
+            static_cast<float>(window.getSize().x) / 2.0f - subtitleBounds.size.x / 2.0f - subtitleBounds.position.x,
+            80.0f * scaleY
         });
         window.draw(*subtitleText);
     }
 
-    // Butoane în coloană pentru mai mult spațiu
-    float startY = 200.f * scaleY;
-    float spacing = 85.f * scaleY;
-
-    for (size_t i = 0; i < buttonSprites.size(); i++) {
-        buttonSprites[i].setScale({scale * 1.2f, scale});
-        buttonSprites[i].setPosition({window.getSize().x / 2.f, startY + i * spacing});
-
-        if (hoveredButton == static_cast<int>(i)) {
-            buttonSprites[i].setColor(sf::Color(100, 150, 255));
-        } else {
-            buttonSprites[i].setColor(sf::Color::White);
-        }
-
-        window.draw(buttonSprites[i]);
-
-        if (fontLoaded && i < buttonTexts.size()) {
-            buttonTexts[i].setCharacterSize(static_cast<unsigned int>(20 * scale));
-
-            if (hoveredButton == static_cast<int>(i)) {
-                buttonTexts[i].setFillColor(sf::Color(255, 255, 100));
-            } else {
-                buttonTexts[i].setFillColor(sf::Color::White);
-            }
-
-            auto textBounds = buttonTexts[i].getLocalBounds();
-            buttonTexts[i].setPosition({
-                window.getSize().x / 2.f - textBounds.size.x / 2.f - textBounds.position.x,
-                startY + i * spacing - textBounds.size.y / 2.f - textBounds.position.y
-            });
-            window.draw(buttonTexts[i]);
-        }
-    }
+    drawButtons(window, 200.0f * scaleY, 85.0f * scaleY, 1.2f, 1.0f, 20.0f);
 }

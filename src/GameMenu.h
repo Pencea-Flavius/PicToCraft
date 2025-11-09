@@ -43,21 +43,33 @@ public:
     int getGridSize() const { return gridSize; }
 
 private:
+    // Asset loading
     void loadAssets();
+
+    // Screen setup functions
     void setupModeSelectionScreen();
     void setupSourceSelectionScreen();
     void setupFileSelectionScreen();
     void setupRandomConfigScreen();
 
+    // Drawing functions
     void drawModeSelection(sf::RenderWindow& window);
     void drawSourceSelection(sf::RenderWindow& window);
     void drawFileSelection(sf::RenderWindow& window);
     void drawRandomConfig(sf::RenderWindow& window);
 
+    // Click handlers
     void handleModeSelectionClick(const sf::Vector2f& mousePos);
     void handleSourceSelectionClick(const sf::Vector2f& mousePos);
     void handleFileSelectionClick(const sf::Vector2f& mousePos);
     void handleRandomConfigClick(const sf::Vector2f& mousePos);
+
+    // Helper functions
+    void createButtons(const std::vector<std::string>& labels, unsigned int fontSize);
+    void drawBackground(sf::RenderWindow& window);
+    sf::Vector2f calculateScale(const sf::RenderWindow& window) const;
+    void drawButtons(sf::RenderWindow& window, float startY, float spacing,
+                     float buttonScaleX, float buttonScaleY, float textSize);
 
     // Assets
     sf::Font font;
@@ -69,6 +81,7 @@ private:
     bool buttonLoaded;
     bool backgroundLoaded;
 
+    // State
     MenuState menuState;
     GameMode selectedGameMode;
     SourceMode selectedSourceMode;
@@ -83,7 +96,6 @@ private:
     // Buttons
     std::vector<sf::Sprite> buttonSprites;
     std::vector<sf::Text> buttonTexts;
-
     int hoveredButton;
 
     // Available files
@@ -95,12 +107,12 @@ private:
     int selectedDifficultyIndex;
 
     // Pentru scalare
-    float baseWidth = 1280.f;
-    float baseHeight = 720.f;
+    float baseWidth = 1280.0f;
+    float baseHeight = 720.0f;
 
     // Dimensiuni logo
-    float logoOriginalWidth = 1003.f;
-    float logoOriginalHeight = 162.f;
+    float logoOriginalWidth = 1003.0f;
+    float logoOriginalHeight = 162.0f;
 };
 
 #endif //OOP_GAMEMENU_H
