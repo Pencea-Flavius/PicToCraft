@@ -46,7 +46,7 @@ GameMenu::GameMenu()
 
     if (availableFiles.empty()) {
         std::cerr << "Nici un fisier gasit in folderul nivele!\n";
-        availableFiles.push_back("nivele/default.txt");
+        availableFiles.emplace_back("nivele/default.txt");
     }
 
     setupModeSelectionScreen();
@@ -127,7 +127,7 @@ void GameMenu::setupFileSelectionScreen() {
         std::filesystem::path p(filePath);
         fileNames.push_back(p.stem().string());
     }
-    fileNames.push_back("Back");
+    fileNames.emplace_back("Back");
 
     createButtons(fileNames, 18);
 }
@@ -145,7 +145,7 @@ void GameMenu::setupRandomConfigScreen() {
     for (const auto& difficulty : difficultyOptions) {
         difficultyNames.push_back(difficulty.name);
     }
-    difficultyNames.push_back("Back");
+    difficultyNames.emplace_back("Back");
 
     createButtons(difficultyNames, 20);
 }

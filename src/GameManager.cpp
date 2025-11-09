@@ -7,9 +7,9 @@ GameManager::GameManager() : grid(), inMenu(true) {
     sf::VideoMode mode = menuRes.selectResolution();
 
     if (menuRes.wasFullscreenChosen())
-        window.create(mode, "Pictocross", sf::State::Fullscreen);
+        window.create(mode, "PictoCraft", sf::State::Fullscreen);
     else
-        window.create(mode, "Pictocross", sf::Style::Close, sf::State::Windowed);
+        window.create(mode, "PictoCraft", sf::Style::Close, sf::State::Windowed);
 
     window.setFramerateLimit(60);
 
