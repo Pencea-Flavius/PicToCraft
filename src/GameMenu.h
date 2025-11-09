@@ -34,6 +34,7 @@ class GameMenu {
 public:
     GameMenu();
 
+    ~GameMenu();
     void handleEvent(const sf::Event& event, const sf::RenderWindow& window);
     void draw(sf::RenderWindow& window);
 
@@ -73,6 +74,11 @@ private:
     void drawButtons(sf::RenderWindow& window, float startY, float spacing,
                      float buttonScaleX, float buttonScaleY, float textSize);
 
+    sf::Font subtitleFont;
+    bool subtitleFontLoaded;
+    void createSubtitle(const std::string& text);
+    void drawSubtitle(sf::RenderWindow& window, float yPosition);
+
     // Assets
     sf::Font font;
     sf::Texture titleTexture;
@@ -82,6 +88,7 @@ private:
     bool titleLoaded;
     bool buttonLoaded;
     bool backgroundLoaded;
+
 
     // State
     MenuState menuState;

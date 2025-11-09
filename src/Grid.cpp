@@ -57,7 +57,7 @@ Grid& Grid::operator=(const Grid& other) {
 // Destructor
 Grid::~Grid() = default;
 
-// Load grid from file
+
 void Grid::load_from_file(const std::string& filename, bool use_score_mode) {
     std::ifstream file(filename);
     if (!file) {

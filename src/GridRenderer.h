@@ -17,6 +17,9 @@ class GridRenderer {
 
 public:
     explicit GridRenderer(Grid& g, float size = 40.f, sf::Vector2f offset = {50.f, 50.f});
+
+    ~GridRenderer() = default;
+
     void draw(sf::RenderWindow& window) const;
     void drawGameInfo(sf::RenderWindow& window) const;
     void handleClick(const sf::Vector2i& mousePos) const;

@@ -19,6 +19,8 @@ public:
     GameManager();
     void run();
 
+    ~GameManager() = default;
+
 private:
     void startGame();
 };

@@ -60,10 +60,9 @@ void GameManager::run() {
             if (inMenu) {
                 menu->handleEvent(*event, window);
 
-                // Verifică dacă utilizatorul vrea să iasă
                 if (menu->shouldQuit()) {
                     window.close();
-                    return; // Ieșire din funcție
+                    return;
                 }
 
                 if (menu->isGameReady()) {
