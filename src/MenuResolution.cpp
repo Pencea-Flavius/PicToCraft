@@ -73,7 +73,7 @@ sf::VideoMode MenuResolution::selectResolution() {
                     return sf::VideoMode({deskSize.x, deskSize.y});
                 }
                 if (key->code == sf::Keyboard::Key::Enter) {
-                    std::this_thread::sleep_for(std::chrono::seconds(1));
+                  //  std::this_thread::sleep_for(std::chrono::seconds(1));
                     if (fullscreenChosen_) {
                         auto dm = sf::VideoMode::getDesktopMode();
                         window.close();

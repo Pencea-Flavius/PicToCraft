@@ -60,6 +60,12 @@ void GameManager::run() {
                 window.close();
                 break;
             }
+                if (auto key = event->getIf<sf::Event::KeyPressed>()) {
+                if (key->code == sf::Keyboard::Key::Escape) {
+                    window.close();
+                    break;
+                }
+            }
 
             if (inMenu) {
                 menu->handleEvent(*event, window);

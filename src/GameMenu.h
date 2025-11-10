@@ -49,6 +49,7 @@ public:
 private:
     // Asset loading
     void loadAssets();
+    void loadSplashMessages();  // NOU
 
     // Screen setup functions
     void setupModeSelectionScreen();
@@ -57,10 +58,8 @@ private:
     void setupRandomConfigScreen();
 
     // Drawing functions
-    void drawModeSelection(sf::RenderWindow& window);
-    void drawSourceSelection(sf::RenderWindow& window);
-    void drawFileSelection(sf::RenderWindow& window);
-    void drawRandomConfig(sf::RenderWindow& window);
+    void drawPanorama(sf::RenderWindow& window);
+    void drawSplashText(sf::RenderWindow& window);  // NOU
 
     // Click handlers
     void handleModeSelectionClick(const sf::Vector2f& mousePos);
@@ -70,23 +69,21 @@ private:
 
     // Helper functions
     void createButtons(const std::vector<std::string>& labels, unsigned int fontSize);
-    void updatePanorama(float deltaTime);
-    void drawPanorama(sf::RenderWindow& window);
+    void createSubtitle(const std::string& text);
+    void updateSplashText(float deltaTime);  // NOU
     sf::Vector2f calculateScale(const sf::RenderWindow& window) const;
     void drawButtons(sf::RenderWindow& window, float startY, float spacing,
                      float buttonScaleX, float buttonScaleY, float textSize);
-
-    sf::Font subtitleFont;
-    bool subtitleFontLoaded;
-    void createSubtitle(const std::string& text);
     void drawSubtitle(sf::RenderWindow& window, float yPosition);
 
     // Assets
     sf::Font font;
+    sf::Font subtitleFont;
     sf::Texture titleTexture;
     sf::Texture buttonTexture;
     sf::Texture panoramaTexture;
     bool fontLoaded;
+    bool subtitleFontLoaded;
     bool titleLoaded;
     bool buttonLoaded;
     bool panoramaLoaded;
@@ -103,6 +100,7 @@ private:
     std::optional<sf::Sprite> panoramaSprite1;
     std::optional<sf::Sprite> panoramaSprite2;
     std::optional<sf::Text> subtitleText;
+    std::optional<sf::Text> splashText;  // NOU
 
     // Buttons
     std::vector<sf::Sprite> buttonSprites;
@@ -120,6 +118,12 @@ private:
     // Panorama animation
     float panoramaOffset;
     float panoramaSpeed;
+
+    // Splash text animation  // NOU - tot blocul
+    std::vector<std::string> splashMessages;
+    bool splashIncreasing;
+    float splashScale;
+    float splashSpeed;
 
     // Pentru scalare
     float baseWidth = 1280.0f;

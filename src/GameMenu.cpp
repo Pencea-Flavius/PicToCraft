@@ -2,6 +2,8 @@
 #include <filesystem>
 #include <algorithm>
 #include <iostream>
+#include <fstream>
+#include <random>
 
 GameMenu::GameMenu()
     : fontLoaded(false),
@@ -12,15 +14,18 @@ GameMenu::GameMenu()
       menuState(MenuState::ModeSelection),
       selectedGameMode(GameMode::Mistakes),
       selectedSourceMode(SourceMode::File),
-      selectedFile(),
       gridSize(10),
       hoveredButton(-1),
       selectedFileIndex(0),
       selectedDifficultyIndex(1),
       panoramaOffset(0.0f),
-      panoramaSpeed(30.0f)
+      panoramaSpeed(30.0f),
+      splashIncreasing(true),
+      splashScale(1.0f),
+      splashSpeed(0.3f)
 {
     loadAssets();
+    loadSplashMessages();
 
     difficultyOptions = {
         {"Peaceful", 5},
@@ -29,6 +34,7 @@ GameMenu::GameMenu()
         {"Hardcore", 16}
     };
 
+    // Citește fișierele din folderul nivele
     try {
         std::filesystem::path levelDir("nivele");
         if (std::filesystem::exists(levelDir) && std::filesystem::is_directory(levelDir)) {
@@ -68,7 +74,6 @@ void GameMenu::loadAssets() {
 
     buttonLoaded = buttonTexture.loadFromFile("assets/button.png");
 
-    // Încarcă panorama
     panoramaLoaded = panoramaTexture.loadFromFile("assets/panorama.jpg");
     if (panoramaLoaded) {
         panoramaTexture.setRepeated(true);
@@ -81,16 +86,70 @@ void GameMenu::loadAssets() {
     }
 }
 
+void GameMenu::loadSplashMessages() {
+    std::ifstream file("assets/splash_text.txt");
+    if (!file) {
+        std::cerr << "Eroare la citirea fisierului splash_text.txt!\n";
+        splashMessages.push_back("Picross Fun!");
+        return;
+    }
+
+    std::string line;
+    while (std::getline(file, line)) {
+        if (!line.empty()) {
+            splashMessages.push_back(line);
+        }
+    }
+    file.close();
+
+    if (splashMessages.empty()) {
+        splashMessages.push_back("Picross Fun!");
+    }
+
+    // Alege un mesaj random
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<size_t> dist(0, splashMessages.size() - 1);
+    std::string randomMessage = splashMessages[dist(gen)];
+
+    // Creează textul splash
+    if (fontLoaded) {
+        splashText = sf::Text(font, randomMessage);
+        splashText->setCharacterSize(30);
+        splashText->setFillColor(sf::Color(213, 222, 82)); // Galben Minecraft
+    }
+}
+
 void GameMenu::update(float deltaTime) {
     if (!panoramaLoaded) return;
 
-    // Misca panorama spre stanga
     panoramaOffset += panoramaSpeed * deltaTime;
 
-    // Reset cand ajunge la capat
     float textureWidth = static_cast<float>(panoramaTexture.getSize().x);
     if (panoramaOffset >= textureWidth) {
         panoramaOffset -= textureWidth;
+    }
+
+    if (menuState == MenuState::ModeSelection) {
+        updateSplashText(deltaTime);
+    }
+}
+
+void GameMenu::updateSplashText(float deltaTime) {
+    if (!splashText) return;
+
+    if (splashIncreasing) {
+        splashScale += splashSpeed * deltaTime;
+    } else {
+        splashScale -= splashSpeed * deltaTime;
+    }
+
+    if (splashScale > 1.25f) {
+        splashScale = 1.25f;
+        splashIncreasing = false;
+    } else if (splashScale < 1.0f) {
+        splashScale = 1.0f;
+        splashIncreasing = true;
     }
 }
 
@@ -276,13 +335,14 @@ void GameMenu::draw(sf::RenderWindow& window) {
     // Ecrane
     switch (menuState) {
         case MenuState::ModeSelection:
-            // Logo doar pe ecranul principal
             if (titleLoaded && titleSprite) {
                 float logoScale = scale * 0.5f;
                 titleSprite->setScale({logoScale, logoScale});
                 titleSprite->setPosition({static_cast<float>(window.getSize().x) / 2.0f, 100.0f * scaleY});
                 window.draw(*titleSprite);
             }
+            // Splash text
+            drawSplashText(window);
             drawButtons(window, 280.0f * scaleY, 80.0f * scaleY, 1.2f, 1.2f, 20.0f);
             break;
 
@@ -304,6 +364,46 @@ void GameMenu::draw(sf::RenderWindow& window) {
         default:
             break;
     }
+}
+
+void GameMenu::drawSplashText(sf::RenderWindow& window) {
+    if (!splashText || !titleLoaded || !titleSprite) return;
+
+    auto [scale, scaleY] = calculateScale(window);
+
+    // Poziționează textul lângă logo (la dreapta jos)
+    float logoX = static_cast<float>(window.getSize().x) / 2.0f;
+    float logoY = 100.0f * scaleY;
+    float logoScale = scale * 0.5f;
+
+    // Dimensiunile logo-ului scalat
+    float logoWidth = logoOriginalWidth * logoScale;
+    float logoHeight = logoOriginalHeight * logoScale;
+
+    // Calculează poziția pentru splash (mai la dreapta și mai jos)
+    float splashX = logoX + logoWidth * 0.42f;  // Mai la dreapta (era 0.35f)
+    float splashY = logoY + logoHeight * 0.05f;  // Mai jos (era -0.15f)
+
+    // Scalează textul cu animația de pulsare
+    float finalScale = scale * splashScale;
+    splashText->setCharacterSize(static_cast<unsigned int>(30.0f * finalScale));
+
+    // Rotație de -20 grade (ca în Minecraft)
+    splashText->setRotation(sf::degrees(-20.0f));
+
+    // Originea pentru rotație corectă
+    auto bounds = splashText->getLocalBounds();
+    splashText->setOrigin({bounds.size.x / 2.0f, bounds.size.y / 2.0f});
+
+    // Shadow (umbră)
+    sf::Text shadowText = *splashText;
+    shadowText.setFillColor(sf::Color(0, 0, 0, 170));
+    shadowText.setPosition({splashX + 2.0f * scale, splashY + 2.0f * scale});
+    window.draw(shadowText);
+
+    // Text principal
+    splashText->setPosition({splashX, splashY});
+    window.draw(*splashText);
 }
 
 void GameMenu::drawPanorama(sf::RenderWindow& window) {
