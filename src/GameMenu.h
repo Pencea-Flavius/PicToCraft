@@ -33,9 +33,10 @@ struct DifficultyOption {
 class GameMenu {
 public:
     GameMenu();
-
     ~GameMenu();
+
     void handleEvent(const sf::Event& event, const sf::RenderWindow& window);
+    void update(float deltaTime);
     void draw(sf::RenderWindow& window);
 
     bool isGameReady() const { return menuState == MenuState::Starting; }
@@ -69,7 +70,8 @@ private:
 
     // Helper functions
     void createButtons(const std::vector<std::string>& labels, unsigned int fontSize);
-    void drawBackground(sf::RenderWindow& window);
+    void updatePanorama(float deltaTime);
+    void drawPanorama(sf::RenderWindow& window);
     sf::Vector2f calculateScale(const sf::RenderWindow& window) const;
     void drawButtons(sf::RenderWindow& window, float startY, float spacing,
                      float buttonScaleX, float buttonScaleY, float textSize);
@@ -83,12 +85,11 @@ private:
     sf::Font font;
     sf::Texture titleTexture;
     sf::Texture buttonTexture;
-    sf::Texture backgroundTexture;
+    sf::Texture panoramaTexture;
     bool fontLoaded;
     bool titleLoaded;
     bool buttonLoaded;
-    bool backgroundLoaded;
-
+    bool panoramaLoaded;
 
     // State
     MenuState menuState;
@@ -99,7 +100,8 @@ private:
 
     // UI Elements
     std::optional<sf::Sprite> titleSprite;
-    std::optional<sf::Sprite> backgroundSprite;
+    std::optional<sf::Sprite> panoramaSprite1;
+    std::optional<sf::Sprite> panoramaSprite2;
     std::optional<sf::Text> subtitleText;
 
     // Buttons
@@ -114,6 +116,10 @@ private:
     // Difficulty options
     std::vector<DifficultyOption> difficultyOptions;
     int selectedDifficultyIndex;
+
+    // Panorama animation
+    float panoramaOffset;
+    float panoramaSpeed;
 
     // Pentru scalare
     float baseWidth = 1280.0f;

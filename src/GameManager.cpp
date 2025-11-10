@@ -50,7 +50,11 @@ void GameManager::startGame() {
 }
 
 void GameManager::run() {
+    sf::Clock clock;
+
     while (window.isOpen()) {
+        float deltaTime = clock.restart().asSeconds();
+
         while (const std::optional<sf::Event> event = window.pollEvent()) {
             if (event->is<sf::Event::Closed>()) {
                 window.close();
@@ -62,7 +66,7 @@ void GameManager::run() {
 
                 if (menu->shouldQuit()) {
                     window.close();
-                    return;
+                    break;
                 }
 
                 if (menu->isGameReady()) {
@@ -87,6 +91,7 @@ void GameManager::run() {
         }
 
         if (inMenu) {
+            menu->update(deltaTime);
             menu->draw(window);
         } else {
             window.clear(sf::Color(240, 240, 240));
