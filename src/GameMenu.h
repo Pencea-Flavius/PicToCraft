@@ -2,136 +2,116 @@
 #define OOP_GAMEMENU_H
 
 #include <SFML/Graphics.hpp>
+#include <memory>
+#include <optional>
 #include <string>
 #include <vector>
-#include <optional>
+
+#include "MenuButton.h"
+#include "MenuPanorama.h"
+#include "SplashText.h"
 
 enum class MenuState {
-    ModeSelection,
-    SourceSelection,
-    FileSelection,
-    RandomConfig,
-    Starting,
-    Quitting
+  ModeSelection,
+  SourceSelection,
+  FileSelection,
+  RandomConfig,
+  Starting,
+  Quitting
 };
 
-enum class GameMode {
-    Score,
-    Mistakes
-};
+enum class GameModeType { Score, Mistakes };
 
-enum class SourceMode {
-    File,
-    Random
-};
+enum class SourceMode { File, Random };
 
 struct DifficultyOption {
-    std::string name;
-    int gridSize;
+  std::string name;
+  int gridSize;
 };
 
 class GameMenu {
 public:
-    GameMenu();
-    ~GameMenu();
+  GameMenu();
+  ~GameMenu();
 
-    void handleEvent(const sf::Event& event, const sf::RenderWindow& window);
-    void update(float deltaTime);
-    void draw(sf::RenderWindow& window);
+  void handleEvent(const sf::Event &event, const sf::RenderWindow &window);
+  void update(float deltaTime);
+  void draw(sf::RenderWindow &window);
 
-    bool isGameReady() const { return menuState == MenuState::Starting; }
-    bool shouldQuit() const { return menuState == MenuState::Quitting; }
-    GameMode getGameMode() const { return selectedGameMode; }
-    SourceMode getSourceMode() const { return selectedSourceMode; }
-    const std::string& getSelectedFile() const { return selectedFile; }
-    int getGridSize() const { return gridSize; }
+  bool isGameReady() const { return menuState == MenuState::Starting; }
+  bool shouldQuit() const { return menuState == MenuState::Quitting; }
+  GameModeType getGameMode() const { return selectedGameMode; }
+  SourceMode getSourceMode() const { return selectedSourceMode; }
+  const std::string &getSelectedFile() const { return selectedFile; }
+  int getGridSize() const { return gridSize; }
+  void reset();
 
 private:
-    // Asset loading
-    void loadAssets();
-    void loadSplashMessages();  // NOU
+  // Asset loading
+  void loadAssets();
 
-    // Screen setup functions
-    void setupModeSelectionScreen();
-    void setupSourceSelectionScreen();
-    void setupFileSelectionScreen();
-    void setupRandomConfigScreen();
+  // Screen setup functions
+  void setupModeSelectionScreen();
+  void setupSourceSelectionScreen();
+  void setupFileSelectionScreen();
+  void setupRandomConfigScreen();
 
-    // Drawing functions
-    void drawPanorama(sf::RenderWindow& window);
-    void drawSplashText(sf::RenderWindow& window);  // NOU
+  // Click handlers
+  void handleModeSelectionClick(const sf::Vector2f &mousePos);
+  void handleSourceSelectionClick(const sf::Vector2f &mousePos);
+  void handleFileSelectionClick(const sf::Vector2f &mousePos);
+  void handleRandomConfigClick(const sf::Vector2f &mousePos);
 
-    // Click handlers
-    void handleModeSelectionClick(const sf::Vector2f& mousePos);
-    void handleSourceSelectionClick(const sf::Vector2f& mousePos);
-    void handleFileSelectionClick(const sf::Vector2f& mousePos);
-    void handleRandomConfigClick(const sf::Vector2f& mousePos);
+  // Helper functions
+  void createButtons(const std::vector<std::string> &labels,
+                     unsigned int fontSize);
+  void createSubtitle(const std::string &text);
+  sf::Vector2f calculateScale(const sf::RenderWindow &window) const;
+  void drawButtons(sf::RenderWindow &window, float startY, float spacing,
+                   float buttonScaleX, float buttonScaleY);
+  void drawSubtitle(sf::RenderWindow &window, float yPosition);
 
-    // Helper functions
-    void createButtons(const std::vector<std::string>& labels, unsigned int fontSize);
-    void createSubtitle(const std::string& text);
-    void updateSplashText(float deltaTime);  // NOU
-    sf::Vector2f calculateScale(const sf::RenderWindow& window) const;
-    void drawButtons(sf::RenderWindow& window, float startY, float spacing,
-                     float buttonScaleX, float buttonScaleY, float textSize);
-    void drawSubtitle(sf::RenderWindow& window, float yPosition);
+  // Assets
+  sf::Font font;
+  sf::Font subtitleFont;
+  sf::Texture titleTexture;
+  sf::Texture buttonTexture;
+  bool fontLoaded;
+  bool subtitleFontLoaded;
+  bool titleLoaded;
+  bool buttonLoaded;
 
-    // Assets
-    sf::Font font;
-    sf::Font subtitleFont;
-    sf::Texture titleTexture;
-    sf::Texture buttonTexture;
-    sf::Texture panoramaTexture;
-    bool fontLoaded;
-    bool subtitleFontLoaded;
-    bool titleLoaded;
-    bool buttonLoaded;
-    bool panoramaLoaded;
+  // Components
+  MenuPanorama panorama;
+  SplashText splashText;
+  std::vector<std::unique_ptr<MenuButton>> buttons;
 
-    // State
-    MenuState menuState;
-    GameMode selectedGameMode;
-    SourceMode selectedSourceMode;
-    std::string selectedFile;
-    int gridSize;
+  // State
+  MenuState menuState;
+  GameModeType selectedGameMode;
+  SourceMode selectedSourceMode;
+  std::string selectedFile;
+  int gridSize;
 
-    // UI Elements
-    std::optional<sf::Sprite> titleSprite;
-    std::optional<sf::Sprite> panoramaSprite1;
-    std::optional<sf::Sprite> panoramaSprite2;
-    std::optional<sf::Text> subtitleText;
-    std::optional<sf::Text> splashText;  // NOU
+  // UI Elements
+  std::optional<sf::Sprite> titleSprite;
+  std::optional<sf::Text> subtitleText;
 
-    // Buttons
-    std::vector<sf::Sprite> buttonSprites;
-    std::vector<sf::Text> buttonTexts;
-    int hoveredButton;
+  // Available files
+  std::vector<std::string> availableFiles;
+  int selectedFileIndex;
 
-    // Available files
-    std::vector<std::string> availableFiles;
-    int selectedFileIndex;
+  // Difficulty options
+  std::vector<DifficultyOption> difficultyOptions;
+  int selectedDifficultyIndex;
 
-    // Difficulty options
-    std::vector<DifficultyOption> difficultyOptions;
-    int selectedDifficultyIndex;
+  // Pentru scalare
+  float baseWidth = 1280.0f;
+  float baseHeight = 720.0f;
 
-    // Panorama animation
-    float panoramaOffset;
-    float panoramaSpeed;
-
-    // Splash text animation  // NOU - tot blocul
-    std::vector<std::string> splashMessages;
-    bool splashIncreasing;
-    float splashScale;
-    float splashSpeed;
-
-    // Pentru scalare
-    float baseWidth = 1280.0f;
-    float baseHeight = 720.0f;
-
-    // Dimensiuni logo
-    float logoOriginalWidth = 1003.0f;
-    float logoOriginalHeight = 162.0f;
+  // Dimensiuni logo
+  float logoOriginalWidth = 1003.0f;
+  float logoOriginalHeight = 162.0f;
 };
 
-#endif //OOP_GAMEMENU_H
+#endif // OOP_GAMEMENU_H

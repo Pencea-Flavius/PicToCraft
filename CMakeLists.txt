@@ -56,6 +56,20 @@ add_executable(${MAIN_EXECUTABLE_NAME}
         src/GridRenderer.h
         src/GameMenu.cpp
         src/GameMenu.h
+        src/MenuPanorama.cpp
+        src/MenuPanorama.h
+        src/SplashText.cpp
+        src/MenuPanorama.cpp
+        src/SplashText.cpp
+        src/MenuButton.cpp
+        src/MenuButton.h
+        src/ShadowedText.cpp
+        src/ShadowedText.h
+        src/GameOverScreen.cpp
+        src/ScoreMode.cpp
+        src/MistakesMode.cpp
+        src/GameMode.cpp
+        src/GameOverScreen.h
 )
 
 target_include_directories(${MAIN_EXECUTABLE_NAME} SYSTEM PRIVATE ${SFML_SOURCE_DIR}/include)

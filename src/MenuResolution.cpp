@@ -8,7 +8,6 @@
 #include <vector>
 #include <memory>
 #include <thread>
-#include <chrono>
 
 static bool loadMenuFont(sf::Font &font) {
     const char *path = "assets/Monocraft.ttf";
