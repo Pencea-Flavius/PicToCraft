@@ -11,11 +11,9 @@
 
 Grid::Grid()
     : size{}, blocks{}, total_correct_blocks{}, completed_blocks{},
-      correct_completed_blocks{}, hints{} {
-  gameMode = std::make_unique<ScoreMode>();
-}
+      correct_completed_blocks{}, hints{},
+      gameMode(std::make_unique<ScoreMode>()) {}
 
-// Construct grid from a boolean pattern
 Grid::Grid(int grid_size, const std::vector<std::vector<bool>> &pattern,
            bool use_score_mode)
     : size{grid_size}, total_correct_blocks{0}, completed_blocks{0},
@@ -43,7 +41,6 @@ Grid::Grid(int grid_size, const std::vector<std::vector<bool>> &pattern,
   hints = PicrossHints(blocks);
 }
 
-// Copy constructor
 Grid::Grid(const Grid &other)
     : size(other.size), blocks(other.blocks),
       total_correct_blocks(other.total_correct_blocks),
@@ -59,7 +56,6 @@ Grid::Grid(const Grid &other)
   }
 }
 
-// Copy assignment
 Grid &Grid::operator=(const Grid &other) {
   if (this != &other) {
     size = other.size;
@@ -80,7 +76,6 @@ Grid &Grid::operator=(const Grid &other) {
   return *this;
 }
 
-// Destructor
 Grid::~Grid() = default;
 
 void Grid::load_from_file(const std::string &filename, bool use_score_mode) {
@@ -149,7 +144,6 @@ void Grid::generate_random(int grid_size, bool use_score_mode, double density) {
   }
 }
 
-// Toggle a block at coordinates (x, y)
 void Grid::toggle_block(int x, int y) {
   if (x < 0 || y < 0 || x >= size || y >= size) {
     std::cout << "Coordonate invalide!\n";
@@ -191,7 +185,6 @@ bool Grid::is_lost() const {
   return false;
 }
 
-// Getters
 int Grid::get_score() const { return gameMode ? gameMode->getScore() : 0; }
 
 int Grid::get_mistakes() const {
