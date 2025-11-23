@@ -2,13 +2,12 @@
 #include <iostream>
 
 MenuPanorama::MenuPanorama() : loaded(false), offset(0.0f), speed(30.0f) {
-  if (panoramaTexture.loadFromFile("assets/panorama.jpg")) {
+  if (panoramaTexture.loadFromFile("assets/cherry.jpg")) {
     panoramaTexture.setRepeated(true);
     panoramaSprite1 = sf::Sprite(panoramaTexture);
     panoramaSprite2 = sf::Sprite(panoramaTexture);
     loaded = true;
-    std::cout << "Panorama incarcata: " << panoramaTexture.getSize().x << "x"
-              << panoramaTexture.getSize().y << "\n";
+
   } else {
     std::cerr << "Eroare la incarcarea panoramei!\n";
   }
