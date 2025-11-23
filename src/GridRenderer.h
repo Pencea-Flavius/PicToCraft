@@ -5,24 +5,29 @@
 #ifndef OOP_GRIDRENDERER_H
 #define OOP_GRIDRENDERER_H
 
-#include <SFML/Graphics.hpp>
 #include "Grid.h"
+#include "HeartDisplay.h"
+#include <SFML/Graphics.hpp>
 
 class GridRenderer {
-    Grid& grid;
-    float cellSize;
-    sf::Vector2f offset;
-    sf::Font font;
-    bool fontLoaded;
+  Grid &grid;
+  float cellSize;
+  sf::Vector2f offset;
+  sf::Font font;
+  bool fontLoaded;
+  mutable HeartDisplay heartDisplay;
+  mutable int lastMistakes;
+  mutable sf::Clock animationClock;
 
 public:
-    explicit GridRenderer(Grid& g, float size = 40.f, sf::Vector2f offset = {50.f, 50.f});
+  explicit GridRenderer(Grid &g, float size = 40.f,
+                        sf::Vector2f offset = {50.f, 50.f});
 
-    ~GridRenderer() = default;
+  ~GridRenderer() = default;
 
-    void draw(sf::RenderWindow& window) const;
-    void drawGameInfo(sf::RenderWindow& window) const;
-    void handleClick(const sf::Vector2i& mousePos) const;
+  void draw(sf::RenderWindow &window) const;
+  void drawGameInfo(sf::RenderWindow &window) const;
+  void handleClick(const sf::Vector2i &mousePos) const;
 };
 
-#endif //OOP_GRIDRENDERER_H
+#endif // OOP_GRIDRENDERER_H

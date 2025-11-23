@@ -15,7 +15,6 @@ GameMenu::GameMenu()
   difficultyOptions = {
       {"Peaceful", 5}, {"Normal", 8}, {"Hard", 12}, {"Hardcore", 16}};
 
-  // Citește fișierele din folderul nivele
   try {
     std::filesystem::path levelDir("nivele");
     if (std::filesystem::exists(levelDir) &&
@@ -23,7 +22,8 @@ GameMenu::GameMenu()
       for (const auto &entry : std::filesystem::directory_iterator(levelDir)) {
         if (entry.is_regular_file()) {
           std::string filename = entry.path().filename().string();
-          if (filename.ends_with(".txt")) {
+          if (filename.length() >= 4 &&
+              filename.compare(filename.length() - 4, 4, ".txt") == 0) {
             availableFiles.push_back(entry.path().string());
           }
         }
@@ -93,14 +93,16 @@ void GameMenu::createSubtitle(const std::string &text) {
 
 void GameMenu::setupModeSelectionScreen() {
   subtitleText.reset();
-  createButtons({"Score Mode", "Mistakes Mode", "Quit"}, 20);
+  createButtons({"Score Mode", "Mistakes Mode", "Time Mode", "Quit"}, 20);
 }
 
 void GameMenu::setupSourceSelectionScreen() {
   if (selectedGameMode == GameModeType::Score) {
     createSubtitle("Score Mode");
-  } else {
+  } else if (selectedGameMode == GameModeType::Mistakes) {
     createSubtitle("Mistakes Mode");
+  } else {
+    createSubtitle("Time Mode");
   }
   createButtons({"Play from File", "Random Game", "Back"}, 20);
 }
@@ -168,6 +170,10 @@ void GameMenu::handleModeSelectionClick(const sf::Vector2f &mousePos) {
     menuState = MenuState::SourceSelection;
     setupSourceSelectionScreen();
   } else if (buttons[2]->isClicked(mousePos)) {
+    selectedGameMode = GameModeType::Time;
+    menuState = MenuState::SourceSelection;
+    setupSourceSelectionScreen();
+  } else if (buttons[3]->isClicked(mousePos)) {
     menuState = MenuState::Quitting;
   }
 }

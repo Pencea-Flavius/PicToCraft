@@ -4,7 +4,7 @@
 #include <sstream>
 
 GridRenderer::GridRenderer(Grid &g, float size, sf::Vector2f off)
-    : grid(g), cellSize(size), offset(off), fontLoaded(false) {
+    : grid(g), cellSize(size), offset(off), fontLoaded(false), lastMistakes(0) {
   fontLoaded = font.openFromFile("assets/Monocraft.ttf");
 }
 
@@ -25,29 +25,47 @@ void GridRenderer::drawGameInfo(sf::RenderWindow &window) const {
     std::ostringstream oss;
     oss << "Scor: " << grid.get_score();
     infoText.setString(oss.str());
+
+    float padding = winSize.x * 0.015f;
+    padding = std::max(10.f, std::min(padding, 30.f));
+
+    auto bounds = infoText.getLocalBounds();
+    infoText.setPosition(
+        {winSize.x - bounds.size.x - bounds.position.x - padding,
+         padding - bounds.position.y});
+
+    float scaleX = static_cast<float>(winSize.x) / 1280.0f;
+    float scaleY = static_cast<float>(winSize.y) / 720.0f;
+    float scale = std::min(scaleX, scaleY);
+
+    ShadowedText::draw(window, infoText, scale);
   } else {
-    std::ostringstream oss;
-    oss << "Greseli: " << grid.get_mistakes() << " / 3";
-    infoText.setString(oss.str());
+    int currentMistakes = grid.get_mistakes();
+    if (grid.get_mistakes() > lastMistakes) {
+      heartDisplay.triggerFlash();
+    }
+    lastMistakes = grid.get_mistakes();
 
-    if (grid.get_mistakes() >= 2)
-      infoText.setFillColor(sf::Color::Red);
-    else if (grid.get_mistakes() >= 1)
-      infoText.setFillColor(sf::Color(200, 100, 0));
+    float scaleX = static_cast<float>(winSize.x) / 1280.0f;
+    float scaleY = static_cast<float>(winSize.y) / 720.0f;
+    float baseScale = std::min(scaleX, scaleY);
+
+    float heartScale = baseScale * 2.5f; // Make hearts 2.5x larger
+
+    float padding = winSize.x * 0.015f;
+    padding = std::max(10.f, std::min(padding, 30.f));
+
+    int maxMistakes = grid.get_max_mistakes();
+    int totalHearts = (maxMistakes + 1) / 2;
+    float heartWidth = 9.0f * heartScale;
+    float totalWidth = totalHearts * heartWidth;
+
+    sf::Vector2f pos(winSize.x - totalWidth - padding, padding);
+
+    heartDisplay.update(animationClock.restart().asSeconds());
+    heartDisplay.draw(window, currentMistakes, maxMistakes, pos, heartScale,
+                      grid.is_time_mode());
   }
-
-  float padding = winSize.x * 0.015f;
-  padding = std::max(10.f, std::min(padding, 30.f));
-
-  auto bounds = infoText.getLocalBounds();
-  infoText.setPosition({winSize.x - bounds.size.x - bounds.position.x - padding,
-                        padding - bounds.position.y});
-
-  float scaleX = static_cast<float>(winSize.x) / 1280.0f;
-  float scaleY = static_cast<float>(winSize.y) / 720.0f;
-  float scale = std::min(scaleX, scaleY);
-
-  ShadowedText::draw(window, infoText, scale);
 }
 
 void GridRenderer::draw(sf::RenderWindow &window) const {

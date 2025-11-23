@@ -70,6 +70,12 @@ add_executable(${MAIN_EXECUTABLE_NAME}
         src/MistakesMode.cpp
         src/GameMode.cpp
         src/GameOverScreen.h
+        src/WinScreen.cpp
+        src/WinScreen.h
+        src/HeartDisplay.cpp
+        src/HeartDisplay.h
+        src/TimeMode.cpp
+        src/TimeMode.h
 )
 
 target_include_directories(${MAIN_EXECUTABLE_NAME} SYSTEM PRIVATE ${SFML_SOURCE_DIR}/include)

@@ -10,6 +10,7 @@ public:
   void onBlockToggled(bool isCorrect, bool isCompleted,
                       bool wasCompleted) override;
   [[nodiscard]] bool isLost() const override;
+  [[nodiscard]] int getMaxMistakes() const override;
   [[nodiscard]] bool shouldDisplayScore() const override;
 };
 

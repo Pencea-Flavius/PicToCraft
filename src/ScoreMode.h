@@ -5,10 +5,8 @@
 
 class ScoreMode : public GameMode {
 public:
-  ScoreMode() = default;
+  ScoreMode();
   ~ScoreMode() override = default;
-  void onBlockToggled(bool isCorrect, bool isCompleted,
-                      bool wasCompleted) override;
   [[nodiscard]] bool isLost() const override;
   [[nodiscard]] bool shouldDisplayScore() const override;
 };

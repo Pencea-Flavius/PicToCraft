@@ -2,25 +2,19 @@
 
 void MistakesMode::onBlockToggled(bool isCorrect, bool isCompleted,
                                   bool wasCompleted) {
-  if ((isCompleted && !isCorrect) || (!isCompleted && isCorrect)) {
-    mistakes++;
-  }
+  // Call base scoring logic
+  GameMode::onBlockToggled(isCorrect, isCompleted, wasCompleted);
 
+  // Add mistake logic
   if (!wasCompleted && isCompleted) {
-    if (isCorrect) {
-      score += 200;
-    } else {
-      score -= 100;
-    }
-  } else if (wasCompleted && !isCompleted) {
-    if (isCorrect) {
-      score -= 300;
+    if (!isCorrect) {
+      mistakes++;
     }
   }
-  if (score < 0)
-    score = 0;
 }
 
 bool MistakesMode::isLost() const { return mistakes >= 3; }
+
+int MistakesMode::getMaxMistakes() const { return 3; }
 
 bool MistakesMode::shouldDisplayScore() const { return false; }

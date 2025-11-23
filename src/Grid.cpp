@@ -1,6 +1,7 @@
 #include "Grid.h"
 #include "MistakesMode.h"
 #include "ScoreMode.h"
+#include "TimeMode.h"
 
 #include <fstream>
 #include <iostream>
@@ -15,14 +16,16 @@ Grid::Grid()
       gameMode(std::make_unique<ScoreMode>()) {}
 
 Grid::Grid(int grid_size, const std::vector<std::vector<bool>> &pattern,
-           bool use_score_mode)
+           GameModeType mode)
     : size{grid_size}, total_correct_blocks{0}, completed_blocks{0},
       correct_completed_blocks{0} {
 
-  if (use_score_mode) {
+  if (mode == GameModeType::Score) {
     gameMode = std::make_unique<ScoreMode>();
-  } else {
+  } else if (mode == GameModeType::Mistakes) {
     gameMode = std::make_unique<MistakesMode>();
+  } else {
+    gameMode = std::make_unique<TimeMode>(grid_size);
   }
 
   blocks.resize(size);
@@ -50,9 +53,12 @@ Grid::Grid(const Grid &other)
   if (dynamic_cast<ScoreMode *>(other.gameMode.get())) {
     gameMode = std::make_unique<ScoreMode>(
         *dynamic_cast<ScoreMode *>(other.gameMode.get()));
-  } else {
+  } else if (dynamic_cast<MistakesMode *>(other.gameMode.get())) {
     gameMode = std::make_unique<MistakesMode>(
         *dynamic_cast<MistakesMode *>(other.gameMode.get()));
+  } else {
+    gameMode = std::make_unique<TimeMode>(
+        *dynamic_cast<TimeMode *>(other.gameMode.get()));
   }
 }
 
@@ -68,9 +74,12 @@ Grid &Grid::operator=(const Grid &other) {
     if (dynamic_cast<ScoreMode *>(other.gameMode.get())) {
       gameMode = std::make_unique<ScoreMode>(
           *dynamic_cast<ScoreMode *>(other.gameMode.get()));
-    } else {
+    } else if (dynamic_cast<MistakesMode *>(other.gameMode.get())) {
       gameMode = std::make_unique<MistakesMode>(
           *dynamic_cast<MistakesMode *>(other.gameMode.get()));
+    } else {
+      gameMode = std::make_unique<TimeMode>(
+          *dynamic_cast<TimeMode *>(other.gameMode.get()));
     }
   }
   return *this;
@@ -78,7 +87,7 @@ Grid &Grid::operator=(const Grid &other) {
 
 Grid::~Grid() = default;
 
-void Grid::load_from_file(const std::string &filename, bool use_score_mode) {
+void Grid::load_from_file(const std::string &filename, GameModeType mode) {
   std::ifstream file(filename);
   if (!file) {
     std::cout << "Eroare la deschiderea fisierului " << filename << "\n";
@@ -106,15 +115,17 @@ void Grid::load_from_file(const std::string &filename, bool use_score_mode) {
   file.close();
   hints = PicrossHints(blocks);
 
-  if (use_score_mode) {
+  if (mode == GameModeType::Score) {
     gameMode = std::make_unique<ScoreMode>();
-  } else {
+  } else if (mode == GameModeType::Mistakes) {
     gameMode = std::make_unique<MistakesMode>();
+  } else {
+    gameMode = std::make_unique<TimeMode>(size);
   }
 }
 
 // Generate random grid
-void Grid::generate_random(int grid_size, bool use_score_mode, double density) {
+void Grid::generate_random(int grid_size, GameModeType mode, double density) {
   size = grid_size;
   blocks.clear();
   blocks.resize(size);
@@ -137,10 +148,12 @@ void Grid::generate_random(int grid_size, bool use_score_mode, double density) {
 
   hints = PicrossHints(blocks);
 
-  if (use_score_mode) {
+  if (mode == GameModeType::Score) {
     gameMode = std::make_unique<ScoreMode>();
-  } else {
+  } else if (mode == GameModeType::Mistakes) {
     gameMode = std::make_unique<MistakesMode>();
+  } else {
+    gameMode = std::make_unique<TimeMode>(size);
   }
 }
 
@@ -172,6 +185,12 @@ void Grid::toggle_block(int x, int y) {
   }
 }
 
+void Grid::update(float deltaTime) {
+  if (gameMode) {
+    gameMode->update(deltaTime);
+  }
+}
+
 // Status checks
 bool Grid::is_solved() const {
   return completed_blocks == total_correct_blocks &&
@@ -191,8 +210,16 @@ int Grid::get_mistakes() const {
   return gameMode ? gameMode->getMistakes() : 0;
 }
 
+int Grid::get_max_mistakes() const {
+  return gameMode ? gameMode->getMaxMistakes() : 0;
+}
+
 bool Grid::shouldDisplayScore() const {
   return gameMode ? gameMode->shouldDisplayScore() : true;
+}
+
+bool Grid::is_time_mode() const {
+  return gameMode ? gameMode->isTimeMode() : false;
 }
 
 int Grid::get_size() const { return size; }

@@ -2,7 +2,8 @@
 #include <iostream>
 #include <optional>
 
-GameManager::GameManager() : grid(), inMenu(true), inGameOver(false) {
+GameManager::GameManager()
+    : grid(), inMenu(true), inGameOver(false), inWinScreen(false) {
   auto &menuRes = MenuResolution::getInstance();
   sf::VideoMode mode = menuRes.selectResolution();
 
@@ -15,20 +16,22 @@ GameManager::GameManager() : grid(), inMenu(true), inGameOver(false) {
 
   menu = std::make_unique<GameMenu>();
   gameOverScreen = std::make_unique<GameOverScreen>();
+  winScreen = std::make_unique<WinScreen>();
 }
 
 void GameManager::startGame() {
-  bool useScoreMode = (menu->getGameMode() == GameModeType::Score);
+  GameModeType mode = menu->getGameMode();
 
   if (menu->getSourceMode() == SourceMode::File) {
-    grid.load_from_file(menu->getSelectedFile(), useScoreMode);
+    grid.load_from_file(menu->getSelectedFile(), mode);
   } else {
-    grid.generate_random(menu->getGridSize(), useScoreMode, 0.6);
+    grid.generate_random(menu->getGridSize(), mode, 0.6);
   }
 
   resetGame();
   inMenu = false;
   inGameOver = false;
+  inWinScreen = false;
 }
 
 void GameManager::resetGame() {
@@ -73,6 +76,16 @@ void GameManager::run() {
           break;
         }
       }
+      if (auto resized = event->getIf<sf::Event::Resized>()) {
+        sf::FloatRect visibleArea({0.f, 0.f},
+                                  {static_cast<float>(resized->size.x),
+                                   static_cast<float>(resized->size.y)});
+        window.setView(sf::View(visibleArea));
+
+        if (!inMenu && !inGameOver && !inWinScreen) {
+          resetGame();
+        }
+      }
 
       if (inMenu) {
         menu->handleEvent(*event, window);
@@ -88,11 +101,11 @@ void GameManager::run() {
       } else if (inGameOver) {
         GameOverAction action = gameOverScreen->handleEvent(*event, window);
         if (action == GameOverAction::Retry) {
-          bool useScoreMode = (menu->getGameMode() == GameModeType::Score);
+          GameModeType mode = menu->getGameMode();
           if (menu->getSourceMode() == SourceMode::File) {
-            grid.load_from_file(menu->getSelectedFile(), useScoreMode);
+            grid.load_from_file(menu->getSelectedFile(), mode);
           } else {
-            grid.generate_random(menu->getGridSize(), useScoreMode,
+            grid.generate_random(menu->getGridSize(), mode,
                                  0.6); // Assuming 0.6 is the default difficulty
           }
           resetGame();
@@ -102,20 +115,20 @@ void GameManager::run() {
           inMenu = true;
           inGameOver = false;
         }
+      } else if (inWinScreen) {
+        if (auto key = event->getIf<sf::Event::KeyPressed>()) {
+          if (key->code == sf::Keyboard::Key::Enter ||
+              key->code == sf::Keyboard::Key::Space) {
+            menu->reset();
+            inMenu = true;
+            inWinScreen = false;
+          }
+        }
       } else {
         if (event->is<sf::Event::MouseButtonPressed>()) {
           auto m = event->getIf<sf::Event::MouseButtonPressed>();
           if (m && m->button == sf::Mouse::Button::Left) {
             renderer->handleClick(sf::Mouse::getPosition(window));
-
-            if (grid.is_solved()) {
-              std::cout << "Puzzle rezolvat! Felicitari!\n";
-              inMenu = true;
-            } else if (grid.is_lost()) {
-              std::cout << "Ai pierdut jocul!\n";
-              inGameOver = true;
-              gameOverScreen->setScore(grid.get_score());
-            }
           }
         }
       }
@@ -124,8 +137,25 @@ void GameManager::run() {
     if (inMenu) {
       menu->update(deltaTime);
       menu->draw(window);
+    } else if (inWinScreen) {
+      window.clear(sf::Color::Black);
+      winScreen->update(deltaTime);
+      winScreen->draw(window);
     } else {
       window.clear(sf::Color(240, 240, 240));
+      grid.update(deltaTime);
+
+      if (!inGameOver && !inWinScreen) {
+        if (grid.is_solved()) {
+          std::cout << "Puzzle rezolvat! Felicitari!\n";
+          inWinScreen = true;
+          winScreen->reset();
+        } else if (grid.is_lost()) {
+          std::cout << "Ai pierdut jocul!\n";
+          inGameOver = true;
+          gameOverScreen->setScore(grid.get_score());
+        }
+      }
       renderer->draw(window);
       renderer->drawGameInfo(window);
 

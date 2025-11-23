@@ -20,7 +20,7 @@ enum class MenuState {
   Quitting
 };
 
-enum class GameModeType { Score, Mistakes };
+#include "GameMode.h"
 
 enum class SourceMode { File, Random };
 

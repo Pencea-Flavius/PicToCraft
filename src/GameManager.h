@@ -6,6 +6,7 @@
 #include "Grid.h"
 #include "GridRenderer.h"
 #include "MenuResolution.h"
+#include "WinScreen.h"
 #include <SFML/Graphics.hpp>
 #include <memory>
 
@@ -15,9 +16,11 @@ class GameManager {
   std::unique_ptr<GridRenderer> renderer;
   std::unique_ptr<GameMenu> menu;
   std::unique_ptr<GameOverScreen> gameOverScreen;
+  std::unique_ptr<WinScreen> winScreen;
 
   bool inMenu;
   bool inGameOver;
+  bool inWinScreen;
 
 public:
   GameManager();

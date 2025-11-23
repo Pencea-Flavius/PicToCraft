@@ -32,16 +32,13 @@ void MenuPanorama::draw(sf::RenderWindow &window) {
 
   auto winSize = window.getSize();
 
-  // Scalează pe înălțime
   float scaleY = static_cast<float>(winSize.y) /
                  static_cast<float>(panoramaTexture.getSize().y);
   float textureWidth = static_cast<float>(panoramaTexture.getSize().x) * scaleY;
 
-  // Primul sprite
   panoramaSprite1->setScale({scaleY, scaleY});
   panoramaSprite1->setPosition({-offset * scaleY, 0.0f});
 
-  // Al doilea sprite pentru seamless loop
   panoramaSprite2->setScale({scaleY, scaleY});
   panoramaSprite2->setPosition({textureWidth - offset * scaleY, 0.0f});
 

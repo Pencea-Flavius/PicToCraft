@@ -21,7 +21,6 @@ public:
     MenuResolution &operator=(const MenuResolution &) = delete;
     MenuResolution(MenuResolution &&) = delete;
     MenuResolution &operator=(MenuResolution &&) = delete;
-
 };
 
 
