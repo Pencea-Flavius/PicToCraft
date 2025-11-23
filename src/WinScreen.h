@@ -22,6 +22,7 @@ class WinScreen {
 
   float baseWidth = 1280.0f;
   float baseHeight = 720.0f;
+  float contentHeight = 0.0f;
 
   void loadPoemText();
   sf::Vector2f calculateScale(const sf::RenderWindow &window) const;

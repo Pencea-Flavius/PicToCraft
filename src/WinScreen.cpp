@@ -72,19 +72,19 @@ sf::Vector2f WinScreen::calculateScale(const sf::RenderWindow &window) const {
 }
 
 void WinScreen::update(float deltaTime) {
-  // Scroll text upward
   scrollOffset += 30.0f * deltaTime;
+  if (contentHeight > 0 && scrollOffset > contentHeight) {
+    scrollOffset = contentHeight;
+  }
 }
 
 void WinScreen::draw(sf::RenderWindow &window) {
   auto winSize = window.getSize();
   auto [scale, scaleY] = calculateScale(window);
 
-  // Draw background with fade
   auto alpha = static_cast<std::uint8_t>(std::min(fadeAlpha, 255.0f));
   backgroundSprite->setColor(sf::Color(255, 255, 255, alpha));
 
-  // Scale background to fill window
   float bgScaleX = static_cast<float>(winSize.x) /
                    static_cast<float>(backgroundTexture.getSize().x);
   float bgScaleY = static_cast<float>(winSize.y) /
@@ -93,11 +93,9 @@ void WinScreen::draw(sf::RenderWindow &window) {
 
   window.draw(*backgroundSprite);
 
-  // Start scrolling position
   float currentY = static_cast<float>(winSize.y) - scrollOffset +
-                   static_cast<float>(winSize.y) * 0.2f; // Start below screen
+                   static_cast<float>(winSize.y) * 0.2f;
 
-  // Draw logo at the beginning (scrolls with text)
   float logoScale = scale * 0.5f;
   logoSprite->setScale({logoScale, logoScale});
 
@@ -107,17 +105,13 @@ void WinScreen::draw(sf::RenderWindow &window) {
   logoSprite->setPosition({logoX, currentY});
   logoSprite->setColor(sf::Color(255, 255, 255, alpha));
 
-  // Only draw logo if visible on screen
   if (currentY > -logoBounds.size.y * logoScale &&
       currentY < static_cast<float>(winSize.y)) {
     window.draw(*logoSprite);
   }
 
-  // Move currentY below the logo
-  currentY +=
-      logoBounds.size.y * logoScale + 80.0f * scale; // Extra spacing after logo
+  currentY += logoBounds.size.y * logoScale + 80.0f * scale;
 
-  // Draw scrolling text
   unsigned int fontSize = static_cast<unsigned int>(24.0f * scale);
 
   for (size_t i = 0; i < paragraphs.size(); ++i) {
@@ -131,16 +125,19 @@ void WinScreen::draw(sf::RenderWindow &window) {
                   bounds.position.x;
     text.setPosition({textX, currentY});
 
-    // Only draw if visible on screen
     if (currentY > -bounds.size.y && currentY < static_cast<float>(winSize.y)) {
       ShadowedText::draw(window, text, scale);
     }
 
-    currentY += bounds.size.y + 40.0f * scale; // Spacing between paragraphs
+    currentY += bounds.size.y + 40.0f * scale;
   }
+
+  contentHeight =
+      currentY + scrollOffset - static_cast<float>(winSize.y) * 0.5f;
+  if (contentHeight < 0)
+    contentHeight = 0;
 }
 
 bool WinScreen::isFinished() const {
-  // Check if all text has scrolled off the top
-  return scrollOffset > 10000.0f; // Adjust based on total content height
+  return contentHeight > 0 && scrollOffset >= contentHeight;
 }

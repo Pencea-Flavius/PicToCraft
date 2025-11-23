@@ -141,6 +141,11 @@ void GameManager::run() {
       window.clear(sf::Color::Black);
       winScreen->update(deltaTime);
       winScreen->draw(window);
+      if (winScreen->isFinished()) {
+        menu->reset();
+        inMenu = true;
+        inWinScreen = false;
+      }
     } else {
       window.clear(sf::Color(240, 240, 240));
       grid.update(deltaTime);
