@@ -8,7 +8,7 @@
 
 class CustomCursor {
 public:
-  CustomCursor(sf::Window &window);
+  explicit CustomCursor(sf::Window &window);
 
   void handleEvent(const sf::Event &event) const;
   void setScale(float scale);

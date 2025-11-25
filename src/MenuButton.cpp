@@ -36,7 +36,6 @@ void MenuButton::setupNinePatch() {
   patchSprites.reserve(9);
 
   int cornerSize = ninePatchConfig.cornerSize;
-  int edgeThickness = ninePatchConfig.edgeThickness;
 
   auto texSize = currentTexture->getSize();
   int texWidth = static_cast<int>(texSize.x);
