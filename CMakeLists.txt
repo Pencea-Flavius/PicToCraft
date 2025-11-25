@@ -59,8 +59,6 @@ add_executable(${MAIN_EXECUTABLE_NAME}
         src/MenuPanorama.cpp
         src/MenuPanorama.h
         src/SplashText.cpp
-        src/MenuPanorama.cpp
-        src/SplashText.cpp
         src/MenuButton.cpp
         src/MenuButton.h
         src/MenuButtonManager.cpp
@@ -81,8 +79,6 @@ add_executable(${MAIN_EXECUTABLE_NAME}
         src/CustomCursor.cpp
         src/CustomCursor.h
         src/TorchMode.cpp
-        src/TorchMode.h
-        src/TorchMode.h
 )
 
 target_include_directories(${MAIN_EXECUTABLE_NAME} SYSTEM PRIVATE ${SFML_SOURCE_DIR}/include)
