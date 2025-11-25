@@ -26,7 +26,6 @@ public:
   void setSelected(bool selected);
   void setTexture(const sf::Texture &texture);
   void setEnabled(bool enabled);
-  void setNinePatchConfig(int cornerSize, int edgeThickness);
 
 private:
   struct NinePatchConfig {

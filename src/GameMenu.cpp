@@ -1,5 +1,5 @@
 #include "GameMenu.h"
-#include "ShadowedText.h"
+
 #include <algorithm>
 #include <filesystem>
 #include <iostream>
@@ -104,14 +104,6 @@ void GameMenu::update(float deltaTime) {
 
   if (menuState == MenuState::MainMenu) {
     splashText.update(deltaTime);
-  }
-}
-
-void GameMenu::createSubtitle(const std::string &text) {
-  if (subtitleFontLoaded) {
-    subtitleText = sf::Text(subtitleFont, text);
-    subtitleText->setCharacterSize(32);
-    subtitleText->setFillColor(sf::Color(220, 220, 220));
   }
 }
 
@@ -341,17 +333,4 @@ sf::Vector2f GameMenu::calculateScale(const sf::RenderWindow &window) const {
   float scaleY = static_cast<float>(window.getSize().y) / baseHeight;
   float scale = std::min(scaleX, scaleY);
   return {scale, scaleY};
-}
-
-void GameMenu::drawSubtitle(sf::RenderWindow &window, float yPosition) {
-  if (subtitleFontLoaded && subtitleText) {
-    auto [scale, scaleY] = calculateScale(window);
-    subtitleText->setCharacterSize(static_cast<unsigned int>(36.0f * scale));
-    auto subtitleBounds = subtitleText->getLocalBounds();
-    subtitleText->setPosition({static_cast<float>(window.getSize().x) / 2.0f -
-                                   subtitleBounds.size.x / 2.0f -
-                                   subtitleBounds.position.x,
-                               yPosition * scaleY});
-    ShadowedText::draw(window, *subtitleText, scale);
-  }
 }

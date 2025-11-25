@@ -58,9 +58,7 @@ private:
   void handleGameSetupClick(int buttonIndex);
 
   // Helper functions
-  void createSubtitle(const std::string &text);
   sf::Vector2f calculateScale(const sf::RenderWindow &window) const;
-  void drawSubtitle(sf::RenderWindow &window, float yPosition);
 
   // New drawing helpers
   void drawOverlay(sf::RenderWindow &window);

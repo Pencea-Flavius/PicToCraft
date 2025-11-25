@@ -246,10 +246,6 @@ bool Grid::is_time_mode() const {
   return gameMode ? gameMode->isTimeMode() : false;
 }
 
-bool Grid::is_dark_mode() const {
-  return gameMode ? gameMode->isTorchMode() : false;
-}
-
 void Grid::drawMode(sf::RenderWindow &window) const {
   if (gameMode) {
     gameMode->draw(window);

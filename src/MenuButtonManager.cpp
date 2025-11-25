@@ -91,20 +91,18 @@ void MenuButtonManager::layoutGameSetup(
                        mousePos);
   }
 
-  if (buttons.size() >= 2) {
-    size_t playIndex = buttons.size() - 2;
-    size_t cancelIndex = buttons.size() - 1;
+  size_t playIndex = buttons.size() - 2;
+  size_t cancelIndex = buttons.size() - 1;
 
-    float footerY = window.getSize().y - 100.0f * scaleY;
+  float footerY = window.getSize().y - 100.0f * scaleY;
 
-    buttons[playIndex]->setStyle(MenuButton::Style::Default);
-    buttons[playIndex]->update(scale, centerX - 170.0f * scale, footerY, 0.8f,
+  buttons[playIndex]->setStyle(MenuButton::Style::Default);
+  buttons[playIndex]->update(scale, centerX - 170.0f * scale, footerY, 0.8f,
+                             1.0f, mousePos);
+
+  buttons[cancelIndex]->setStyle(MenuButton::Style::Default);
+  buttons[cancelIndex]->update(scale, centerX + 170.0f * scale, footerY, 0.8f,
                                1.0f, mousePos);
-
-    buttons[cancelIndex]->setStyle(MenuButton::Style::Default);
-    buttons[cancelIndex]->update(scale, centerX + 170.0f * scale, footerY, 0.8f,
-                                 1.0f, mousePos);
-  }
 }
 
 int MenuButtonManager::handleClick(const sf::Vector2f &mousePos) const {

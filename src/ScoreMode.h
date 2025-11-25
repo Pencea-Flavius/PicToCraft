@@ -7,7 +7,7 @@ class ScoreMode : public GameMode {
 public:
   ScoreMode();
   ~ScoreMode() override = default;
-  [[nodiscard]] int getMaxMistakes() const override;
+
   [[nodiscard]] bool isLost() const override;
   [[nodiscard]] bool shouldDisplayScore() const override;
   [[nodiscard]] std::unique_ptr<GameMode> clone() const override;

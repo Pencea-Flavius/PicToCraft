@@ -2,8 +2,6 @@
 
 ScoreMode::ScoreMode() = default;
 
-int ScoreMode::getMaxMistakes() const { return 0; }
-
 bool ScoreMode::isLost() const { return false; }
 
 bool ScoreMode::shouldDisplayScore() const { return true; }

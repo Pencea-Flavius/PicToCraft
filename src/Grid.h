@@ -50,7 +50,7 @@ public:
   [[nodiscard]] int get_max_mistakes() const;
   [[nodiscard]] bool shouldDisplayScore() const;
   [[nodiscard]] bool is_time_mode() const;
-  [[nodiscard]] bool is_dark_mode() const;
+
   [[nodiscard]] int get_size() const;
   [[nodiscard]] const Block &get_block(int x, int y) const;
   [[nodiscard]] const PicrossHints &get_hints() const;

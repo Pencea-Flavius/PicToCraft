@@ -182,12 +182,6 @@ void MenuButton::setTexture(const sf::Texture &texture) {
 
 void MenuButton::setEnabled(bool isEnabled) { enabled = isEnabled; }
 
-void MenuButton::setNinePatchConfig(int cornerSize, int edgeThickness) {
-  ninePatchConfig.cornerSize = cornerSize;
-  ninePatchConfig.edgeThickness = edgeThickness;
-  setupNinePatch();
-}
-
 void MenuButton::draw(sf::RenderWindow &window) {
   if (style == Style::Tab) {
     // Only show hover effect if not selected
