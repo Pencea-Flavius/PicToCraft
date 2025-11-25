@@ -18,3 +18,7 @@ bool MistakesMode::isLost() const { return mistakes >= 3; }
 int MistakesMode::getMaxMistakes() const { return 3; }
 
 bool MistakesMode::shouldDisplayScore() const { return false; }
+
+std::unique_ptr<GameMode> MistakesMode::clone() const {
+  return std::make_unique<MistakesMode>(*this);
+}

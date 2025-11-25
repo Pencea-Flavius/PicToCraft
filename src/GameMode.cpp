@@ -19,8 +19,7 @@ void GameMode::onBlockToggled(bool isCorrect, bool isCompleted,
     } else {
       score -= 100;
     }
-  }
-  else if (wasCompleted && !isCompleted) {
+  } else if (wasCompleted && !isCompleted) {
     if (isCorrect) {
       score -= 300;
     }

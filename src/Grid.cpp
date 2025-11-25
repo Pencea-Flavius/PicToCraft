@@ -2,6 +2,7 @@
 #include "MistakesMode.h"
 #include "ScoreMode.h"
 #include "TimeMode.h"
+#include "TorchMode.h"
 
 #include <fstream>
 #include <iostream>
@@ -16,17 +17,28 @@ Grid::Grid()
       gameMode(std::make_unique<ScoreMode>()) {}
 
 Grid::Grid(int grid_size, const std::vector<std::vector<bool>> &pattern,
-           GameModeType mode)
+           GameConfig config)
     : size{grid_size}, total_correct_blocks{0}, completed_blocks{0},
       correct_completed_blocks{0} {
 
-  if (mode == GameModeType::Score) {
-    gameMode = std::make_unique<ScoreMode>();
-  } else if (mode == GameModeType::Mistakes) {
-    gameMode = std::make_unique<MistakesMode>();
+  // Base mode
+  std::unique_ptr<GameMode> baseMode;
+  if (config.baseMode == GameModeType::Mistakes) {
+    baseMode = std::make_unique<MistakesMode>();
   } else {
-    gameMode = std::make_unique<TimeMode>(grid_size);
+    baseMode = std::make_unique<ScoreMode>();
   }
+
+  // Apply modifiers
+  if (config.timeMode) {
+    baseMode = std::make_unique<TimeMode>(std::move(baseMode), grid_size);
+  }
+
+  if (config.torchMode) {
+    baseMode = std::make_unique<TorchMode>(std::move(baseMode));
+  }
+
+  gameMode = std::move(baseMode);
 
   blocks.resize(size);
   for (int i = 0; i < size; i++) {
@@ -50,15 +62,11 @@ Grid::Grid(const Grid &other)
       completed_blocks(other.completed_blocks),
       correct_completed_blocks(other.correct_completed_blocks),
       hints(other.hints) {
-  if (dynamic_cast<ScoreMode *>(other.gameMode.get())) {
-    gameMode = std::make_unique<ScoreMode>(
-        *dynamic_cast<ScoreMode *>(other.gameMode.get()));
-  } else if (dynamic_cast<MistakesMode *>(other.gameMode.get())) {
-    gameMode = std::make_unique<MistakesMode>(
-        *dynamic_cast<MistakesMode *>(other.gameMode.get()));
+
+  if (other.gameMode) {
+    gameMode = other.gameMode->clone();
   } else {
-    gameMode = std::make_unique<TimeMode>(
-        *dynamic_cast<TimeMode *>(other.gameMode.get()));
+    gameMode = std::make_unique<ScoreMode>();
   }
 }
 
@@ -67,19 +75,15 @@ Grid &Grid::operator=(const Grid &other) {
     size = other.size;
     blocks = other.blocks;
     total_correct_blocks = other.total_correct_blocks;
+
     completed_blocks = other.completed_blocks;
     correct_completed_blocks = other.correct_completed_blocks;
     hints = other.hints;
 
-    if (dynamic_cast<ScoreMode *>(other.gameMode.get())) {
-      gameMode = std::make_unique<ScoreMode>(
-          *dynamic_cast<ScoreMode *>(other.gameMode.get()));
-    } else if (dynamic_cast<MistakesMode *>(other.gameMode.get())) {
-      gameMode = std::make_unique<MistakesMode>(
-          *dynamic_cast<MistakesMode *>(other.gameMode.get()));
+    if (other.gameMode) {
+      gameMode = other.gameMode->clone();
     } else {
-      gameMode = std::make_unique<TimeMode>(
-          *dynamic_cast<TimeMode *>(other.gameMode.get()));
+      gameMode = std::make_unique<ScoreMode>();
     }
   }
   return *this;
@@ -87,7 +91,7 @@ Grid &Grid::operator=(const Grid &other) {
 
 Grid::~Grid() = default;
 
-void Grid::load_from_file(const std::string &filename, GameModeType mode) {
+void Grid::load_from_file(const std::string &filename, GameConfig config) {
   std::ifstream file(filename);
   if (!file) {
     std::cout << "Eroare la deschiderea fisierului " << filename << "\n";
@@ -115,17 +119,27 @@ void Grid::load_from_file(const std::string &filename, GameModeType mode) {
   file.close();
   hints = PicrossHints(blocks);
 
-  if (mode == GameModeType::Score) {
-    gameMode = std::make_unique<ScoreMode>();
-  } else if (mode == GameModeType::Mistakes) {
-    gameMode = std::make_unique<MistakesMode>();
+  std::unique_ptr<GameMode> baseMode;
+  if (config.baseMode == GameModeType::Mistakes) {
+    baseMode = std::make_unique<MistakesMode>();
   } else {
-    gameMode = std::make_unique<TimeMode>(size);
+    baseMode = std::make_unique<ScoreMode>();
   }
+
+  // Apply modifiers
+  if (config.timeMode) {
+    baseMode = std::make_unique<TimeMode>(std::move(baseMode), size);
+  }
+
+  if (config.torchMode) {
+    baseMode = std::make_unique<TorchMode>(std::move(baseMode));
+  }
+
+  gameMode = std::move(baseMode);
 }
 
 // Generate random grid
-void Grid::generate_random(int grid_size, GameModeType mode, double density) {
+void Grid::generate_random(int grid_size, GameConfig config, double density) {
   size = grid_size;
   blocks.clear();
   blocks.resize(size);
@@ -148,13 +162,23 @@ void Grid::generate_random(int grid_size, GameModeType mode, double density) {
 
   hints = PicrossHints(blocks);
 
-  if (mode == GameModeType::Score) {
-    gameMode = std::make_unique<ScoreMode>();
-  } else if (mode == GameModeType::Mistakes) {
-    gameMode = std::make_unique<MistakesMode>();
+  std::unique_ptr<GameMode> baseMode;
+  if (config.baseMode == GameModeType::Mistakes) {
+    baseMode = std::make_unique<MistakesMode>();
   } else {
-    gameMode = std::make_unique<TimeMode>(size);
+    baseMode = std::make_unique<ScoreMode>();
   }
+
+  // Apply modifiers
+  if (config.timeMode) {
+    baseMode = std::make_unique<TimeMode>(std::move(baseMode), size);
+  }
+
+  if (config.torchMode) {
+    baseMode = std::make_unique<TorchMode>(std::move(baseMode));
+  }
+
+  gameMode = std::move(baseMode);
 }
 
 void Grid::toggle_block(int x, int y) {
@@ -220,6 +244,16 @@ bool Grid::shouldDisplayScore() const {
 
 bool Grid::is_time_mode() const {
   return gameMode ? gameMode->isTimeMode() : false;
+}
+
+bool Grid::is_dark_mode() const {
+  return gameMode ? gameMode->isTorchMode() : false;
+}
+
+void Grid::drawMode(sf::RenderWindow &window) const {
+  if (gameMode) {
+    gameMode->draw(window);
+  }
 }
 
 int Grid::get_size() const { return size; }

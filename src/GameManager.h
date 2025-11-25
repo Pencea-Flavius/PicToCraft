@@ -1,6 +1,7 @@
 #ifndef OOP_GAMEMANAGER_H
 #define OOP_GAMEMANAGER_H
 
+#include "CustomCursor.h"
 #include "GameMenu.h"
 #include "GameOverScreen.h"
 #include "Grid.h"
@@ -9,6 +10,7 @@
 #include "WinScreen.h"
 #include <SFML/Graphics.hpp>
 #include <memory>
+#include <optional>
 
 class GameManager {
   sf::RenderWindow window;
@@ -21,6 +23,8 @@ class GameManager {
   bool inMenu;
   bool inGameOver;
   bool inWinScreen;
+
+  std::unique_ptr<CustomCursor> customCursor;
 
 public:
   GameManager();

@@ -1,6 +1,7 @@
 #include "TimeMode.h"
 
-TimeMode::TimeMode(int gridSize) : decayTimer(0.0f) {
+TimeMode::TimeMode(std::unique_ptr<GameMode> mode, int gridSize)
+    : GameModeDecorator(std::move(mode)), decayTimer(0.0f) {
 
   if (gridSize <= 5) {
     maxHearts = 6;
@@ -17,7 +18,7 @@ TimeMode::TimeMode(int gridSize) : decayTimer(0.0f) {
 
 void TimeMode::onBlockToggled(bool isCorrect, bool isCompleted,
                               bool wasCompleted) {
-  GameMode::onBlockToggled(isCorrect, isCompleted, wasCompleted);
+  GameModeDecorator::onBlockToggled(isCorrect, isCompleted, wasCompleted);
 
   if (!wasCompleted && isCompleted) {
     if (!isCorrect) {
@@ -54,3 +55,16 @@ bool TimeMode::shouldDisplayScore() const {
 }
 
 bool TimeMode::isTimeMode() const { return true; }
+
+int TimeMode::getMistakes() const { return mistakes; }
+
+std::unique_ptr<GameMode> TimeMode::clone() const {
+  auto clonedWrapped = wrappedMode ? wrappedMode->clone() : nullptr;
+  // Use 0 as gridSize, we'll overwrite maxHearts anyway
+  auto newMode = std::make_unique<TimeMode>(std::move(clonedWrapped), 0);
+  newMode->maxHearts = this->maxHearts;
+  newMode->decayTimer = this->decayTimer;
+  newMode->mistakes = this->mistakes;
+  newMode->score = this->score;
+  return newMode;
+}

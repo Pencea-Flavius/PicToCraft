@@ -8,6 +8,7 @@
 #include "Grid.h"
 #include "HeartDisplay.h"
 #include <SFML/Graphics.hpp>
+#include <optional>
 
 class GridRenderer {
   Grid &grid;

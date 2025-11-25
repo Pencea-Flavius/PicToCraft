@@ -3,13 +3,13 @@
 
 #include "GameMode.h"
 
-class TimeMode : public GameMode {
+class TimeMode : public GameModeDecorator {
   int maxHearts;
   float decayTimer;
   const float DECAY_INTERVAL = 10.0f;
 
 public:
-  explicit TimeMode(int gridSize);
+  explicit TimeMode(std::unique_ptr<GameMode> mode, int gridSize);
   ~TimeMode() override = default;
 
   void onBlockToggled(bool isCorrect, bool isCompleted,
@@ -20,6 +20,8 @@ public:
   [[nodiscard]] int getMaxMistakes() const override;
   [[nodiscard]] bool shouldDisplayScore() const override;
   [[nodiscard]] bool isTimeMode() const override;
+  [[nodiscard]] int getMistakes() const override;
+  [[nodiscard]] std::unique_ptr<GameMode> clone() const override;
 };
 
 #endif // OOP_TIMEMODE_H

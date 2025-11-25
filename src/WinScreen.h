@@ -32,9 +32,13 @@ public:
   ~WinScreen();
 
   void reset();
+  void setScore(int score);
   void update(float deltaTime);
   void draw(sf::RenderWindow &window);
   bool isFinished() const;
+
+private:
+  int finalScore = 0;
 };
 
 #endif // OOP_WINSCREEN_H

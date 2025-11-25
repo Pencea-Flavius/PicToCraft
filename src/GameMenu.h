@@ -7,15 +7,13 @@
 #include <string>
 #include <vector>
 
-#include "MenuButton.h"
+#include "MenuButtonManager.h"
 #include "MenuPanorama.h"
 #include "SplashText.h"
 
 enum class MenuState {
-  ModeSelection,
-  SourceSelection,
-  FileSelection,
-  RandomConfig,
+  MainMenu,
+  GameSetup, // Renamed from WorldSelection
   Starting,
   Quitting
 };
@@ -40,7 +38,8 @@ public:
 
   bool isGameReady() const { return menuState == MenuState::Starting; }
   bool shouldQuit() const { return menuState == MenuState::Quitting; }
-  GameModeType getGameMode() const { return selectedGameMode; }
+
+  GameConfig getGameConfig() const { return gameConfig; }
   SourceMode getSourceMode() const { return selectedSourceMode; }
   const std::string &getSelectedFile() const { return selectedFile; }
   int getGridSize() const { return gridSize; }
@@ -51,31 +50,36 @@ private:
   void loadAssets();
 
   // Screen setup functions
-  void setupModeSelectionScreen();
-  void setupSourceSelectionScreen();
-  void setupFileSelectionScreen();
-  void setupRandomConfigScreen();
+  void setupMainMenu();
+  void setupGameSetupScreen();
 
   // Click handlers
-  void handleModeSelectionClick(const sf::Vector2f &mousePos);
-  void handleSourceSelectionClick(const sf::Vector2f &mousePos);
-  void handleFileSelectionClick(const sf::Vector2f &mousePos);
-  void handleRandomConfigClick(const sf::Vector2f &mousePos);
+  void handleMainMenuClick(int buttonIndex);
+  void handleGameSetupClick(int buttonIndex);
 
   // Helper functions
-  void createButtons(const std::vector<std::string> &labels,
-                     unsigned int fontSize);
   void createSubtitle(const std::string &text);
   sf::Vector2f calculateScale(const sf::RenderWindow &window) const;
-  void drawButtons(sf::RenderWindow &window, float startY, float spacing,
-                   float buttonScaleX, float buttonScaleY);
   void drawSubtitle(sf::RenderWindow &window, float yPosition);
+
+  // New drawing helpers
+  void drawOverlay(sf::RenderWindow &window);
+  void drawGameSetup(sf::RenderWindow &window);
 
   // Assets
   sf::Font font;
   sf::Font subtitleFont;
   sf::Texture titleTexture;
   sf::Texture buttonTexture;
+  sf::Texture buttonDisabledTexture;
+
+  // New textures
+  sf::Texture menuBackgroundTexture;
+  sf::Texture menuListBackgroundTexture;
+  sf::Texture tabHeaderBackgroundTexture;
+  sf::Texture headerSeparatorTexture;
+  sf::Texture footerSeparatorTexture;
+
   bool fontLoaded;
   bool subtitleFontLoaded;
   bool titleLoaded;
@@ -84,14 +88,17 @@ private:
   // Components
   MenuPanorama panorama;
   SplashText splashText;
-  std::vector<std::unique_ptr<MenuButton>> buttons;
+  MenuButtonManager buttonManager;
 
   // State
   MenuState menuState;
-  GameModeType selectedGameMode;
+  GameConfig gameConfig;
   SourceMode selectedSourceMode;
   std::string selectedFile;
   int gridSize;
+
+  // UI State for Game Setup
+  int selectedTab = 0; // 0 = Game, 1 = Modifiers
 
   // UI Elements
   std::optional<sf::Sprite> titleSprite;

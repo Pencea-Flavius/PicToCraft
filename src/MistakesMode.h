@@ -12,6 +12,7 @@ public:
   [[nodiscard]] bool isLost() const override;
   [[nodiscard]] int getMaxMistakes() const override;
   [[nodiscard]] bool shouldDisplayScore() const override;
+  [[nodiscard]] std::unique_ptr<GameMode> clone() const override;
 };
 
 #endif // OOP_MISTAKESMODE_H

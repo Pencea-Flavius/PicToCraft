@@ -27,16 +27,15 @@ public:
   Grid();
 
   Grid(int grid_size, const std::vector<std::vector<bool>> &pattern,
-       GameModeType mode = GameModeType::Score);
+       GameConfig config = {});
 
   Grid(const Grid &other);
   Grid &operator=(const Grid &other);
   ~Grid();
 
-  void load_from_file(const std::string &filename,
-                      GameModeType mode = GameModeType::Score);
+  void load_from_file(const std::string &filename, GameConfig config = {});
 
-  void generate_random(int grid_size, GameModeType mode = GameModeType::Score,
+  void generate_random(int grid_size, GameConfig config = {},
                        double density = 0.5);
 
   void toggle_block(int x, int y);
@@ -51,9 +50,11 @@ public:
   [[nodiscard]] int get_max_mistakes() const;
   [[nodiscard]] bool shouldDisplayScore() const;
   [[nodiscard]] bool is_time_mode() const;
+  [[nodiscard]] bool is_dark_mode() const;
   [[nodiscard]] int get_size() const;
   [[nodiscard]] const Block &get_block(int x, int y) const;
   [[nodiscard]] const PicrossHints &get_hints() const;
+  void drawMode(sf::RenderWindow &window) const;
 
   friend std::ostream &operator<<(std::ostream &os, const Grid &g);
 };

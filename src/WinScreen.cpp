@@ -64,6 +64,8 @@ void WinScreen::reset() {
   clock.restart();
 }
 
+void WinScreen::setScore(int score) { finalScore = score; }
+
 sf::Vector2f WinScreen::calculateScale(const sf::RenderWindow &window) const {
   float scaleX = static_cast<float>(window.getSize().x) / baseWidth;
   float scaleY = static_cast<float>(window.getSize().y) / baseHeight;
@@ -111,6 +113,22 @@ void WinScreen::draw(sf::RenderWindow &window) {
   }
 
   currentY += logoBounds.size.y * logoScale + 80.0f * scale;
+
+  // Draw Score
+  sf::Text scoreText(font, "Final Score: " + std::to_string(finalScore));
+  scoreText.setCharacterSize(static_cast<unsigned int>(40.0f * scale));
+  scoreText.setFillColor(sf::Color::Yellow);
+  auto scoreBounds = scoreText.getLocalBounds();
+  float scoreX = (static_cast<float>(winSize.x) - scoreBounds.size.x) / 2.0f -
+                 scoreBounds.position.x;
+  scoreText.setPosition({scoreX, currentY});
+
+  if (currentY > -scoreBounds.size.y &&
+      currentY < static_cast<float>(winSize.y)) {
+    ShadowedText::draw(window, scoreText, scale);
+  }
+
+  currentY += scoreBounds.size.y + 60.0f * scale;
 
   unsigned int fontSize = static_cast<unsigned int>(24.0f * scale);
 

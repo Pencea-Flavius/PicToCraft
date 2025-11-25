@@ -108,7 +108,7 @@ void GameOverScreen::update(const sf::RenderWindow &window) {
   for (size_t i = 0; i < buttons.size(); ++i) {
     float x = winSize.x / 2.0f;
     float y = buttonY + i * spacing;
-    buttons[i]->update(window, scale, x, y, 1.2f, 1.2f, mousePos);
+    buttons[i]->update(scale, x, y, 1.2f, 1.2f, mousePos);
   }
 }
 
@@ -124,4 +124,8 @@ void GameOverScreen::draw(sf::RenderWindow &window) {
   for (const auto &btn : buttons) {
     btn->draw(window);
   }
+}
+
+void GameOverScreen::reset() {
+  // Reset any state if needed
 }

@@ -1,6 +1,12 @@
 #include "GridRenderer.h"
 #include "ShadowedText.h"
+#include <SFML/Graphics/BlendMode.hpp>
+#include <SFML/Graphics/Image.hpp>
+#include <SFML/Graphics/RenderTexture.hpp>
+#include <SFML/Graphics/Sprite.hpp>
 #include <algorithm>
+#include <cmath>
+#include <cstdint>
 #include <sstream>
 
 GridRenderer::GridRenderer(Grid &g, float size, sf::Vector2f off)
@@ -137,6 +143,8 @@ void GridRenderer::draw(sf::RenderWindow &window) const {
       window.draw(rect);
     }
   }
+
+  grid.drawMode(window);
 }
 
 void GridRenderer::handleClick(const sf::Vector2i &mousePos) const {

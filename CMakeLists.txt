@@ -63,6 +63,8 @@ add_executable(${MAIN_EXECUTABLE_NAME}
         src/SplashText.cpp
         src/MenuButton.cpp
         src/MenuButton.h
+        src/MenuButtonManager.cpp
+        src/MenuButtonManager.h
         src/ShadowedText.cpp
         src/ShadowedText.h
         src/GameOverScreen.cpp
@@ -76,6 +78,11 @@ add_executable(${MAIN_EXECUTABLE_NAME}
         src/HeartDisplay.h
         src/TimeMode.cpp
         src/TimeMode.h
+        src/CustomCursor.cpp
+        src/CustomCursor.h
+        src/TorchMode.cpp
+        src/TorchMode.h
+        src/TorchMode.h
 )
 
 target_include_directories(${MAIN_EXECUTABLE_NAME} SYSTEM PRIVATE ${SFML_SOURCE_DIR}/include)

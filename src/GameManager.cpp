@@ -1,4 +1,5 @@
 #include "GameManager.h"
+#include <SFML/Graphics/RenderTexture.hpp>
 #include <iostream>
 #include <optional>
 
@@ -17,15 +18,25 @@ GameManager::GameManager()
   menu = std::make_unique<GameMenu>();
   gameOverScreen = std::make_unique<GameOverScreen>();
   winScreen = std::make_unique<WinScreen>();
+
+  bool enableCustomCursor = true;
+  float cursorScale = 0.2f;
+  customCursor = std::make_unique<CustomCursor>(window);
+  customCursor->setScale(cursorScale);
+  customCursor->setEnabled(enableCustomCursor);
 }
 
 void GameManager::startGame() {
-  GameModeType mode = menu->getGameMode();
+  GameConfig config = menu->getGameConfig();
 
   if (menu->getSourceMode() == SourceMode::File) {
-    grid.load_from_file(menu->getSelectedFile(), mode);
+    grid.load_from_file(menu->getSelectedFile(), config);
   } else {
-    grid.generate_random(menu->getGridSize(), mode, 0.6);
+    grid.generate_random(menu->getGridSize(), config, 0.6);
+  }
+
+  if (customCursor) {
+    customCursor->setTorchMode(config.torchMode);
   }
 
   resetGame();
@@ -85,6 +96,16 @@ void GameManager::run() {
         if (!inMenu && !inGameOver && !inWinScreen) {
           resetGame();
         }
+
+        if (customCursor) {
+          // Base width 1920, base scale 0.2f
+          float newScale =
+              (static_cast<float>(resized->size.x) / 1920.0f) * 0.2f;
+          customCursor->setScale(newScale);
+        }
+      }
+      if (customCursor) {
+        customCursor->handleEvent(*event);
       }
 
       if (inMenu) {
@@ -101,19 +122,26 @@ void GameManager::run() {
       } else if (inGameOver) {
         GameOverAction action = gameOverScreen->handleEvent(*event, window);
         if (action == GameOverAction::Retry) {
-          GameModeType mode = menu->getGameMode();
+          GameConfig config = menu->getGameConfig();
           if (menu->getSourceMode() == SourceMode::File) {
-            grid.load_from_file(menu->getSelectedFile(), mode);
+            grid.load_from_file(menu->getSelectedFile(), config);
           } else {
-            grid.generate_random(menu->getGridSize(), mode,
+            grid.generate_random(menu->getGridSize(), config,
                                  0.6); // Assuming 0.6 is the default difficulty
+          }
+          if (customCursor) {
+            customCursor->setTorchMode(config.torchMode);
           }
           resetGame();
           inGameOver = false;
         } else if (action == GameOverAction::MainMenu) {
           menu->reset();
+          menu->reset();
           inMenu = true;
           inGameOver = false;
+          if (customCursor) {
+            customCursor->setTorchMode(false);
+          }
         }
       } else if (inWinScreen) {
         if (auto key = event->getIf<sf::Event::KeyPressed>()) {
@@ -122,6 +150,9 @@ void GameManager::run() {
             menu->reset();
             inMenu = true;
             inWinScreen = false;
+            if (customCursor) {
+              customCursor->setTorchMode(false);
+            }
           }
         }
       } else {
@@ -145,6 +176,9 @@ void GameManager::run() {
         menu->reset();
         inMenu = true;
         inWinScreen = false;
+        if (customCursor) {
+          customCursor->setTorchMode(false);
+        }
       }
     } else {
       window.clear(sf::Color(240, 240, 240));
@@ -152,12 +186,12 @@ void GameManager::run() {
 
       if (!inGameOver && !inWinScreen) {
         if (grid.is_solved()) {
-          std::cout << "Puzzle rezolvat! Felicitari!\n";
           inWinScreen = true;
           winScreen->reset();
+          winScreen->setScore(grid.get_score());
         } else if (grid.is_lost()) {
-          std::cout << "Ai pierdut jocul!\n";
           inGameOver = true;
+          gameOverScreen->reset();
           gameOverScreen->setScore(grid.get_score());
         }
       }
