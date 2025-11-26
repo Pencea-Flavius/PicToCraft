@@ -9,7 +9,7 @@
 
 class MenuButton {
 public:
-  enum class Style { Default, Tab };
+  enum class Style { Default, Tab, Slider };
 
   MenuButton(const std::string &label, const sf::Font &font,
              const sf::Texture &texture, unsigned int fontSize);
@@ -19,13 +19,22 @@ public:
               float heightScale, const sf::Vector2f &mousePos);
 
   void draw(sf::RenderWindow &window);
-  bool isClicked(const sf::Vector2f &mousePos) const;
+  bool isClicked(const sf::Vector2f &mousePos);
   void setColor(const sf::Color &color);
 
   void setStyle(Style style);
   void setSelected(bool selected);
   void setTexture(const sf::Texture &texture);
   void setEnabled(bool enabled);
+  void setText(const std::string &newText);
+
+  // Slider methods
+  void setSliderValue(float value); // 0.0 to 1.0
+  float getSliderValue() const;
+  void setSliderSteps(int steps); // 0 for continuous
+  bool isDraggingSlider() const { return isDragging; }
+  void handleDrag(const sf::Vector2f &mousePos);
+  void stopDrag();
 
 private:
   struct NinePatchConfig {
@@ -38,6 +47,10 @@ private:
   static sf::SoundBuffer clickSoundBuffer;
   static std::unique_ptr<sf::Sound> clickSound;
   static bool soundInitialized;
+
+  static sf::Texture sliderHandleTexture;
+  static sf::Texture sliderHandleHighlightedTexture;
+  static bool sliderTexturesLoaded;
 
   std::vector<sf::Sprite> patchSprites;
   const sf::Texture *currentTexture;
@@ -52,6 +65,11 @@ private:
   Style style = Style::Default;
   bool selected = false;
   bool enabled = true;
+
+  // Slider state
+  float sliderValue = 0.0f;
+  int sliderSteps = 0;
+  bool isDragging = false;
 
   sf::Vector2f buttonSize;
   sf::Vector2f position;

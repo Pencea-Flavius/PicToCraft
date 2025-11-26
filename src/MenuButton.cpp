@@ -1,12 +1,17 @@
 #include "MenuButton.h"
 #include "Exceptions.h"
 #include "ShadowedText.h"
+#include <algorithm>
 #include <cmath>
-#include <iostream>
+#include <stdexcept>
 
 sf::SoundBuffer MenuButton::clickSoundBuffer;
 std::unique_ptr<sf::Sound> MenuButton::clickSound = nullptr;
 bool MenuButton::soundInitialized = false;
+
+sf::Texture MenuButton::sliderHandleTexture;
+sf::Texture MenuButton::sliderHandleHighlightedTexture;
+bool MenuButton::sliderTexturesLoaded = false;
 
 MenuButton::MenuButton(const std::string &label, const sf::Font &font,
                        const sf::Texture &texture, unsigned int fontSize)
@@ -21,6 +26,19 @@ MenuButton::MenuButton(const std::string &label, const sf::Font &font,
     clickSound = std::make_unique<sf::Sound>(clickSoundBuffer);
     clickSound->setVolume(50.0f);
     soundInitialized = true;
+  }
+
+  if (!sliderTexturesLoaded) {
+    if (!sliderHandleTexture.loadFromFile("assets/buttons/slider_handle.png")) {
+      throw std::runtime_error(
+          "Failed to load assets/buttons/slider_handle.png");
+    }
+    if (!sliderHandleHighlightedTexture.loadFromFile(
+            "assets/buttons/slider_handle_highlighted.png")) {
+      throw std::runtime_error(
+          "Failed to load assets/buttons/slider_handle_highlighted.png");
+    }
+    sliderTexturesLoaded = true;
   }
 
   setupNinePatch();
@@ -166,15 +184,50 @@ void MenuButton::update(float scale, float x, float y, float widthScale,
       {position.x - buttonSize.x / 2.0f, position.y - buttonSize.y / 2.0f},
       {buttonSize.x, buttonSize.y});
   hovered = bounds.contains(mousePos);
+
+  if (style == Style::Slider && isDragging) {
+    handleDrag(mousePos);
+  }
 }
 
-bool MenuButton::isClicked(const sf::Vector2f &mousePos) const {
+void MenuButton::setSliderValue(float value) {
+  sliderValue = std::clamp(value, 0.0f, 1.0f);
+}
+
+float MenuButton::getSliderValue() const { return sliderValue; }
+
+void MenuButton::setSliderSteps(int steps) { sliderSteps = steps; }
+
+void MenuButton::handleDrag(const sf::Vector2f &mousePos) {
+  float left = position.x - buttonSize.x / 2.0f;
+  float width = buttonSize.x;
+  float relativeX = mousePos.x - left;
+  float rawValue = std::clamp(relativeX / width, 0.0f, 1.0f);
+
+  if (sliderSteps > 1) {
+    float stepSize = 1.0f / (sliderSteps - 1);
+    int step = static_cast<int>(std::round(rawValue / stepSize));
+    sliderValue = step * stepSize;
+  } else {
+    sliderValue = rawValue;
+  }
+}
+
+void MenuButton::stopDrag() { isDragging = false; }
+
+bool MenuButton::isClicked(const sf::Vector2f &mousePos) {
   if (!enabled)
     return false;
   sf::FloatRect bounds(
       {position.x - buttonSize.x / 2.0f, position.y - buttonSize.y / 2.0f},
       {buttonSize.x, buttonSize.y});
   bool clicked = bounds.contains(mousePos);
+
+  if (clicked && style == Style::Slider) {
+    isDragging = true;
+    handleDrag(mousePos);
+  }
+
   if (clicked && soundInitialized && clickSound) {
     clickSound->play();
   }
@@ -191,6 +244,10 @@ void MenuButton::setTexture(const sf::Texture &texture) {
 }
 
 void MenuButton::setEnabled(bool isEnabled) { enabled = isEnabled; }
+
+void MenuButton::setText(const std::string &newText) {
+  text.setString(newText);
+}
 
 void MenuButton::draw(sf::RenderWindow &window) {
   if (style == Style::Tab) {
@@ -214,6 +271,46 @@ void MenuButton::draw(sf::RenderWindow &window) {
                              textBounds.position.y);
     text.setPosition({textX, textY});
     text.setFillColor(textColor);
+    ShadowedText::draw(window, text, currentScale);
+
+    ShadowedText::draw(window, text, currentScale);
+
+  } else if (style == Style::Slider) {
+    sf::Color trackColor = sf::Color::White;
+    for (auto &sprite : patchSprites) {
+      sprite.setColor(trackColor);
+      window.draw(sprite);
+    }
+
+    sf::Sprite handleSprite(hovered || isDragging
+                                ? sliderHandleHighlightedTexture
+                                : sliderHandleTexture);
+
+    auto handleBounds = handleSprite.getLocalBounds();
+    handleSprite.setOrigin(
+        sf::Vector2f(handleBounds.size.x / 2.0f, handleBounds.size.y / 2.0f));
+
+    float handleScale = currentScale * 3;
+    handleSprite.setScale({handleScale, handleScale});
+
+    float handleX =
+        (position.x - buttonSize.x / 2.0f) + (sliderValue * buttonSize.x);
+    handleSprite.setPosition({handleX, position.y});
+
+    window.draw(handleSprite);
+
+    text.setCharacterSize(
+        static_cast<unsigned int>(baseFontSize * currentScale));
+
+    auto textBounds = text.getLocalBounds();
+    float textX = std::round(position.x - textBounds.size.x / 2.0f -
+                             textBounds.position.x);
+    float textY = std::round(position.y - textBounds.size.y / 2.0f -
+                             textBounds.position.y);
+
+    text.setFillColor(sf::Color::White);
+    text.setPosition({textX, textY});
+
     ShadowedText::draw(window, text, currentScale);
 
   } else {

@@ -60,7 +60,7 @@ private:
   // Click handlers
   void handleMainMenuClick(int buttonIndex);
   void handleGameSetupClick(int buttonIndex);
-  void handleOptionsClick(int buttonIndex);
+  void handleOptionsClick(int buttonIndex, const sf::RenderWindow &window);
 
   // Helper functions
   sf::Vector2f calculateScale(const sf::RenderWindow &window) const;

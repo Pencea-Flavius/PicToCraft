@@ -164,21 +164,29 @@ void GameMenu::setupGameSetupScreen() {
 }
 
 void GameMenu::setupOptionsScreen() {
-  std::vector<std::string> labels;
+  buttonManager.createButtons({}, 20); // Clear buttons
 
-  // Show 5 resolution options (cycle through them)
-  labels.push_back("< Resolution: " +
-                   MenuResolution::resolutionToString(
-                       availableResolutions[currentResolutionIndex]) +
-                   " >");
+  float sliderVal = 0.0f;
+  if (availableResolutions.size() > 1) {
+    sliderVal = static_cast<float>(currentResolutionIndex) /
+                (availableResolutions.size() - 1);
+  }
 
-  // Fullscreen checkbox
-  labels.push_back(pendingFullscreen ? "[X] Fullscreen" : "[ ] Fullscreen");
 
-  // Done button (applies settings and returns to main menu)
-  labels.push_back("Done");
+  std::string resLabel =
+      "Resolution: " + MenuResolution::resolutionToString(
+                           availableResolutions[currentResolutionIndex]);
+  buttonManager.addSlider(resLabel, sliderVal,
+                          static_cast<int>(availableResolutions.size()), 20);
 
-  buttonManager.createButtons(labels, 20);
+  if (pendingFullscreen) {
+    buttonManager.setButtonEnabled(0, false);
+  }
+
+  buttonManager.addButton(
+      pendingFullscreen ? "Fullscreen: ON" : "Fullscreen: OFF", 20);
+
+  buttonManager.addButton("Done", 20);
 }
 
 void GameMenu::handleEvent(const sf::Event &event,
@@ -199,10 +207,37 @@ void GameMenu::handleEvent(const sf::Event &event,
           handleGameSetupClick(clickedIndex);
           break;
         case MenuState::Options:
-          handleOptionsClick(clickedIndex);
+          handleOptionsClick(clickedIndex, window);
           break;
         default:
           break;
+        }
+      }
+    }
+  } else if (const auto *mouseRelease =
+                 event.getIf<sf::Event::MouseButtonReleased>()) {
+    if (mouseRelease->button == sf::Mouse::Button::Left) {
+      buttonManager.stopDrag();
+    }
+  } else if (const auto *mouseMove = event.getIf<sf::Event::MouseMoved>()) {
+    if (menuState == MenuState::Options) {
+      sf::Vector2f mousePos = window.mapPixelToCoords(
+          {mouseMove->position.x, mouseMove->position.y});
+      buttonManager.handleDrag(mousePos);
+
+      if (buttonManager.getButtonCount() > 0) {
+        float val = buttonManager.getSliderValue(0);
+        int steps = static_cast<int>(availableResolutions.size());
+        if (steps > 1) {
+          int index = static_cast<int>(std::round(val * (steps - 1)));
+          if (index >= 0 && index < steps) {
+            currentResolutionIndex = index;
+            std::string resLabel =
+                "Resolution: " +
+                MenuResolution::resolutionToString(
+                    availableResolutions[currentResolutionIndex]);
+            buttonManager.setButtonText(0, resLabel);
+          }
         }
       }
     }
@@ -221,19 +256,22 @@ void GameMenu::handleMainMenuClick(int buttonIndex) {
   }
 }
 
-void GameMenu::handleOptionsClick(int buttonIndex) {
+void GameMenu::handleOptionsClick(int buttonIndex,
+                                  const sf::RenderWindow &window) {
   if (buttonIndex == 0) {
-    // Resolution: cycle through options
-    currentResolutionIndex = (currentResolutionIndex + 1) %
-                             static_cast<int>(availableResolutions.size());
-    setupOptionsScreen(); // Refresh labels
+    // Resolution slider - handled in update()
   } else if (buttonIndex == 1) {
-    // Fullscreen: toggle checkbox
+    // Fullscreen: toggle
     pendingFullscreen = !pendingFullscreen;
-    setupOptionsScreen(); // Refresh labels
+    buttonManager.setButtonText(1, pendingFullscreen ? "Fullscreen: ON"
+                                                     : "Fullscreen: OFF");
+    buttonManager.setButtonEnabled(0, !pendingFullscreen);
   } else if (buttonIndex == 2) {
-    // Done: apply settings and return to main menu
-    pendingResolutionChange = availableResolutions[currentResolutionIndex];
+    auto selectedRes = availableResolutions[currentResolutionIndex];
+    if (selectedRes.size.x != window.getSize().x ||
+        selectedRes.size.y != window.getSize().y) {
+      pendingResolutionChange = selectedRes;
+    }
     menuState = MenuState::MainMenu;
     setupMainMenu();
   }
@@ -350,8 +388,7 @@ void GameMenu::drawOptions(sf::RenderWindow &window) {
   drawOverlay(window);
 
   auto [scale, scaleY] = calculateScale(window);
-  buttonManager.layoutMainMenu(window, scale,
-                               scaleY); // Reuse main menu layout (centered)
+  buttonManager.layoutOptions(window, scale, scaleY);
   buttonManager.draw(window);
 }
 

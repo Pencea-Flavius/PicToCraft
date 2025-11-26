@@ -15,6 +15,34 @@ void MenuButtonManager::createButtons(const std::vector<std::string> &labels,
   }
 }
 
+void MenuButtonManager::addSlider(const std::string &label, float initialValue,
+                                  int steps, unsigned int fontSize) {
+  auto slider = std::make_unique<MenuButton>(label, font, buttonDisabledTexture,
+                                             fontSize);
+  slider->setStyle(MenuButton::Style::Slider);
+  slider->setSliderValue(initialValue);
+  slider->setSliderSteps(steps);
+  buttons.push_back(std::move(slider));
+}
+
+void MenuButtonManager::addButton(const std::string &label,
+                                  unsigned int fontSize) {
+  buttons.push_back(
+      std::make_unique<MenuButton>(label, font, buttonTexture, fontSize));
+}
+
+void MenuButtonManager::setButtonText(int index, const std::string &text) {
+  if (index >= 0 && index < static_cast<int>(buttons.size())) {
+    buttons[index]->setText(text);
+  }
+}
+
+void MenuButtonManager::setButtonEnabled(int index, bool enabled) {
+  if (index >= 0 && index < static_cast<int>(buttons.size())) {
+    buttons[index]->setEnabled(enabled);
+  }
+}
+
 void MenuButtonManager::layoutMainMenu(const sf::RenderWindow &window,
                                        float scale, float scaleY) {
   if (buttons.size() < 3)
@@ -105,7 +133,48 @@ void MenuButtonManager::layoutGameSetup(
                                1.0f, mousePos);
 }
 
-int MenuButtonManager::handleClick(const sf::Vector2f &mousePos) const {
+void MenuButtonManager::layoutOptions(const sf::RenderWindow &window,
+                                      float scale, float scaleY) {
+  if (buttons.size() < 3)
+    return;
+
+  float centerX = window.getSize().x / 2.0f;
+  float startY = 200.0f * scaleY;
+  float spacing = 60.0f * scaleY;
+
+  sf::Vector2f mousePos =
+      window.mapPixelToCoords(sf::Mouse::getPosition(window));
+
+  buttons[0]->update(scale, centerX, startY, 1.5f, 1.5f, mousePos);
+
+  buttons[1]->update(scale, centerX, startY + spacing * 1.5f, 1.5f, 1.5f,
+                     mousePos);
+  float footerY = window.getSize().y - 50.0f * scaleY;
+  buttons[2]->update(scale, centerX, footerY, 1.5f, 1.5f, mousePos);
+}
+
+void MenuButtonManager::handleDrag(const sf::Vector2f &mousePos) {
+  for (auto &button : buttons) {
+    if (button->isDraggingSlider()) {
+      button->handleDrag(mousePos);
+    }
+  }
+}
+
+void MenuButtonManager::stopDrag() {
+  for (auto &button : buttons) {
+    button->stopDrag();
+  }
+}
+
+float MenuButtonManager::getSliderValue(int index) const {
+  if (index >= 0 && index < static_cast<int>(buttons.size())) {
+    return buttons[index]->getSliderValue();
+  }
+  return 0.0f;
+}
+
+int MenuButtonManager::handleClick(const sf::Vector2f &mousePos) {
   for (size_t i = 0; i < buttons.size(); i++) {
     if (buttons[i]->isClicked(mousePos)) {
       return static_cast<int>(i);
