@@ -7,11 +7,11 @@
 
 GameMenu::GameMenu()
     : menuState(MenuState::MainMenu), selectedSourceMode(SourceMode::File),
-      gridSize(5), buttonManager(font, buttonTexture, buttonDisabledTexture),
+      gridSize(5),
+      availableResolutions(MenuResolution::getAvailableResolutions()),
+      buttonManager(font, buttonTexture, buttonDisabledTexture),
       selectedFileIndex(0), selectedDifficultyIndex(0),
       currentResolutionIndex(0), pendingFullscreen(false) {
-
-  availableResolutions = MenuResolution::getAvailableResolutions();
 
   // Find desktop resolution index
   auto desktop = sf::VideoMode::getDesktopMode();
@@ -55,9 +55,8 @@ GameMenu::GameMenu()
   }
 
   // Set default file
-  if (!availableFiles.empty()) {
-    selectedFile = availableFiles[0];
-  }
+  // Set default file
+  selectedFile = availableFiles[0];
 
   setupMainMenu();
 }

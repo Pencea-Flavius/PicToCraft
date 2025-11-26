@@ -23,10 +23,10 @@ Grid::Grid()
 Grid::Grid(int grid_size, const std::vector<std::vector<bool>> &pattern,
            GameConfig config)
     : size{grid_size}, total_correct_blocks{0}, completed_blocks{0},
-      correct_completed_blocks{0} {
+      correct_completed_blocks{0},
+      gameMode(GameModeFactory::createGameMode(config, grid_size)) {
   totalGridsCreated++;
 
-  gameMode = GameModeFactory::createGameMode(config, grid_size);
   std::cout << "Created Grid with mode: " << *gameMode << "\n";
 
   blocks.resize(size);
@@ -205,7 +205,8 @@ bool Grid::is_time_mode() const {
     if (dynamic_cast<TimeMode *>(current)) {
       return true;
     }
-    if (auto *decorator = dynamic_cast<GameModeDecorator *>(current)) {
+    if (const auto *decorator =
+            dynamic_cast<const GameModeDecorator *>(current)) {
       current = decorator->getWrappedMode();
     } else {
       break;
