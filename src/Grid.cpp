@@ -230,5 +230,3 @@ std::ostream &operator<<(std::ostream &os, const Grid &g) {
   os << g.hints;
   return os;
 }
-
-int Grid::getGridCount() { return totalGridsCreated; }
