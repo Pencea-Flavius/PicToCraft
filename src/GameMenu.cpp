@@ -306,7 +306,7 @@ void GameMenu::drawOverlay(sf::RenderWindow &window) const {
   auto [scale, scaleY] = calculateScale(window);
 
   float headerHeight = std::round(100.0f * scaleY);
-  float footerHeight = std::round(100.0f * scaleY);
+  float footerHeight = headerHeight;
 
   // Use integer scaling for separator to avoid tiling artifacts
   float separatorScale = std::floor(scaleY);
