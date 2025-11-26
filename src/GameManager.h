@@ -26,6 +26,9 @@ class GameManager {
 
   std::unique_ptr<CustomCursor> customCursor;
 
+  sf::SoundBuffer deathBuffer;
+  sf::Sound deathSound;
+
 public:
   GameManager();
   void run();

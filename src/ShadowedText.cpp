@@ -1,4 +1,5 @@
 #include "ShadowedText.h"
+#include <cmath>
 
 void ShadowedText::draw(sf::RenderWindow &window, const sf::Text &text,
                         const sf::Vector2f &position, float scale) {
@@ -8,7 +9,11 @@ void ShadowedText::draw(sf::RenderWindow &window, const sf::Text &text,
   shadow.setRotation(text.getRotation());
   shadow.setOrigin(text.getOrigin());
   shadow.setScale(text.getScale());
-  shadow.setPosition(position + sf::Vector2f(2.0f * scale, 2.0f * scale));
+
+  sf::Vector2f shadowOffset(std::round(2.0f * scale), std::round(2.0f * scale));
+  sf::Vector2f snappedPos(std::round(position.x), std::round(position.y));
+
+  shadow.setPosition(snappedPos + shadowOffset);
   window.draw(shadow);
 
   sf::Text mainText(text.getFont(), text.getString());
@@ -17,7 +22,7 @@ void ShadowedText::draw(sf::RenderWindow &window, const sf::Text &text,
   mainText.setRotation(text.getRotation());
   mainText.setOrigin(text.getOrigin());
   mainText.setScale(text.getScale());
-  mainText.setPosition(position);
+  mainText.setPosition(snappedPos);
   window.draw(mainText);
 }
 
@@ -29,8 +34,15 @@ void ShadowedText::draw(sf::RenderWindow &window, const sf::Text &text,
   shadow.setRotation(text.getRotation());
   shadow.setOrigin(text.getOrigin());
   shadow.setScale(text.getScale());
-  shadow.setPosition(text.getPosition() +
-                     sf::Vector2f(2.0f * scale, 2.0f * scale));
+
+  sf::Vector2f shadowOffset(std::round(2.0f * scale), std::round(2.0f * scale));
+  sf::Vector2f pos = text.getPosition();
+  sf::Vector2f snappedPos(std::round(pos.x), std::round(pos.y));
+
+  shadow.setPosition(snappedPos + shadowOffset);
   window.draw(shadow);
-  window.draw(text);
+
+  sf::Text mainText(text); // Copy
+  mainText.setPosition(snappedPos);
+  window.draw(mainText);
 }

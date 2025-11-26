@@ -93,6 +93,12 @@ std::optional<sf::Cursor> CustomCursor::loadCursor(const std::string &path,
   if (!img.loadFromFile(path))
     return std::nullopt;
 
+  float baseScale = 0.2f;
+  float scaleRatio = currentScale / baseScale;
+
+  hotspot.x = static_cast<int>(hotspot.x * scaleRatio);
+  hotspot.y = static_cast<int>(hotspot.y * scaleRatio);
+
   if (currentScale != 1.0f || hotspot.x < 0 || hotspot.y < 0) {
     sf::Texture tex;
     if (!tex.loadFromImage(img))

@@ -1,8 +1,21 @@
 #include "TorchMode.h"
 #include <cmath>
+#include <random>
 
 TorchMode::TorchMode(std::unique_ptr<GameMode> mode)
-    : GameModeDecorator(std::move(mode)) {}
+    : GameModeDecorator(std::move(mode)), fireSound(dummyBuffer),
+      silenceTimer(0.0f), inSilence(false) {
+  // Load fire sounds
+  sf::SoundBuffer buffer;
+  if (buffer.loadFromFile("assets/sound/fire1.mp3"))
+    fireBuffers.push_back(buffer);
+  if (buffer.loadFromFile("assets/sound/fire2.mp3"))
+    fireBuffers.push_back(buffer);
+  if (buffer.loadFromFile("assets/sound/fire3.mp3"))
+    fireBuffers.push_back(buffer);
+
+  playNextFireSound();
+}
 
 bool TorchMode::isTorchMode() const { return true; }
 
@@ -12,6 +25,37 @@ std::unique_ptr<GameMode> TorchMode::clone() const {
   newMode->mistakes = this->mistakes;
   newMode->score = this->score;
   return newMode;
+}
+
+void TorchMode::update(float deltaTime) {
+  GameModeDecorator::update(deltaTime);
+
+  if (inSilence) {
+    silenceTimer += deltaTime;
+    if (silenceTimer >= 3.0f) {
+      inSilence = false;
+      silenceTimer = 0.0f;
+      playNextFireSound();
+    }
+  } else {
+    if (fireSound.getStatus() == sf::SoundSource::Status::Stopped) {
+      inSilence = true;
+    }
+  }
+}
+
+void TorchMode::playNextFireSound() {
+  if (fireBuffers.empty())
+    return;
+
+  static std::random_device rd;
+  static std::mt19937 gen(rd());
+  std::uniform_int_distribution<> dis(0, fireBuffers.size() - 1);
+
+  int index = dis(gen);
+  fireSound.setBuffer(fireBuffers[index]);
+  fireSound.setVolume(100.0f); // Increased volume
+  fireSound.play();
 }
 
 void TorchMode::createLightTexture() const {
@@ -68,12 +112,29 @@ void TorchMode::draw(sf::RenderWindow &window) const {
   // Use screen coordinates for the light on the overlay
   lightSprite->setPosition(static_cast<sf::Vector2f>(mousePos));
 
+  // Scale light based on resolution (baseline 1920x1080)
+  float scale = static_cast<float>(window.getSize().x) / 1920.0f;
+  lightSprite->setScale({scale, scale});
+
+  // 1. Draw the "hole" (transparency)
   sf::BlendMode subtractAlpha(
       sf::BlendMode::Factor::Zero, sf::BlendMode::Factor::One,
       sf::BlendMode::Equation::Add, sf::BlendMode::Factor::One,
       sf::BlendMode::Factor::One, sf::BlendMode::Equation::ReverseSubtract);
 
+  lightSprite->setColor(sf::Color::White); // Reset color for alpha subtraction
   lightLayer.draw(*lightSprite, subtractAlpha);
+
+  // 2. Draw the fire tint (orange/yellow)
+  // Use Additive blending to make it look like light
+  sf::BlendMode addColor(sf::BlendMode::Factor::SrcAlpha,
+                         sf::BlendMode::Factor::One,
+                         sf::BlendMode::Equation::Add);
+
+  // Warm orange/yellow color
+  lightSprite->setColor(sf::Color(255, 150, 50, 100));
+  lightLayer.draw(*lightSprite, addColor);
+
   lightLayer.display();
 
   sf::Sprite overlay(lightLayer.getTexture());

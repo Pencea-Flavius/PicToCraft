@@ -1,7 +1,8 @@
 #include "TimeMode.h"
 
 TimeMode::TimeMode(std::unique_ptr<GameMode> mode, int gridSize)
-    : GameModeDecorator(std::move(mode)), decayTimer(0.0f) {
+    : GameModeDecorator(std::move(mode)), decayTimer(0.0f),
+      hurtSound(hurtBuffer) {
 
   if (gridSize <= 5) {
     maxHearts = 6;
@@ -14,6 +15,9 @@ TimeMode::TimeMode(std::unique_ptr<GameMode> mode, int gridSize)
   }
 
   mistakes = 0; // Starts with 0 damage
+
+  if (!hurtBuffer.loadFromFile("assets/sound/hurt.mp3")) {
+  }
 }
 
 void TimeMode::onBlockToggled(bool isCorrect, bool isCompleted,
@@ -23,10 +27,12 @@ void TimeMode::onBlockToggled(bool isCorrect, bool isCompleted,
   if (!wasCompleted && isCompleted) {
     if (!isCorrect) {
       mistakes++;
+      hurtSound.play();
     }
   } else if (wasCompleted && !isCompleted) {
     if (isCorrect) {
       mistakes++;
+      hurtSound.play();
     }
   }
 }
@@ -40,6 +46,7 @@ void TimeMode::update(float deltaTime) {
     decayTimer -= DECAY_INTERVAL;
     // Lose half a heart every 10 seconds
     mistakes++;
+    hurtSound.play();
   }
 }
 
@@ -60,7 +67,6 @@ int TimeMode::getMistakes() const { return mistakes; }
 
 std::unique_ptr<GameMode> TimeMode::clone() const {
   auto clonedWrapped = wrappedMode ? wrappedMode->clone() : nullptr;
-  // Use 0 as gridSize, we'll overwrite maxHearts anyway
   auto newMode = std::make_unique<TimeMode>(std::move(clonedWrapped), 0);
   newMode->maxHearts = this->maxHearts;
   newMode->decayTimer = this->decayTimer;

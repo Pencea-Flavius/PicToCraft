@@ -2,8 +2,10 @@
 #define OOP_TORCHMODE_H
 
 #include "GameMode.h"
+#include <SFML/Audio.hpp>
 #include <SFML/Graphics.hpp>
 #include <optional>
+#include <vector>
 
 class TorchMode : public GameModeDecorator {
 public:
@@ -13,6 +15,7 @@ public:
 
   [[nodiscard]] bool isTorchMode() const override;
   void draw(sf::RenderWindow &window) const override;
+  void update(float deltaTime) override;
   [[nodiscard]] std::unique_ptr<GameMode> clone() const override;
 
 private:
@@ -21,7 +24,15 @@ private:
   mutable sf::Texture lightTexture;
   mutable bool lightTextureCreated = false;
 
+  std::vector<sf::SoundBuffer> fireBuffers;
+  sf::SoundBuffer dummyBuffer;
+  sf::Sound fireSound;
+
+  float silenceTimer;
+  bool inSilence;
+
   void createLightTexture() const;
+  void playNextFireSound();
 };
 
 #endif // OOP_TORCHMODE_H

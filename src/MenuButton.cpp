@@ -1,5 +1,6 @@
 #include "MenuButton.h"
 #include "ShadowedText.h"
+#include <cmath>
 #include <iostream>
 
 sf::SoundBuffer MenuButton::clickSoundBuffer;
@@ -87,7 +88,10 @@ void MenuButton::updateNinePatchLayout() {
   if (cornerSize > 0) {
     borderScale = static_cast<float>(edgeThickness) / cornerSize;
   }
-  float visualBorderScale = scale * borderScale;
+  float visualBorderScale = std::round(scale * borderScale);
+  if (visualBorderScale < 1.0f)
+    visualBorderScale = 1.0f;
+
   float scaledCornerSize = cornerSize * visualBorderScale;
 
   float horizontalScale =
@@ -95,46 +99,53 @@ void MenuButton::updateNinePatchLayout() {
   float verticalScale =
       (targetHeight - 2.0f * scaledCornerSize) / static_cast<float>(edgeHeight);
 
+  float snappedTopLeftX = std::round(topLeftX);
+  float snappedTopLeftY = std::round(topLeftY);
+
   // 0: Top-Left
-  patchSprites[0].setPosition({topLeftX, topLeftY});
+  patchSprites[0].setPosition({snappedTopLeftX, snappedTopLeftY});
   patchSprites[0].setScale({visualBorderScale, visualBorderScale});
 
   // 1: Top
-  patchSprites[1].setPosition({topLeftX + scaledCornerSize, topLeftY});
+  patchSprites[1].setPosition(
+      {snappedTopLeftX + scaledCornerSize, snappedTopLeftY});
   patchSprites[1].setScale({horizontalScale, visualBorderScale});
 
   // 2: Top-Right
   patchSprites[2].setPosition(
-      {topLeftX + targetWidth - scaledCornerSize, topLeftY});
+      {snappedTopLeftX + targetWidth - scaledCornerSize, snappedTopLeftY});
   patchSprites[2].setScale({visualBorderScale, visualBorderScale});
 
   // 3: Left
-  patchSprites[3].setPosition({topLeftX, topLeftY + scaledCornerSize});
+  patchSprites[3].setPosition(
+      {snappedTopLeftX, snappedTopLeftY + scaledCornerSize});
   patchSprites[3].setScale({visualBorderScale, verticalScale});
 
   // 4: Center
   patchSprites[4].setPosition(
-      {topLeftX + scaledCornerSize, topLeftY + scaledCornerSize});
+      {snappedTopLeftX + scaledCornerSize, snappedTopLeftY + scaledCornerSize});
   patchSprites[4].setScale({horizontalScale, verticalScale});
 
   // 5: Right
-  patchSprites[5].setPosition(
-      {topLeftX + targetWidth - scaledCornerSize, topLeftY + scaledCornerSize});
+  patchSprites[5].setPosition({snappedTopLeftX + targetWidth - scaledCornerSize,
+                               snappedTopLeftY + scaledCornerSize});
   patchSprites[5].setScale({visualBorderScale, verticalScale});
 
   // 6: Bottom-Left
   patchSprites[6].setPosition(
-      {topLeftX, topLeftY + targetHeight - scaledCornerSize});
+      {snappedTopLeftX, snappedTopLeftY + targetHeight - scaledCornerSize});
   patchSprites[6].setScale({visualBorderScale, visualBorderScale});
 
   // 7: Bottom
-  patchSprites[7].setPosition({topLeftX + scaledCornerSize,
-                               topLeftY + targetHeight - scaledCornerSize});
+  patchSprites[7].setPosition(
+      {snappedTopLeftX + scaledCornerSize,
+       snappedTopLeftY + targetHeight - scaledCornerSize});
   patchSprites[7].setScale({horizontalScale, visualBorderScale});
 
   // 8: Bottom-Right
-  patchSprites[8].setPosition({topLeftX + targetWidth - scaledCornerSize,
-                               topLeftY + targetHeight - scaledCornerSize});
+  patchSprites[8].setPosition(
+      {snappedTopLeftX + targetWidth - scaledCornerSize,
+       snappedTopLeftY + targetHeight - scaledCornerSize});
   patchSprites[8].setScale({visualBorderScale, visualBorderScale});
 }
 
@@ -197,8 +208,10 @@ void MenuButton::draw(sf::RenderWindow &window) {
     text.setCharacterSize(
         static_cast<unsigned int>(baseFontSize * currentScale));
     auto textBounds = text.getLocalBounds();
-    float textX = position.x - textBounds.size.x / 2.0f - textBounds.position.x;
-    float textY = position.y - textBounds.size.y / 2.0f - textBounds.position.y;
+    float textX = std::round(position.x - textBounds.size.x / 2.0f -
+                             textBounds.position.x);
+    float textY = std::round(position.y - textBounds.size.y / 2.0f -
+                             textBounds.position.y);
     text.setPosition({textX, textY});
     text.setFillColor(textColor);
     ShadowedText::draw(window, text, currentScale);
@@ -216,8 +229,10 @@ void MenuButton::draw(sf::RenderWindow &window) {
         static_cast<unsigned int>(baseFontSize * currentScale));
 
     auto textBounds = text.getLocalBounds();
-    float textX = position.x - textBounds.size.x / 2.0f - textBounds.position.x;
-    float textY = position.y - textBounds.size.y / 2.0f - textBounds.position.y;
+    float textX = std::round(position.x - textBounds.size.x / 2.0f -
+                             textBounds.position.x);
+    float textY = std::round(position.y - textBounds.size.y / 2.0f -
+                             textBounds.position.y);
 
     sf::Color textColor =
         hovered ? sf::Color(255, 255, 160) : sf::Color(221, 221, 221);

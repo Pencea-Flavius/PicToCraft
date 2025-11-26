@@ -61,8 +61,20 @@ private:
   sf::Vector2f calculateScale(const sf::RenderWindow &window) const;
 
   // New drawing helpers
-  void drawOverlay(sf::RenderWindow &window);
+  void drawOverlay(sf::RenderWindow &window) const;
   void drawGameSetup(sf::RenderWindow &window);
+
+  bool fontLoaded;
+  bool subtitleFontLoaded;
+  bool titleLoaded;
+  bool buttonLoaded;
+
+  // State
+  MenuState menuState;
+  GameConfig gameConfig;
+  SourceMode selectedSourceMode;
+  std::string selectedFile;
+  int gridSize;
 
   // Assets
   sf::Font font;
@@ -78,22 +90,10 @@ private:
   sf::Texture headerSeparatorTexture;
   sf::Texture footerSeparatorTexture;
 
-  bool fontLoaded;
-  bool subtitleFontLoaded;
-  bool titleLoaded;
-  bool buttonLoaded;
-
   // Components
   MenuPanorama panorama;
   SplashText splashText;
   MenuButtonManager buttonManager;
-
-  // State
-  MenuState menuState;
-  GameConfig gameConfig;
-  SourceMode selectedSourceMode;
-  std::string selectedFile;
-  int gridSize;
 
   // UI State for Game Setup
   int selectedTab = 0; // 0 = Game, 1 = Modifiers

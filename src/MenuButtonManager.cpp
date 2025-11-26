@@ -49,7 +49,7 @@ void MenuButtonManager::layoutGameSetup(
     return;
 
   float centerX = window.getSize().x / 2.0f;
-  float topY = 120.0f * scaleY;
+  float topY = 140.0f * scaleY;
   float spacing = 60.0f * scaleY;
 
   sf::Vector2f mousePos =
@@ -94,7 +94,7 @@ void MenuButtonManager::layoutGameSetup(
   size_t playIndex = buttons.size() - 2;
   size_t cancelIndex = buttons.size() - 1;
 
-  float footerY = window.getSize().y - 100.0f * scaleY;
+  float footerY = window.getSize().y - 50.0f * scaleY;
 
   buttons[playIndex]->setStyle(MenuButton::Style::Default);
   buttons[playIndex]->update(scale, centerX - 170.0f * scale, footerY, 0.8f,

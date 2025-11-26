@@ -2,11 +2,15 @@
 #define OOP_TIMEMODE_H
 
 #include "GameMode.h"
+#include <SFML/Audio.hpp>
 
 class TimeMode : public GameModeDecorator {
-  int maxHearts;
   float decayTimer;
   const float DECAY_INTERVAL = 10.0f;
+  int maxHearts;
+
+  sf::SoundBuffer hurtBuffer;
+  sf::Sound hurtSound;
 
 public:
   explicit TimeMode(std::unique_ptr<GameMode> mode, int gridSize);

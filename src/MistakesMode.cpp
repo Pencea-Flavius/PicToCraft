@@ -1,5 +1,17 @@
 #include "MistakesMode.h"
 
+MistakesMode::MistakesMode() : hurtSound(hurtBuffer) {
+  if (!hurtBuffer.loadFromFile("assets/sound/hurt.mp3")) {
+  }
+
+}
+
+MistakesMode::MistakesMode(const MistakesMode &other)
+    : GameMode(other), hurtBuffer(other.hurtBuffer), hurtSound(hurtBuffer) {
+  mistakes = other.mistakes;
+  score = other.score;
+}
+
 void MistakesMode::onBlockToggled(bool isCorrect, bool isCompleted,
                                   bool wasCompleted) {
   // Call base scoring logic
@@ -9,6 +21,7 @@ void MistakesMode::onBlockToggled(bool isCorrect, bool isCompleted,
   if (!wasCompleted && isCompleted) {
     if (!isCorrect) {
       mistakes++;
+      hurtSound.play();
     }
   }
 }

@@ -1,18 +1,18 @@
 #include "GameMenu.h"
 
 #include <algorithm>
+#include <cmath>
 #include <filesystem>
 #include <iostream>
 
 GameMenu::GameMenu()
     : fontLoaded(false), subtitleFontLoaded(false), titleLoaded(false),
       buttonLoaded(false), menuState(MenuState::MainMenu),
-      selectedSourceMode(SourceMode::File), gridSize(5), selectedFileIndex(0),
-      selectedDifficultyIndex(0), selectedTab(0),
-      buttonManager(font, buttonTexture, buttonDisabledTexture) {
+      selectedSourceMode(SourceMode::File), gridSize(5),
+      buttonManager(font, buttonTexture, buttonDisabledTexture),
+      selectedFileIndex(0), selectedDifficultyIndex(0) {
 
-  // Initialize default config
-  gameConfig.baseMode = GameModeType::Score; // Default to Training/Score
+  gameConfig.baseMode = GameModeType::Score;
   gameConfig.timeMode = false;
   gameConfig.torchMode = false;
 
@@ -115,16 +115,17 @@ void GameMenu::setupMainMenu() {
 void GameMenu::setupGameSetupScreen() {
   std::vector<std::string> labels;
 
-  labels.push_back("Game");
-  labels.push_back("Modifiers");
+  labels.emplace_back("Game");
+  labels.emplace_back("Modifiers");
 
   if (selectedTab == 0) {
-    labels.push_back(selectedSourceMode == SourceMode::Random ? "Source: Random"
-                                                              : "Source: File");
+    labels.emplace_back(selectedSourceMode == SourceMode::Random
+                            ? "Source: Random"
+                            : "Source: File");
 
-    labels.push_back(gameConfig.baseMode == GameModeType::Score
-                         ? "Mode: Training"
-                         : "Mode: Damage");
+    labels.emplace_back(gameConfig.baseMode == GameModeType::Score
+                            ? "Mode: Training"
+                            : "Mode: Damage");
 
     if (selectedSourceMode == SourceMode::Random) {
       labels.push_back("Difficulty: " +
@@ -136,16 +137,16 @@ void GameMenu::setupGameSetupScreen() {
     }
   } else {
     if (gameConfig.baseMode == GameModeType::Mistakes) {
-      labels.push_back(gameConfig.timeMode ? "Time: ON" : "Time: OFF");
+      labels.emplace_back(gameConfig.timeMode ? "Time: ON" : "Time: OFF");
     } else {
-      labels.push_back("Time: N/A");
+      labels.emplace_back("Time: N/A");
     }
 
-    labels.push_back(gameConfig.torchMode ? "Torch: ON" : "Torch: OFF");
+    labels.emplace_back(gameConfig.torchMode ? "Torch: ON" : "Torch: OFF");
   }
 
-  labels.push_back("Play Selected Game");
-  labels.push_back("Cancel");
+  labels.emplace_back("Play Selected Game");
+  labels.emplace_back("Cancel");
 
   buttonManager.createButtons(labels, 20);
 }
@@ -301,31 +302,38 @@ void GameMenu::drawGameSetup(sf::RenderWindow &window) {
   buttonManager.draw(window);
 }
 
-void GameMenu::drawOverlay(sf::RenderWindow &window) {
-  sf::RectangleShape overlay(sf::Vector2f(window.getSize()));
-  overlay.setFillColor(sf::Color(0, 0, 0, 180)); // Darker semi-transparent
-  window.draw(overlay);
+void GameMenu::drawOverlay(sf::RenderWindow &window) const {
+  auto [scale, scaleY] = calculateScale(window);
 
-  float headerHeight = 80.0f;
-  float footerHeight = 80.0f;
+  float headerHeight = std::round(100.0f * scaleY);
+  float footerHeight = std::round(100.0f * scaleY);
 
-  sf::RectangleShape header(
-      {static_cast<float>(window.getSize().x), headerHeight});
-  header.setTexture(&headerSeparatorTexture);
-  header.setTextureRect(
-      sf::IntRect({0, 0}, {static_cast<int>(window.getSize().x),
-                           static_cast<int>(headerHeight)}));
+  // Use integer scaling for separator to avoid tiling artifacts
+  float separatorScale = std::floor(scaleY);
+  if (separatorScale < 1.0f)
+    separatorScale = 1.0f;
+  float separatorHeight = 10.0f * separatorScale;
 
-  sf::RectangleShape footer(
-      {static_cast<float>(window.getSize().x), footerHeight});
-  footer.setTexture(&footerSeparatorTexture);
-  footer.setTextureRect(
-      sf::IntRect({0, 0}, {static_cast<int>(window.getSize().x),
-                           static_cast<int>(footerHeight)}));
-  footer.setPosition({0.f, window.getSize().y - footerHeight});
+  float middleHeight = window.getSize().y - headerHeight - footerHeight;
+  if (middleHeight > 0) {
+    sf::RectangleShape overlay(
+        {static_cast<float>(window.getSize().x), middleHeight});
+    overlay.setPosition({0.f, headerHeight});
+    overlay.setFillColor(sf::Color(0, 0, 0, 130));
+    window.draw(overlay);
+  }
+  sf::RectangleShape headerSep(
+      {static_cast<float>(window.getSize().x), separatorHeight});
+  headerSep.setTexture(&headerSeparatorTexture);
+  headerSep.setPosition({0.f, headerHeight});
+  window.draw(headerSep);
 
-  window.draw(header);
-  window.draw(footer);
+  sf::RectangleShape footerSep(
+      {static_cast<float>(window.getSize().x), separatorHeight});
+  footerSep.setTexture(&footerSeparatorTexture);
+  footerSep.setPosition(
+      {0.f, window.getSize().y - footerHeight - separatorHeight});
+  window.draw(footerSep);
 }
 
 sf::Vector2f GameMenu::calculateScale(const sf::RenderWindow &window) const {

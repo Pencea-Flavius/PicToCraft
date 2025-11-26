@@ -4,7 +4,8 @@
 #include <optional>
 
 GameManager::GameManager()
-    : grid(), inMenu(true), inGameOver(false), inWinScreen(false) {
+    : grid(), inMenu(true), inGameOver(false), inWinScreen(false),
+      deathSound(deathBuffer) {
   auto &menuRes = MenuResolution::getInstance();
   sf::VideoMode mode = menuRes.selectResolution();
 
@@ -24,6 +25,8 @@ GameManager::GameManager()
   customCursor = std::make_unique<CustomCursor>(window);
   customCursor->setScale(cursorScale);
   customCursor->setEnabled(enableCustomCursor);
+  if (!deathBuffer.loadFromFile("assets/sound/hurt2.mp3")) {
+  }
 }
 
 void GameManager::startGame() {
@@ -193,6 +196,7 @@ void GameManager::run() {
           inGameOver = true;
           gameOverScreen->reset();
           gameOverScreen->setScore(grid.get_score());
+          deathSound.play();
         }
       }
       renderer->draw(window);
