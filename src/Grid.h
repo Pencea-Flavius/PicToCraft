@@ -22,6 +22,7 @@ class Grid {
   int correct_completed_blocks;
   PicrossHints hints;
   std::unique_ptr<GameMode> gameMode;
+  static int totalGridsCreated;
 
 public:
   Grid();
@@ -30,7 +31,8 @@ public:
        GameConfig config = {});
 
   Grid(const Grid &other);
-  Grid &operator=(const Grid &other);
+  Grid &operator=(Grid other);
+  friend void swap(Grid &first, Grid &second);
   ~Grid();
 
   void load_from_file(const std::string &filename, GameConfig config = {});
@@ -57,6 +59,8 @@ public:
   void drawMode(sf::RenderWindow &window) const;
 
   friend std::ostream &operator<<(std::ostream &os, const Grid &g);
+
+  static int getGridCount();
 };
 
 #endif // OOP_GRID_H

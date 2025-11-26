@@ -1,9 +1,10 @@
 #include "MistakesMode.h"
+#include "Exceptions.h"
 
 MistakesMode::MistakesMode() : hurtSound(hurtBuffer) {
   if (!hurtBuffer.loadFromFile("assets/sound/hurt.mp3")) {
+    throw AssetLoadException("assets/sound/hurt.mp3", "Sound");
   }
-
 }
 
 MistakesMode::MistakesMode(const MistakesMode &other)

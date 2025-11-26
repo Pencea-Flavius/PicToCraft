@@ -28,21 +28,5 @@ void ShadowedText::draw(sf::RenderWindow &window, const sf::Text &text,
 
 void ShadowedText::draw(sf::RenderWindow &window, const sf::Text &text,
                         float scale) {
-  sf::Text shadow(text.getFont(), text.getString());
-  shadow.setCharacterSize(text.getCharacterSize());
-  shadow.setFillColor(sf::Color(0, 0, 0, 170));
-  shadow.setRotation(text.getRotation());
-  shadow.setOrigin(text.getOrigin());
-  shadow.setScale(text.getScale());
-
-  sf::Vector2f shadowOffset(std::round(2.0f * scale), std::round(2.0f * scale));
-  sf::Vector2f pos = text.getPosition();
-  sf::Vector2f snappedPos(std::round(pos.x), std::round(pos.y));
-
-  shadow.setPosition(snappedPos + shadowOffset);
-  window.draw(shadow);
-
-  sf::Text mainText(text); // Copy
-  mainText.setPosition(snappedPos);
-  window.draw(mainText);
+  draw(window, text, text.getPosition(), scale);
 }

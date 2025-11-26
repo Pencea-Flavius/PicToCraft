@@ -1,47 +1,55 @@
 #include "HeartDisplay.h"
+#include "Exceptions.h"
 #include <iostream>
 
 HeartDisplay::HeartDisplay() : isFlashing(false), flashTimer(0.0f) {
   if (!containerTexture.loadFromFile("assets/hearts/container_hardcore.png")) {
-    std::cerr << "Failed to load container_hardcore.png\n";
+    throw AssetLoadException("assets/hearts/container_hardcore.png", "Texture");
   }
   if (!containerBlinkingTexture.loadFromFile(
           "assets/hearts/container_hardcore_blinking.png")) {
-    std::cerr << "Failed to load container_hardcore_blinking.png\n";
+    throw AssetLoadException("assets/hearts/container_hardcore_blinking.png",
+                             "Texture");
   }
 
   if (!fullHeartTexture.loadFromFile("assets/hearts/hardcore_full.png")) {
-    std::cerr << "Failed to load hardcore_full.png\n";
+    throw AssetLoadException("assets/hearts/hardcore_full.png", "Texture");
   }
   if (!fullHeartBlinkingTexture.loadFromFile(
           "assets/hearts/hardcore_full_blinking.png")) {
-    std::cerr << "Failed to load hardcore_full_blinking.png\n";
+    throw AssetLoadException("assets/hearts/hardcore_full_blinking.png",
+                             "Texture");
   }
 
   if (!halfHeartTexture.loadFromFile("assets/hearts/hardcore_half.png")) {
-    std::cerr << "Failed to load hardcore_half.png\n";
+    throw AssetLoadException("assets/hearts/hardcore_half.png", "Texture");
   }
   if (!halfHeartBlinkingTexture.loadFromFile(
           "assets/hearts/hardcore_half_blinking.png")) {
-    std::cerr << "Failed to load hardcore_half_blinking.png\n";
+    throw AssetLoadException("assets/hearts/hardcore_half_blinking.png",
+                             "Texture");
   }
 
   if (!poisonedFullHeartTexture.loadFromFile(
           "assets/hearts/poisoned_hardcore_full.png")) {
-    std::cerr << "Failed to load poisoned_hardcore_full.png\n";
+    throw AssetLoadException("assets/hearts/poisoned_hardcore_full.png",
+                             "Texture");
   }
   if (!poisonedFullHeartBlinkingTexture.loadFromFile(
           "assets/hearts/poisoned_hardcore_full_blinking.png")) {
-    std::cerr << "Failed to load poisoned_hardcore_full_blinking.png\n";
+    throw AssetLoadException(
+        "assets/hearts/poisoned_hardcore_full_blinking.png", "Texture");
   }
 
   if (!poisonedHalfHeartTexture.loadFromFile(
           "assets/hearts/poisoned_hardcore_half.png")) {
-    std::cerr << "Failed to load poisoned_hardcore_half.png\n";
+    throw AssetLoadException("assets/hearts/poisoned_hardcore_half.png",
+                             "Texture");
   }
   if (!poisonedHalfHeartBlinkingTexture.loadFromFile(
           "assets/hearts/poisoned_hardcore_half_blinking.png")) {
-    std::cerr << "Failed to load poisoned_hardcore_half_blinking.png\n";
+    throw AssetLoadException(
+        "assets/hearts/poisoned_hardcore_half_blinking.png", "Texture");
   }
 
   containerSprite.emplace(containerTexture);

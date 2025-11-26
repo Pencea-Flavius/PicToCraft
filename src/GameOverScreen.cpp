@@ -1,11 +1,12 @@
 #include "GameOverScreen.h"
+#include "Exceptions.h"
 #include "ShadowedText.h"
 #include <iostream>
 
 GameOverScreen::GameOverScreen()
     : font(), titleText(font), scoreLabel(font), scoreValue(font) {
   if (!font.openFromFile("assets/Monocraft.ttf")) {
-    std::cerr << "Failed to load font for GameOverScreen\n";
+    throw AssetLoadException("assets/Monocraft.ttf", "Font");
   }
 
   titleText.setString("You died!");
@@ -30,7 +31,7 @@ void GameOverScreen::createButtons() {
   static sf::Texture buttonTexture;
   if (buttonTexture.getSize().x == 0) {
     if (!buttonTexture.loadFromFile("assets/button.png")) {
-      std::cerr << "Failed to load button texture for GameOverScreen\n";
+      throw AssetLoadException("assets/button.png", "Texture");
     }
   }
 

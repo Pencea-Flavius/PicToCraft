@@ -1,5 +1,7 @@
 #include "SplashText.h"
+#include "Exceptions.h"
 #include "ShadowedText.h"
+#include <cmath>
 #include <fstream>
 #include <iostream>
 #include <random>
@@ -13,10 +15,8 @@ SplashText::SplashText()
 
 void SplashText::loadMessages() {
   std::ifstream file("assets/splash_text.txt");
-  if (!file) {
-    std::cerr << "Eroare la citirea fisierului splash_text.txt!\n";
-    messages.push_back("Picross Fun!");
-    return;
+  if (!file.is_open()) {
+    throw AssetLoadException("assets/splash_text.txt", "File");
   }
 
   std::string line;

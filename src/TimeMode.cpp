@@ -1,8 +1,10 @@
+
 #include "TimeMode.h"
+#include "Exceptions.h"
 
 TimeMode::TimeMode(std::unique_ptr<GameMode> mode, int gridSize)
-    : GameModeDecorator(std::move(mode)), decayTimer(0.0f),
-      hurtSound(hurtBuffer) {
+    : GameModeDecorator(std::move(mode)), decayTimer(0.0f), timeLeft(0.0f),
+      totalTime(gridSize * 15.0f), hurtSound(hurtBuffer) {
 
   if (gridSize <= 5) {
     maxHearts = 6;
@@ -15,8 +17,10 @@ TimeMode::TimeMode(std::unique_ptr<GameMode> mode, int gridSize)
   }
 
   mistakes = 0; // Starts with 0 damage
+  timeLeft = totalTime;
 
   if (!hurtBuffer.loadFromFile("assets/sound/hurt.mp3")) {
+    throw AssetLoadException("assets/sound/hurt.mp3", "Sound");
   }
 }
 
@@ -60,8 +64,6 @@ int TimeMode::getMaxMistakes() const { return maxHearts; }
 bool TimeMode::shouldDisplayScore() const {
   return false; // Display hearts instead
 }
-
-bool TimeMode::isTimeMode() const { return true; }
 
 int TimeMode::getMistakes() const { return mistakes; }
 

@@ -1,23 +1,27 @@
 #include "TorchMode.h"
-#include <cmath>
+#include "Exceptions.h"
+#include <iostream>
 #include <random>
 
 TorchMode::TorchMode(std::unique_ptr<GameMode> mode)
     : GameModeDecorator(std::move(mode)), fireSound(dummyBuffer),
-      silenceTimer(0.0f), inSilence(false) {
-  // Load fire sounds
+      silenceTimer(0), inSilence(false) {
   sf::SoundBuffer buffer;
-  if (buffer.loadFromFile("assets/sound/fire1.mp3"))
-    fireBuffers.push_back(buffer);
-  if (buffer.loadFromFile("assets/sound/fire2.mp3"))
-    fireBuffers.push_back(buffer);
-  if (buffer.loadFromFile("assets/sound/fire3.mp3"))
-    fireBuffers.push_back(buffer);
+  if (!buffer.loadFromFile("assets/sound/fire1.mp3")) {
+    throw AssetLoadException("assets/sound/fire1.mp3", "Sound");
+  }
+  fireBuffers.push_back(buffer);
+  if (!buffer.loadFromFile("assets/sound/fire2.mp3")) {
+    throw AssetLoadException("assets/sound/fire2.mp3", "Sound");
+  }
+  fireBuffers.push_back(buffer);
+  if (!buffer.loadFromFile("assets/sound/fire3.mp3")) {
+    throw AssetLoadException("assets/sound/fire3.mp3", "Sound");
+  }
+  fireBuffers.push_back(buffer);
 
   playNextFireSound();
 }
-
-bool TorchMode::isTorchMode() const { return true; }
 
 std::unique_ptr<GameMode> TorchMode::clone() const {
   auto clonedWrapped = wrappedMode ? wrappedMode->clone() : nullptr;

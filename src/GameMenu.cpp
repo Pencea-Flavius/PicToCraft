@@ -1,16 +1,26 @@
 #include "GameMenu.h"
-
+#include "Exceptions.h"
+#include "MenuResolution.h"
 #include <algorithm>
 #include <cmath>
 #include <filesystem>
-#include <iostream>
 
 GameMenu::GameMenu()
-    : fontLoaded(false), subtitleFontLoaded(false), titleLoaded(false),
-      buttonLoaded(false), menuState(MenuState::MainMenu),
-      selectedSourceMode(SourceMode::File), gridSize(5),
-      buttonManager(font, buttonTexture, buttonDisabledTexture),
-      selectedFileIndex(0), selectedDifficultyIndex(0) {
+    : menuState(MenuState::MainMenu), selectedSourceMode(SourceMode::File),
+      gridSize(5), buttonManager(font, buttonTexture, buttonDisabledTexture),
+      selectedFileIndex(0), selectedDifficultyIndex(0),
+      currentResolutionIndex(0), pendingFullscreen(false) {
+
+  availableResolutions = MenuResolution::getAvailableResolutions();
+
+  // Find desktop resolution index
+  auto desktop = sf::VideoMode::getDesktopMode();
+  for (size_t i = 0; i < availableResolutions.size(); ++i) {
+    if (availableResolutions[i].size == desktop.size) {
+      currentResolutionIndex = static_cast<int>(i);
+      break;
+    }
+  }
 
   gameConfig.baseMode = GameModeType::Score;
   gameConfig.timeMode = false;
@@ -36,12 +46,12 @@ GameMenu::GameMenu()
       }
     }
   } catch (const std::exception &e) {
-    std::cerr << "Eroare la citirea folderului nivele: " << e.what() << "\n";
+    throw GameException("Eroare la citirea folderului nivele: " +
+                        std::string(e.what()));
   }
 
   if (availableFiles.empty()) {
-    std::cerr << "Nici un fisier gasit in folderul nivele!\n";
-    availableFiles.emplace_back("nivele/default.txt");
+    throw GameException("Nici un fisier gasit in folderul nivele!");
   }
 
   // Set default file
@@ -60,41 +70,45 @@ void GameMenu::reset() {
 }
 
 void GameMenu::loadAssets() {
-  fontLoaded = font.openFromFile("assets/Monocraft.ttf");
-  subtitleFontLoaded = subtitleFont.openFromFile("assets/MinecraftTen.ttf");
+  (void)font.openFromFile("assets/Monocraft.ttf");
+  (void)subtitleFont.openFromFile("assets/MinecraftTen.ttf");
 
-  titleLoaded = titleTexture.loadFromFile("assets/pictocraft.png");
-  if (titleLoaded) {
-    titleSprite = sf::Sprite(titleTexture);
-    auto bounds = titleSprite->getLocalBounds();
-    titleSprite->setOrigin({bounds.size.x / 2.0f, bounds.size.y / 2.0f});
+  if (!titleTexture.loadFromFile("assets/pictocraft.png")) {
+    throw AssetLoadException("assets/pictocraft.png", "Texture");
   }
 
-  buttonLoaded = buttonTexture.loadFromFile("assets/button.png");
+  titleSprite = sf::Sprite(titleTexture);
+  auto bounds = titleSprite->getLocalBounds();
+  titleSprite->setOrigin({bounds.size.x / 2.0f, bounds.size.y / 2.0f});
+
+  if (!buttonTexture.loadFromFile("assets/button.png")) {
+    throw AssetLoadException("assets/button.png", "Texture");
+  }
   if (!buttonDisabledTexture.loadFromFile("assets/button_disabled.png")) {
-    std::cerr << "Failed to load button_disabled.png\n";
+    throw AssetLoadException("assets/button_disabled.png", "Texture");
   }
 
   if (!menuBackgroundTexture.loadFromFile("assets/menu/menu_background.png")) {
-    std::cerr << "Failed to load menu_background.png\n";
+    throw AssetLoadException("assets/menu/menu_background.png", "Texture");
   }
   menuBackgroundTexture.setRepeated(true);
 
   if (!tabHeaderBackgroundTexture.loadFromFile(
           "assets/menu/tab_header_background.png")) {
-    std::cerr << "Failed to load tab_header_background.png\n";
+    throw AssetLoadException("assets/menu/tab_header_background.png",
+                             "Texture");
   }
   tabHeaderBackgroundTexture.setRepeated(true);
 
   if (!headerSeparatorTexture.loadFromFile(
           "assets/menu/header_separator.png")) {
-    std::cerr << "Failed to load header_separator.png\n";
+    throw AssetLoadException("assets/menu/header_separator.png", "Texture");
   }
   headerSeparatorTexture.setRepeated(true);
 
   if (!footerSeparatorTexture.loadFromFile(
           "assets/menu/footer_separator.png")) {
-    std::cerr << "Failed to load footer_separator.png\n";
+    throw AssetLoadException("assets/menu/footer_separator.png", "Texture");
   }
   footerSeparatorTexture.setRepeated(true);
 }
@@ -108,7 +122,6 @@ void GameMenu::update(float deltaTime) {
 }
 
 void GameMenu::setupMainMenu() {
-  subtitleText.reset();
   buttonManager.createButtons({"Singleplayer", "Options", "Quit"}, 20);
 }
 
@@ -151,6 +164,24 @@ void GameMenu::setupGameSetupScreen() {
   buttonManager.createButtons(labels, 20);
 }
 
+void GameMenu::setupOptionsScreen() {
+  std::vector<std::string> labels;
+
+  // Show 5 resolution options (cycle through them)
+  labels.push_back("< Resolution: " +
+                   MenuResolution::resolutionToString(
+                       availableResolutions[currentResolutionIndex]) +
+                   " >");
+
+  // Fullscreen checkbox
+  labels.push_back(pendingFullscreen ? "[X] Fullscreen" : "[ ] Fullscreen");
+
+  // Done button (applies settings and returns to main menu)
+  labels.push_back("Done");
+
+  buttonManager.createButtons(labels, 20);
+}
+
 void GameMenu::handleEvent(const sf::Event &event,
                            const sf::RenderWindow &window) {
 
@@ -168,6 +199,9 @@ void GameMenu::handleEvent(const sf::Event &event,
         case MenuState::GameSetup:
           handleGameSetupClick(clickedIndex);
           break;
+        case MenuState::Options:
+          handleOptionsClick(clickedIndex);
+          break;
         default:
           break;
         }
@@ -181,9 +215,28 @@ void GameMenu::handleMainMenuClick(int buttonIndex) {
     menuState = MenuState::GameSetup;
     setupGameSetupScreen();
   } else if (buttonIndex == 1) {
-    std::cout << "Options clicked\n";
+    menuState = MenuState::Options;
+    setupOptionsScreen();
   } else if (buttonIndex == 2) {
     menuState = MenuState::Quitting;
+  }
+}
+
+void GameMenu::handleOptionsClick(int buttonIndex) {
+  if (buttonIndex == 0) {
+    // Resolution: cycle through options
+    currentResolutionIndex = (currentResolutionIndex + 1) %
+                             static_cast<int>(availableResolutions.size());
+    setupOptionsScreen(); // Refresh labels
+  } else if (buttonIndex == 1) {
+    // Fullscreen: toggle checkbox
+    pendingFullscreen = !pendingFullscreen;
+    setupOptionsScreen(); // Refresh labels
+  } else if (buttonIndex == 2) {
+    // Done: apply settings and return to main menu
+    pendingResolutionChange = availableResolutions[currentResolutionIndex];
+    menuState = MenuState::MainMenu;
+    setupMainMenu();
   }
 }
 
@@ -265,7 +318,7 @@ void GameMenu::draw(sf::RenderWindow &window) {
   case MenuState::MainMenu: {
     panorama.draw(window);
 
-    if (titleLoaded && titleSprite) {
+    if (titleSprite) {
       float logoScale = scale * 0.5f;
       titleSprite->setScale({logoScale, logoScale});
       titleSprite->setPosition(
@@ -284,9 +337,23 @@ void GameMenu::draw(sf::RenderWindow &window) {
     drawGameSetup(window);
     break;
 
+  case MenuState::Options:
+    drawOptions(window);
+    break;
+
   default:
     break;
   }
+}
+
+void GameMenu::drawOptions(sf::RenderWindow &window) {
+  panorama.draw(window);
+  drawOverlay(window);
+
+  auto [scale, scaleY] = calculateScale(window);
+  buttonManager.layoutMainMenu(window, scale,
+                               scaleY); // Reuse main menu layout (centered)
+  buttonManager.draw(window);
 }
 
 void GameMenu::drawGameSetup(sf::RenderWindow &window) {

@@ -1,6 +1,7 @@
 #ifndef OOP_GAMEMODE_H
 #define OOP_GAMEMODE_H
 
+#include <iostream>
 #include <memory>
 
 enum class GameModeType { Score, Mistakes, Time, Torch };
@@ -19,18 +20,19 @@ class GameMode {
 protected:
   int score;
   int mistakes;
+  static int totalGameModesCreated;
+  static int activeGameModes;
 
 public:
   GameMode();
-  virtual ~GameMode() = default;
+  virtual ~GameMode();
 
   virtual void onBlockToggled(bool isCorrect, bool isCompleted,
                               bool wasCompleted);
   [[nodiscard]] virtual bool isLost() const = 0;
   [[nodiscard]] virtual int getMaxMistakes() const { return 0; }
   [[nodiscard]] virtual bool shouldDisplayScore() const = 0;
-  [[nodiscard]] virtual bool isTimeMode() const { return false; }
-  [[nodiscard]] virtual bool isTorchMode() const { return false; }
+
   virtual void update(float deltaTime) {}
   virtual void draw(class sf::RenderWindow &window) const {}
 
@@ -38,6 +40,16 @@ public:
   [[nodiscard]] virtual int getMistakes() const;
 
   [[nodiscard]] virtual std::unique_ptr<GameMode> clone() const = 0;
+  [[nodiscard]] virtual std::string getName() const = 0;
+
+  virtual void print(std::ostream &os) const {
+    os << "GameMode (Score: " << score << ", Mistakes: " << mistakes << ")";
+  }
+
+  friend std::ostream &operator<<(std::ostream &os, const GameMode &gm) {
+    gm.print(os);
+    return os;
+  }
 
   void reset();
 };
@@ -73,14 +85,6 @@ public:
     return wrappedMode ? wrappedMode->shouldDisplayScore() : false;
   }
 
-  [[nodiscard]] bool isTimeMode() const override {
-    return wrappedMode ? wrappedMode->isTimeMode() : false;
-  }
-
-  [[nodiscard]] bool isTorchMode() const override {
-    return wrappedMode ? wrappedMode->isTorchMode() : false;
-  }
-
   void update(float deltaTime) override {
     if (wrappedMode) {
       wrappedMode->update(deltaTime);
@@ -100,6 +104,18 @@ public:
   [[nodiscard]] int getMistakes() const override {
     return wrappedMode ? wrappedMode->getMistakes() : 0;
   }
+
+  void print(std::ostream &os) const override {
+    if (wrappedMode) {
+      wrappedMode->print(os);
+    }
+  }
+
+  [[nodiscard]] std::string getName() const override {
+    return wrappedMode ? wrappedMode->getName() : "Decorator";
+  }
+
+  [[nodiscard]] GameMode *getWrappedMode() const { return wrappedMode.get(); }
 };
 
 #endif // OOP_GAMEMODE_H

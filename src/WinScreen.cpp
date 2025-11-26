@@ -1,20 +1,21 @@
 #include "WinScreen.h"
+#include "Exceptions.h"
 #include "ShadowedText.h"
 #include <fstream>
 #include <iostream>
 
 WinScreen::WinScreen() : scrollOffset(0.0f), fadeAlpha(255.0f) {
   if (!font.openFromFile("assets/Monocraft.ttf")) {
-    std::cerr << "Failed to load font for WinScreen\n";
+    throw AssetLoadException("assets/Monocraft.ttf", "Font");
   }
 
   if (!backgroundTexture.loadFromFile("assets/End_Poem_background.png")) {
-    std::cerr << "Failed to load End_Poem_background.png\n";
+    throw AssetLoadException("assets/End_Poem_background.png", "Texture");
   }
   backgroundSprite.emplace(backgroundTexture);
 
   if (!logoTexture.loadFromFile("assets/pictocraft.png")) {
-    std::cerr << "Failed to load pictocraft.png\n";
+    throw AssetLoadException("assets/pictocraft.png", "Texture");
   }
   logoSprite.emplace(logoTexture);
 
@@ -26,8 +27,7 @@ WinScreen::~WinScreen() = default;
 void WinScreen::loadPoemText() {
   std::ifstream file("assets/poem.txt");
   if (!file.is_open()) {
-    std::cerr << "Failed to open poem.txt\n";
-    return;
+    throw AssetLoadException("assets/poem.txt", "File");
   }
 
   std::string line;

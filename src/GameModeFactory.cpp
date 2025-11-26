@@ -1,0 +1,28 @@
+#include "GameModeFactory.h"
+#include "MistakesMode.h"
+#include "ScoreMode.h"
+#include "TimeMode.h"
+#include "TorchMode.h"
+
+std::unique_ptr<GameMode>
+GameModeFactory::createGameMode(const GameConfig &config, int gridSize) {
+  std::unique_ptr<GameMode> baseMode;
+
+  // Create base mode
+  if (config.baseMode == GameModeType::Mistakes) {
+    baseMode = std::make_unique<MistakesMode>();
+  } else {
+    baseMode = std::make_unique<ScoreMode>();
+  }
+
+  // Apply decorators
+  if (config.timeMode) {
+    baseMode = std::make_unique<TimeMode>(std::move(baseMode), gridSize);
+  }
+
+  if (config.torchMode) {
+    baseMode = std::make_unique<TorchMode>(std::move(baseMode));
+  }
+
+  return baseMode;
+}

@@ -1,6 +1,20 @@
 #include "GameMode.h"
+#include <iostream>
 
-GameMode::GameMode() : score(1000), mistakes(0) {}
+int GameMode::totalGameModesCreated = 0;
+int GameMode::activeGameModes = 0;
+
+GameMode::GameMode() : score(1000), mistakes(0) {
+  totalGameModesCreated++;
+  activeGameModes++;
+  std::cout << "GameMode created. Total: " << totalGameModesCreated
+            << ", Active: " << activeGameModes << "\n";
+}
+
+GameMode::~GameMode() {
+  activeGameModes--;
+  std::cout << "GameMode destroyed. Active: " << activeGameModes << "\n";
+}
 
 int GameMode::getScore() const { return score; }
 

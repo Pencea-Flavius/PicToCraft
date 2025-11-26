@@ -13,10 +13,14 @@ public:
   TorchMode(const TorchMode &other) = delete;
   ~TorchMode() override = default;
 
-  [[nodiscard]] bool isTorchMode() const override;
   void draw(sf::RenderWindow &window) const override;
   void update(float deltaTime) override;
   [[nodiscard]] std::unique_ptr<GameMode> clone() const override;
+  void print(std::ostream &os) const override {
+    os << "TorchMode + ";
+    GameModeDecorator::print(os);
+  }
+  [[nodiscard]] std::string getName() const override { return "Torch Mode"; }
 
 private:
   mutable sf::RenderTexture lightLayer;

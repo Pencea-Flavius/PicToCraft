@@ -1,4 +1,5 @@
 #include "MenuButton.h"
+#include "Exceptions.h"
 #include "ShadowedText.h"
 #include <cmath>
 #include <iostream>
@@ -14,13 +15,12 @@ MenuButton::MenuButton(const std::string &label, const sf::Font &font,
       currentScale(1.0f), buttonSize(200.0f, 20.0f), position(0.0f, 0.0f) {
 
   if (!soundInitialized) {
-    if (clickSoundBuffer.loadFromFile("assets/sound/click.mp3")) {
-      clickSound = std::make_unique<sf::Sound>(clickSoundBuffer);
-      clickSound->setVolume(50.0f);
-      soundInitialized = true;
-    } else {
-      std::cerr << "Failed to load click sound" << std::endl;
+    if (!clickSoundBuffer.loadFromFile("assets/sound/click.mp3")) {
+      throw AssetLoadException("assets/sound/click.mp3", "Sound");
     }
+    clickSound = std::make_unique<sf::Sound>(clickSoundBuffer);
+    clickSound->setVolume(50.0f);
+    soundInitialized = true;
   }
 
   setupNinePatch();

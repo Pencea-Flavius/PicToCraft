@@ -8,20 +8,9 @@
 #include <SFML/Graphics.hpp>
 
 class MenuResolution {
-    MenuResolution() = default;
-    ~MenuResolution() = default;
-    bool fullscreenChosen_ = false;
 public:
-    static MenuResolution &getInstance();
-
-    sf::VideoMode selectResolution();
-
-    [[nodiscard]] bool wasFullscreenChosen() const { return fullscreenChosen_; }
-    MenuResolution(const MenuResolution &) = delete;
-    MenuResolution &operator=(const MenuResolution &) = delete;
-    MenuResolution(MenuResolution &&) = delete;
-    MenuResolution &operator=(MenuResolution &&) = delete;
+  static std::vector<sf::VideoMode> getAvailableResolutions();
+  static std::string resolutionToString(const sf::VideoMode &mode);
 };
 
-
-#endif //OOP_MENURESOLUTION_H
+#endif // OOP_MENURESOLUTION_H

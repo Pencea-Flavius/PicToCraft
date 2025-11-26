@@ -1,7 +1,9 @@
 #include "CustomCursor.h"
+#include "Exceptions.h"
 #include <SFML/Graphics/RenderTexture.hpp>
 #include <SFML/Graphics/Sprite.hpp>
 #include <SFML/Graphics/Texture.hpp>
+#include <iostream>
 
 CustomCursor::CustomCursor(sf::Window &window)
     : window(window), isEnabled(true), currentScale(0.2f), hotspotIdle(20, 100),
@@ -91,7 +93,7 @@ std::optional<sf::Cursor> CustomCursor::loadCursor(const std::string &path,
                                                    sf::Vector2i hotspot) {
   sf::Image img;
   if (!img.loadFromFile(path))
-    return std::nullopt;
+    throw AssetLoadException(path, "Cursor Image");
 
   float baseScale = 0.2f;
   float scaleRatio = currentScale / baseScale;

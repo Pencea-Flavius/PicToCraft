@@ -1,4 +1,5 @@
 #include "GameManager.h"
+#include "Exceptions.h"
 #include <SFML/Graphics/RenderTexture.hpp>
 #include <iostream>
 #include <optional>
@@ -6,14 +7,17 @@
 GameManager::GameManager()
     : grid(), inMenu(true), inGameOver(false), inWinScreen(false),
       deathSound(deathBuffer) {
-  auto &menuRes = MenuResolution::getInstance();
-  sf::VideoMode mode = menuRes.selectResolution();
 
-  if (menuRes.wasFullscreenChosen())
-    window.create(mode, "PictoCraft", sf::State::Fullscreen);
-  else
-    window.create(mode, "PictoCraft", sf::Style::Close, sf::State::Windowed);
+  auto desktop = sf::VideoMode::getDesktopMode();
+  unsigned int width = 1280;
+  unsigned int height = 720;
+  if (desktop.size.x < width)
+    width = desktop.size.x;
+  if (desktop.size.y < height)
+    height = desktop.size.y;
 
+  window.create(sf::VideoMode({width, height}), "PictoCraft", sf::Style::Close,
+                sf::State::Windowed);
   window.setFramerateLimit(60);
 
   menu = std::make_unique<GameMenu>();
@@ -26,6 +30,7 @@ GameManager::GameManager()
   customCursor->setScale(cursorScale);
   customCursor->setEnabled(enableCustomCursor);
   if (!deathBuffer.loadFromFile("assets/sound/hurt2.mp3")) {
+    throw AssetLoadException("assets/sound/hurt2.mp3", "Sound");
   }
 }
 
@@ -113,6 +118,22 @@ void GameManager::run() {
 
       if (inMenu) {
         menu->handleEvent(*event, window);
+
+        if (auto res = menu->getPendingResolutionChange()) {
+          bool fullscreen = menu->getPendingFullscreen();
+          if (fullscreen) {
+            window.create(*res, "PictoCraft", sf::State::Fullscreen);
+          } else {
+            window.create(*res, "PictoCraft", sf::Style::Close,
+                          sf::State::Windowed);
+          }
+          window.setFramerateLimit(60);
+          if (customCursor) {
+            float newScale =
+                (static_cast<float>(window.getSize().x) / 1920.0f) * 0.2f;
+            customCursor->setScale(newScale);
+          }
+        }
 
         if (menu->shouldQuit()) {
           window.close();

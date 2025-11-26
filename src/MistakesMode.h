@@ -15,6 +15,8 @@ public:
   [[nodiscard]] int getMaxMistakes() const override;
   [[nodiscard]] bool shouldDisplayScore() const override;
   [[nodiscard]] std::unique_ptr<GameMode> clone() const override;
+  void print(std::ostream &os) const override { os << "MistakesMode"; }
+  [[nodiscard]] std::string getName() const override { return "Mistakes Mode"; }
 
 private:
   sf::SoundBuffer hurtBuffer;

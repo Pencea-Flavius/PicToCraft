@@ -1,16 +1,15 @@
 #include "MenuPanorama.h"
+#include "Exceptions.h"
 #include <iostream>
 
 MenuPanorama::MenuPanorama() : loaded(false), offset(0.0f), speed(30.0f) {
-  if (panoramaTexture.loadFromFile("assets/cherry.jpg")) {
-    panoramaTexture.setRepeated(true);
-    panoramaSprite1 = sf::Sprite(panoramaTexture);
-    panoramaSprite2 = sf::Sprite(panoramaTexture);
-    loaded = true;
-
-  } else {
-    std::cerr << "Eroare la incarcarea panoramei!\n";
+  if (!panoramaTexture.loadFromFile("assets/cherry.jpg")) {
+    throw AssetLoadException("assets/cherry.jpg", "Texture");
   }
+  panoramaTexture.setRepeated(true);
+  panoramaSprite1 = sf::Sprite(panoramaTexture);
+  panoramaSprite2 = sf::Sprite(panoramaTexture);
+  loaded = true;
 }
 
 void MenuPanorama::update(float deltaTime) {

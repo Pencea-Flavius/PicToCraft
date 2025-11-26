@@ -11,12 +11,7 @@
 #include "MenuPanorama.h"
 #include "SplashText.h"
 
-enum class MenuState {
-  MainMenu,
-  GameSetup, // Renamed from WorldSelection
-  Starting,
-  Quitting
-};
+enum class MenuState { MainMenu, GameSetup, Options, Starting, Quitting };
 
 #include "GameMode.h"
 
@@ -45,6 +40,14 @@ public:
   int getGridSize() const { return gridSize; }
   void reset();
 
+  // Resolution handling
+  std::optional<sf::VideoMode> getPendingResolutionChange() {
+    auto res = pendingResolutionChange;
+    pendingResolutionChange.reset();
+    return res;
+  }
+  bool getPendingFullscreen() const { return pendingFullscreen; }
+
 private:
   // Asset loading
   void loadAssets();
@@ -52,10 +55,12 @@ private:
   // Screen setup functions
   void setupMainMenu();
   void setupGameSetupScreen();
+  void setupOptionsScreen();
 
   // Click handlers
   void handleMainMenuClick(int buttonIndex);
   void handleGameSetupClick(int buttonIndex);
+  void handleOptionsClick(int buttonIndex);
 
   // Helper functions
   sf::Vector2f calculateScale(const sf::RenderWindow &window) const;
@@ -63,11 +68,7 @@ private:
   // New drawing helpers
   void drawOverlay(sf::RenderWindow &window) const;
   void drawGameSetup(sf::RenderWindow &window);
-
-  bool fontLoaded;
-  bool subtitleFontLoaded;
-  bool titleLoaded;
-  bool buttonLoaded;
+  void drawOptions(sf::RenderWindow &window);
 
   // State
   MenuState menuState;
@@ -75,6 +76,12 @@ private:
   SourceMode selectedSourceMode;
   std::string selectedFile;
   int gridSize;
+
+  // Resolution State
+  std::vector<sf::VideoMode> availableResolutions;
+  int currentResolutionIndex;
+  std::optional<sf::VideoMode> pendingResolutionChange;
+  bool pendingFullscreen;
 
   // Assets
   sf::Font font;

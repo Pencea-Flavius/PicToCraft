@@ -6,6 +6,8 @@
 
 class TimeMode : public GameModeDecorator {
   float decayTimer;
+  float timeLeft;
+  float totalTime;
   const float DECAY_INTERVAL = 10.0f;
   int maxHearts;
 
@@ -23,9 +25,14 @@ public:
   [[nodiscard]] bool isLost() const override;
   [[nodiscard]] int getMaxMistakes() const override;
   [[nodiscard]] bool shouldDisplayScore() const override;
-  [[nodiscard]] bool isTimeMode() const override;
+
   [[nodiscard]] int getMistakes() const override;
   [[nodiscard]] std::unique_ptr<GameMode> clone() const override;
+  void print(std::ostream &os) const override {
+    os << "TimeMode + ";
+    GameModeDecorator::print(os);
+  }
+  [[nodiscard]] std::string getName() const override { return "Time Mode"; }
 };
 
 #endif // OOP_TIMEMODE_H

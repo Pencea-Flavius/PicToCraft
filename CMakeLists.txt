@@ -82,6 +82,8 @@ add_executable(${MAIN_EXECUTABLE_NAME}
         src/CustomCursor.h
         src/TorchMode.cpp
         src/TorchMode.h
+        src/GameModeFactory.cpp
+        src/GameModeFactory.h
 )
 
 target_include_directories(${MAIN_EXECUTABLE_NAME} SYSTEM PRIVATE ${SFML_SOURCE_DIR}/include)
