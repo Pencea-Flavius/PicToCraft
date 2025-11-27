@@ -24,6 +24,11 @@ void MistakesMode::onBlockToggled(bool isCorrect, bool isCompleted,
       mistakes++;
       hurtSound.play();
     }
+  } else if (wasCompleted && !isCompleted) {
+    if (isCorrect) {
+      mistakes++;
+      hurtSound.play();
+    }
   }
 }
 

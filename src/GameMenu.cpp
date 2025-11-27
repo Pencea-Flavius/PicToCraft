@@ -11,7 +11,8 @@ GameMenu::GameMenu()
       availableResolutions(MenuResolution::getAvailableResolutions()),
       buttonManager(font, buttonTexture, buttonDisabledTexture),
       selectedFileIndex(0), selectedDifficultyIndex(0),
-      currentResolutionIndex(0), pendingFullscreen(false) {
+      currentResolutionIndex(0), pendingFullscreen(false),
+      initialFullscreenState(false) {
 
   // Find desktop resolution index
   auto desktop = sf::VideoMode::getDesktopMode();
@@ -250,6 +251,7 @@ void GameMenu::handleMainMenuClick(int buttonIndex) {
     setupGameSetupScreen();
   } else if (buttonIndex == 1) {
     menuState = MenuState::Options;
+    initialFullscreenState = pendingFullscreen;
     setupOptionsScreen();
   } else if (buttonIndex == 2) {
     menuState = MenuState::Quitting;
@@ -269,7 +271,8 @@ void GameMenu::handleOptionsClick(int buttonIndex,
   } else if (buttonIndex == 2) {
     auto selectedRes = availableResolutions[currentResolutionIndex];
     if (selectedRes.size.x != window.getSize().x ||
-        selectedRes.size.y != window.getSize().y) {
+        selectedRes.size.y != window.getSize().y ||
+        pendingFullscreen != initialFullscreenState) {
       pendingResolutionChange = selectedRes;
     }
     menuState = MenuState::MainMenu;

@@ -82,6 +82,7 @@ private:
   int currentResolutionIndex;
   std::optional<sf::VideoMode> pendingResolutionChange;
   bool pendingFullscreen;
+  bool initialFullscreenState;
 
   // Assets
   sf::Font font;
