@@ -30,8 +30,8 @@ GameOverScreen::~GameOverScreen() = default;
 void GameOverScreen::createButtons() {
   static sf::Texture buttonTexture;
   if (buttonTexture.getSize().x == 0) {
-    if (!buttonTexture.loadFromFile("assets/button.png")) {
-      throw AssetLoadException("assets/button.png", "Texture");
+    if (!buttonTexture.loadFromFile("assets/buttons/button.png")) {
+      throw AssetLoadException("assets/buttons/button.png", "Texture");
     }
   }
 

@@ -80,11 +80,12 @@ void GameMenu::loadAssets() {
   auto bounds = titleSprite->getLocalBounds();
   titleSprite->setOrigin({bounds.size.x / 2.0f, bounds.size.y / 2.0f});
 
-  if (!buttonTexture.loadFromFile("assets/button.png")) {
-    throw AssetLoadException("assets/button.png", "Texture");
+  if (!buttonTexture.loadFromFile("assets/buttons/button.png")) {
+    throw AssetLoadException("assets/buttons/button.png", "Texture");
   }
-  if (!buttonDisabledTexture.loadFromFile("assets/button_disabled.png")) {
-    throw AssetLoadException("assets/button_disabled.png", "Texture");
+  if (!buttonDisabledTexture.loadFromFile(
+          "assets/buttons/button_disabled.png")) {
+    throw AssetLoadException("assets/buttons/button_disabled.png", "Texture");
   }
 
   if (!menuBackgroundTexture.loadFromFile("assets/menu/menu_background.png")) {
@@ -171,7 +172,6 @@ void GameMenu::setupOptionsScreen() {
     sliderVal = static_cast<float>(currentResolutionIndex) /
                 (availableResolutions.size() - 1);
   }
-
 
   std::string resLabel =
       "Resolution: " + MenuResolution::resolutionToString(
