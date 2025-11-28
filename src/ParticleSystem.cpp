@@ -10,8 +10,7 @@ static float randomFloat(float min, float max) {
   return dis(gen);
 }
 
-ParticleSystem::ParticleSystem() : vertices(sf::PrimitiveType::Triangles) {
-}
+ParticleSystem::ParticleSystem() : vertices(sf::PrimitiveType::Triangles) {}
 
 void ParticleSystem::emit(sf::Vector2f position, ParticleType type) {
   Particle p;
@@ -29,8 +28,7 @@ void ParticleSystem::emit(sf::Vector2f position, ParticleType type) {
 
     // Fire colors
     int r = 255;
-    int g =
-        static_cast<int>(randomFloat(50, 150));
+    int g = static_cast<int>(randomFloat(50, 150));
     int b = 0;
     p.color = sf::Color(r, g, b, 255);
 
@@ -48,7 +46,7 @@ void ParticleSystem::emit(sf::Vector2f position, ParticleType type) {
 
     // Grey smoke
     int grey = static_cast<int>(randomFloat(20, 50)); // Darker grey
-    p.color = sf::Color(grey, grey, grey, 100); // Semi-transparent
+    p.color = sf::Color(grey, grey, grey, 100);       // Semi-transparent
 
     p.size = randomFloat(4.0f, 8.0f);
   }
@@ -83,19 +81,19 @@ void ParticleSystem::draw(sf::RenderWindow &window) {
   vertices.resize(start + particles.size() * 6);
 
   std::size_t idx = start;
-  for (const auto &p: particles) {
+  for (const auto &p : particles) {
     // Create a small quad for each particle
     sf::Vector2f pos = p.position;
     float size = p.size;
     sf::Color col = p.color;
 
-    vertices[idx++] = sf::Vertex(pos + sf::Vector2f(-size, -size), col);
-    vertices[idx++] = sf::Vertex(pos + sf::Vector2f(size, -size), col);
-    vertices[idx++] = sf::Vertex(pos + sf::Vector2f(size, size), col);
+    vertices[idx++] = sf::Vertex{pos + sf::Vector2f(-size, -size), col};
+    vertices[idx++] = sf::Vertex{pos + sf::Vector2f(size, -size), col};
+    vertices[idx++] = sf::Vertex{pos + sf::Vector2f(size, size), col};
 
-    vertices[idx++] = sf::Vertex(pos + sf::Vector2f(-size, -size), col);
-    vertices[idx++] = sf::Vertex(pos + sf::Vector2f(size, size), col);
-    vertices[idx++] = sf::Vertex(pos + sf::Vector2f(-size, size), col);
+    vertices[idx++] = sf::Vertex{pos + sf::Vector2f(-size, -size), col};
+    vertices[idx++] = sf::Vertex{pos + sf::Vector2f(size, size), col};
+    vertices[idx++] = sf::Vertex{pos + sf::Vector2f(-size, size), col};
   }
 
   // Use additive blending for fire effect
