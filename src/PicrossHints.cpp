@@ -1,113 +1,128 @@
-//
-// Created by zzfla on 11/8/2025.
-//
-
 #include "PicrossHints.h"
-#include <ostream>
 #include <algorithm>
+#include <iostream>
 
-PicrossHints::PicrossHints() : row_hints{}, col_hints{} {}
+PicrossHints::PicrossHints(const std::vector<std::vector<bool> > &grid) {
+    if (grid.empty())
+        return;
 
-PicrossHints::PicrossHints(const std::vector<std::vector<Block>>& grid) {
-    calculate_hints(grid);
-}
-
-PicrossHints::PicrossHints(const PicrossHints& other)
-    : row_hints{other.row_hints}, col_hints{other.col_hints} {}
-
-PicrossHints& PicrossHints::operator=(const PicrossHints& other) {
-    if (this != &other) {
-        row_hints = other.row_hints;
-        col_hints = other.col_hints;
-    }
-    return *this;
-}
-
-PicrossHints::~PicrossHints() = default;
-
-void PicrossHints::calculate_hints(const std::vector<std::vector<Block>>& grid) {
-    size_t size = grid.size();
-    row_hints.clear();
-    col_hints.clear();
-
-    for (size_t i = 0; i < size; i++) {
-        std::vector<int> row_hint;
+    // Calculate row hints
+    for (const auto &row: grid) {
+        std::vector<int> current_row_hints;
         int count = 0;
-
-        for (size_t j = 0; j < size; j++) {
-            if (grid[i][j].is_correct()) {
+        for (bool cell: row) {
+            if (cell) {
                 count++;
             } else if (count > 0) {
-                row_hint.push_back(count);
+                current_row_hints.push_back(count);
                 count = 0;
             }
         }
-
         if (count > 0) {
-            row_hint.push_back(count);
+            current_row_hints.push_back(count);
         }
-
-        if (row_hint.empty()) {
-            row_hint.push_back(0);
+        if (current_row_hints.empty()) {
+            current_row_hints.push_back(0);
         }
-
-        row_hints.push_back(row_hint);
+        row_hints.push_back(current_row_hints);
     }
 
-    for (size_t j = 0; j < size; j++) {
-        std::vector<int> col_hint;
+    // Calculate col hints
+    size_t cols = grid[0].size();
+    for (size_t j = 0; j < cols; ++j) {
+        std::vector<int> current_col_hints;
         int count = 0;
-
-        for (size_t i = 0; i < size; i++) {
-            if (grid[i][j].is_correct()) {
+        for (size_t i = 0; i < grid.size(); ++i) {
+            if (grid[i][j]) {
                 count++;
             } else if (count > 0) {
-                col_hint.push_back(count);
+                current_col_hints.push_back(count);
                 count = 0;
             }
         }
-
         if (count > 0) {
-            col_hint.push_back(count);
+            current_col_hints.push_back(count);
         }
-
-        if (col_hint.empty()) {
-            col_hint.push_back(0);
+        if (current_col_hints.empty()) {
+            current_col_hints.push_back(0);
         }
-
-        col_hints.push_back(col_hint);
+        col_hints.push_back(current_col_hints);
     }
-}
 
-const std::vector<std::vector<int>>& PicrossHints::get_row_hints() const { return row_hints; }
-const std::vector<std::vector<int>>& PicrossHints::get_col_hints() const { return col_hints; }
-
-size_t PicrossHints::get_max_col_height() const {
-    size_t max_height = 0;
-    for (const auto& col : col_hints) {
-        max_height = std::max(max_height, col.size());
+    // Initialize webbed state (0 health = not webbed)
+    row_hints_webbed.resize(row_hints.size());
+    for (size_t i = 0; i < row_hints.size(); ++i) {
+        row_hints_webbed[i].resize(row_hints[i].size(), 0);
     }
-    return max_height;
+
+    col_hints_webbed.resize(col_hints.size());
+    for (size_t i = 0; i < col_hints.size(); ++i) {
+        col_hints_webbed[i].resize(col_hints[i].size(), 0);
+    }
 }
 
 size_t PicrossHints::get_max_row_width() const {
     size_t max_width = 0;
-    for (const auto& row : row_hints) {
+    for (const auto &row: row_hints) {
         max_width = std::max(max_width, row.size());
     }
     return max_width;
 }
 
-std::ostream &operator<<(std::ostream &os, const PicrossHints &h) {
-    os << "=== HINTS ===\n";
-    os << "Linii:\n";
-    for (const auto &row: h.row_hints) {
-        for (int val: row) os << val << " ";
+size_t PicrossHints::get_max_col_height() const {
+    size_t max_height = 0;
+    for (const auto &col: col_hints) {
+        max_height = std::max(max_height, col.size());
+    }
+    return max_height;
+}
+
+void PicrossHints::setWebHealth(bool isRow, int line, int index, int health) {
+    if (isRow) {
+        if (line >= 0 && line < row_hints_webbed.size() && index >= 0 &&
+            index < row_hints_webbed[line].size()) {
+            row_hints_webbed[line][index] = health;
+        }
+    } else {
+        if (line >= 0 && line < col_hints_webbed.size() && index >= 0 &&
+            index < col_hints_webbed[line].size()) {
+            col_hints_webbed[line][index] = health;
+        }
+    }
+}
+
+bool PicrossHints::isWebbed(bool isRow, int line, int index) const {
+    return getWebHealth(isRow, line, index) > 0;
+}
+
+int PicrossHints::getWebHealth(bool isRow, int line, int index) const {
+    if (isRow) {
+        if (line >= 0 && line < row_hints_webbed.size() && index >= 0 &&
+            index < row_hints_webbed[line].size()) {
+            return row_hints_webbed[line][index];
+        }
+    } else {
+        if (line >= 0 && line < col_hints_webbed.size() && index >= 0 &&
+            index < col_hints_webbed[line].size()) {
+            return col_hints_webbed[line][index];
+        }
+    }
+    return 0;
+}
+
+std::ostream &operator<<(std::ostream &os, const PicrossHints &hints) {
+    os << "Row Hints:\n";
+    for (const auto &row: hints.row_hints) {
+        for (int val: row) {
+            os << val << " ";
+        }
         os << "\n";
     }
-    os << "Coloane:\n";
-    for (const auto &col: h.col_hints) {
-        for (int val: col) os << val << " ";
+    os << "Col Hints:\n";
+    for (const auto &col: hints.col_hints) {
+        for (int val: col) {
+            os << val << " ";
+        }
         os << "\n";
     }
     return os;

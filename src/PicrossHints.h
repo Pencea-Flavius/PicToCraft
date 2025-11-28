@@ -10,25 +10,35 @@
 #include "Block.h"
 
 class PicrossHints {
-    std::vector<std::vector<int>> row_hints;
-    std::vector<std::vector<int>> col_hints;
+    std::vector<std::vector<int> > row_hints;
+    std::vector<std::vector<int> > col_hints;
+    std::vector<std::vector<int> > row_hints_webbed;
+    std::vector<std::vector<int> > col_hints_webbed;
 
 public:
-    PicrossHints();
-    explicit PicrossHints(const std::vector<std::vector<Block>>& grid);
-    PicrossHints(const PicrossHints& other);
-    PicrossHints& operator=(const PicrossHints& other);
-    ~PicrossHints();
+    PicrossHints() = default;
 
-    void calculate_hints(const std::vector<std::vector<Block>>& grid);
+    explicit PicrossHints(const std::vector<std::vector<bool> > &grid);
 
-    [[nodiscard]] const std::vector<std::vector<int>>& get_row_hints() const;
-    [[nodiscard]] const std::vector<std::vector<int>>& get_col_hints() const;
+    [[nodiscard]] const std::vector<std::vector<int> > &get_row_hints() const {
+        return row_hints;
+    }
 
-    [[nodiscard]] size_t get_max_col_height() const;
+    [[nodiscard]] const std::vector<std::vector<int> > &get_col_hints() const {
+        return col_hints;
+    }
+
     [[nodiscard]] size_t get_max_row_width() const;
 
-    friend std::ostream &operator<<(std::ostream &os, const PicrossHints &h);
+    [[nodiscard]] size_t get_max_col_height() const;
+
+    void setWebHealth(bool isRow, int line, int index, int health);
+
+    [[nodiscard]] bool isWebbed(bool isRow, int line, int index) const;
+
+    [[nodiscard]] int getWebHealth(bool isRow, int line, int index) const;
+
+    friend std::ostream &operator<<(std::ostream &os, const PicrossHints &hints);
 };
 
-#endif //OOP_PICROSSHINTS_H
+#endif // OOP_PICROSSHINTS_H

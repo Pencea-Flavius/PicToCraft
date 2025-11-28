@@ -25,7 +25,7 @@ GameManager::GameManager()
   winScreen = std::make_unique<WinScreen>();
 
   bool enableCustomCursor = true;
-  float cursorScale = 0.2f;
+  float cursorScale = (static_cast<float>(width) / 1920.0f) * 0.2f;
   customCursor = std::make_unique<CustomCursor>(window);
   customCursor->setScale(cursorScale);
   customCursor->setEnabled(enableCustomCursor);
@@ -76,6 +76,7 @@ void GameManager::resetGame() {
 
   renderer = std::make_unique<GridRenderer>(grid, cellSize,
                                             sf::Vector2f(offsetX, offsetY));
+  grid.setRenderer(renderer.get());
 }
 
 void GameManager::run() {
@@ -180,10 +181,12 @@ void GameManager::run() {
           }
         }
       } else {
-        if (event->is<sf::Event::MouseButtonPressed>()) {
-          auto m = event->getIf<sf::Event::MouseButtonPressed>();
-          if (m && m->button == sf::Mouse::Button::Left) {
-            renderer->handleClick(sf::Mouse::getPosition(window));
+        if (!grid.handleInput(*event, window)) {
+          if (event->is<sf::Event::MouseButtonPressed>()) {
+            auto m = event->getIf<sf::Event::MouseButtonPressed>();
+            if (m && m->button == sf::Mouse::Button::Left) {
+              renderer->handleClick(sf::Mouse::getPosition(window));
+            }
           }
         }
       }

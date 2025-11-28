@@ -82,6 +82,12 @@ add_executable(${MAIN_EXECUTABLE_NAME}
         src/CustomCursor.h
         src/TorchMode.cpp
         src/TorchMode.h
+        src/SpidersMode.cpp
+        src/SpidersMode.h
+        src/Spider.cpp
+        src/Spider.h
+        src/ParticleSystem.cpp
+        src/ParticleSystem.h
         src/GameModeFactory.cpp
         src/GameModeFactory.h
 )

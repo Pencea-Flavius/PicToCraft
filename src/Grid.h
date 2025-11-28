@@ -15,52 +15,76 @@
 #include <memory>
 
 class Grid {
-  int size;
-  std::vector<std::vector<Block>> blocks;
-  int total_correct_blocks;
-  int completed_blocks;
-  int correct_completed_blocks;
-  PicrossHints hints;
-  std::unique_ptr<GameMode> gameMode;
-  static int totalGridsCreated;
+    int size;
+    std::vector<std::vector<Block> > blocks;
+    int total_correct_blocks;
+    int completed_blocks;
+    int correct_completed_blocks;
+    PicrossHints hints;
+    std::unique_ptr<GameMode> gameMode;
+    static int totalGridsCreated;
 
 public:
-  Grid();
+    Grid();
 
-  Grid(int grid_size, const std::vector<std::vector<bool>> &pattern,
-       GameConfig config = {});
+    Grid(int grid_size, const std::vector<std::vector<bool> > &pattern,
+         GameConfig config = {});
 
-  Grid(const Grid &other);
-  Grid &operator=(Grid other);
-  friend void swap(Grid &first, Grid &second);
-  ~Grid();
+    Grid(const Grid &other);
 
-  void load_from_file(const std::string &filename, GameConfig config = {});
+    Grid &operator=(Grid other);
 
-  void generate_random(int grid_size, GameConfig config = {},
-                       double density = 0.5);
+    friend void swap(Grid &first, Grid &second);
 
-  void toggle_block(int x, int y);
-  void update(float deltaTime);
+    ~Grid();
 
-  [[nodiscard]] bool is_solved() const;
+    void load_from_file(const std::string &filename, GameConfig config = {});
 
-  [[nodiscard]] bool is_lost() const;
+    void generate_random(int grid_size, GameConfig config = {},
+                         double density = 0.5);
 
-  [[nodiscard]] int get_score() const;
-  [[nodiscard]] int get_mistakes() const;
-  [[nodiscard]] int get_max_mistakes() const;
-  [[nodiscard]] bool shouldDisplayScore() const;
-  [[nodiscard]] bool is_time_mode() const;
+    void toggle_block(int x, int y);
 
-  [[nodiscard]] int get_size() const;
-  [[nodiscard]] const Block &get_block(int x, int y) const;
-  [[nodiscard]] const PicrossHints &get_hints() const;
-  void drawMode(sf::RenderWindow &window) const;
+    void update(float deltaTime);
 
-  friend std::ostream &operator<<(std::ostream &os, const Grid &g);
+    bool handleInput(const sf::Event &event, const sf::RenderWindow &window);
 
-  static int getGridCount();
+    [[nodiscard]] bool is_solved() const;
+
+    [[nodiscard]] bool is_lost() const;
+
+    [[nodiscard]] int get_score() const;
+
+    [[nodiscard]] int get_mistakes() const;
+
+    [[nodiscard]] int get_max_mistakes() const;
+
+    [[nodiscard]] bool shouldDisplayScore() const;
+
+    [[nodiscard]] bool is_time_mode() const;
+
+    [[nodiscard]] int get_size() const;
+
+    [[nodiscard]] const Block &get_block(int x, int y) const;
+
+    [[nodiscard]] const PicrossHints &get_hints() const;
+
+    void drawMode(sf::RenderWindow &window) const;
+
+    void webHint(bool isRow, int line, int index);
+
+    void unwebHint(bool isRow, int line, int index);
+
+    void damageWeb(bool isRow, int line, int index);
+
+    void healWebs(); // Added healWebs
+    [[nodiscard]] bool isHintWebbed(bool isRow, int line, int index) const;
+
+    void setRenderer(const class GridRenderer *r);
+
+    friend std::ostream &operator<<(std::ostream &os, const Grid &g);
+
+    static int getGridCount();
 };
 
 #endif // OOP_GRID_H

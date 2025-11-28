@@ -46,6 +46,8 @@ void TorchMode::update(float deltaTime) {
       inSilence = true;
     }
   }
+
+  particleSystem.update(deltaTime);
 }
 
 void TorchMode::playNextFireSound() {
@@ -116,11 +118,10 @@ void TorchMode::draw(sf::RenderWindow &window) const {
   // Use screen coordinates for the light on the overlay
   lightSprite->setPosition(static_cast<sf::Vector2f>(mousePos));
 
-  // Scale light based on resolution (baseline 1920x1080)
+  // Scale light based on resolution
   float scale = static_cast<float>(window.getSize().x) / 1920.0f;
   lightSprite->setScale({scale, scale});
 
-  // 1. Draw the "hole" (transparency)
   sf::BlendMode subtractAlpha(
       sf::BlendMode::Factor::Zero, sf::BlendMode::Factor::One,
       sf::BlendMode::Equation::Add, sf::BlendMode::Factor::One,
@@ -129,13 +130,10 @@ void TorchMode::draw(sf::RenderWindow &window) const {
   lightSprite->setColor(sf::Color::White); // Reset color for alpha subtraction
   lightLayer.draw(*lightSprite, subtractAlpha);
 
-  // 2. Draw the fire tint (orange/yellow)
-  // Use Additive blending to make it look like light
   sf::BlendMode addColor(sf::BlendMode::Factor::SrcAlpha,
                          sf::BlendMode::Factor::One,
                          sf::BlendMode::Equation::Add);
 
-  // Warm orange/yellow color
   lightSprite->setColor(sf::Color(255, 150, 50, 100));
   lightLayer.draw(*lightSprite, addColor);
 
@@ -145,5 +143,39 @@ void TorchMode::draw(sf::RenderWindow &window) const {
   sf::View originalView = window.getView();
   window.setView(window.getDefaultView());
   window.draw(overlay);
+
+  // Emit particles at mouse position
+  sf::Vector2i mousePosI = sf::Mouse::getPosition(window);
+  sf::Vector2f mousePosF = static_cast<sf::Vector2f>(mousePosI);
+
+  float scaleFactor = static_cast<float>(window.getSize().x) / 1920.0f;
+
+  sf::Vector2f offset(0.f, 0.f);
+
+  if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left)) {
+    // Clicked position
+    offset = sf::Vector2f(20.f, -60.f) * scaleFactor;
+  } else {
+    // Normal position
+    // Adjusted for better alignment
+    offset = sf::Vector2f(40.f, -90.f) * scaleFactor;
+  }
+
+  sf::Vector2f emitPos = mousePosF + offset;
+
+  // Emit multiple particles for denser effect
+  // Fire
+  for (int i = 0; i < 5; ++i) {
+    const_cast<TorchMode *>(this)->particleSystem.emit(emitPos,
+                                                       ParticleType::Fire);
+  }
+  // Smoke (less frequent)
+  if (rand() % 2 == 0) {
+    const_cast<TorchMode *>(this)->particleSystem.emit(emitPos,
+                                                       ParticleType::Smoke);
+  }
+
+  const_cast<TorchMode *>(this)->particleSystem.draw(window);
+
   window.setView(originalView);
 }

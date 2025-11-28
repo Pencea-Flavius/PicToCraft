@@ -2,6 +2,7 @@
 #define OOP_TORCHMODE_H
 
 #include "GameMode.h"
+#include "ParticleSystem.h"
 #include <SFML/Audio.hpp>
 #include <SFML/Graphics.hpp>
 #include <optional>
@@ -37,6 +38,8 @@ private:
 
   void createLightTexture() const;
   void playNextFireSound();
+
+  ParticleSystem particleSystem;
 };
 
 #endif // OOP_TORCHMODE_H
