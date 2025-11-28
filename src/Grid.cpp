@@ -29,7 +29,8 @@ Grid::Grid(int grid_size, const std::vector<std::vector<bool> > &pattern,
     if (gameMode)
         gameMode->setGrid(this);
 
-    std::cout << "Created Grid with mode: " << *gameMode << "\n";
+    if (gameMode)
+        std::cout << "Created Grid with mode: " << *gameMode << "\n";
 
     std::vector<std::vector<bool> > bool_grid(size, std::vector<bool>(size));
     blocks.resize(size);
@@ -121,7 +122,8 @@ void Grid::load_from_file(const std::string &filename, GameConfig config) {
     gameMode = GameModeFactory::createGameMode(config, size);
     if (gameMode)
         gameMode->setGrid(this);
-    std::cout << "Loaded Grid with mode: " << *gameMode << "\n";
+    if (gameMode)
+        std::cout << "Loaded Grid with mode: " << *gameMode << "\n";
 }
 
 // Generate random grid
@@ -153,7 +155,8 @@ void Grid::generate_random(int grid_size, GameConfig config, double density) {
     gameMode = GameModeFactory::createGameMode(config, size);
     if (gameMode)
         gameMode->setGrid(this);
-    std::cout << "Generated Random Grid with mode: " << *gameMode << "\n";
+    if (gameMode)
+        std::cout << "Generated Random Grid with mode: " << *gameMode << "\n";
 }
 
 void Grid::toggle_block(int x, int y) {
