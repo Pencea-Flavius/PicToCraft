@@ -20,8 +20,6 @@ public:
 
     void setCornerSize(int size);
 
-    void setEdgeThickness(int thickness); // 0 means use cornerSize
-
     void setSize(float width, float height);
 
     sf::Vector2f getSize() const;

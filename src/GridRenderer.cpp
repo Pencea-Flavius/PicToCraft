@@ -12,9 +12,7 @@
 
 GridRenderer::GridRenderer(Grid &g, float size, sf::Vector2f off)
   : grid(g), cellSize(size), offset(off), fontLoaded(false), lastMistakes(0),
-    backgroundPatch(sf::Texture(), 4,
-                    10),
-    hintTabPatch(sf::Texture(), 4, 0) {
+    backgroundPatch(sf::Texture(), 4, 10), hintTabPatch(sf::Texture(), 4, 0) {
   fontLoaded = font.openFromFile("assets/Monocraft.ttf");
   if (!webTexture.loadFromFile("assets/cobweb.png")) {
     std::cerr << "Failed to load cobweb texture" << std::endl;
@@ -24,8 +22,7 @@ GridRenderer::GridRenderer(Grid &g, float size, sf::Vector2f off)
     std::cerr << "Failed to load assets/grid/container.png" << std::endl;
   } else {
     backgroundPatch.setTexture(backgroundTexture);
-    backgroundPatch.setPatchScale(
-      1.0f);
+    backgroundPatch.setPatchScale(1.0f);
   }
 
   if (!blockTexture.loadFromFile("assets/grid/slot.png")) {
@@ -123,8 +120,7 @@ void GridRenderer::drawHintTabs(sf::RenderWindow &window) const {
 
   sf::Vector2f gridOffset = {
     offset.x + rowHintsWidth,
-    offset.y + colHintsHeight
-  };
+    offset.y + colHintsHeight};
 
   auto winSize = window.getSize();
   float scaleX = static_cast<float>(winSize.x) / 1280.0f;
@@ -151,8 +147,7 @@ void GridRenderer::drawHintTabs(sf::RenderWindow &window) const {
   float spriteScaleX = tabWidth / static_cast<float>(texW);
   float slotHeight = cellSize * 0.8f;
   float spriteScaleY_Body = slotHeight / static_cast<float>(bodyH);
-  float spriteScaleY_Cap =
-      spriteScaleX;
+  float spriteScaleY_Cap = spriteScaleX;
 
   bodySprite.setScale({spriteScaleX, spriteScaleY_Body});
   capSprite.setScale({spriteScaleX, spriteScaleY_Cap});
@@ -266,7 +261,7 @@ void GridRenderer::draw(sf::RenderWindow &window) const {
   mutablePatch.setSize(gridWidth + scaledPadding * 2,
                        gridHeight + scaledPadding * 2);
   mutablePatch.setPosition(
-    {gridOffset.x - scaledPadding, gridOffset.y - scaledPadding});
+      {gridOffset.x - scaledPadding, gridOffset.y - scaledPadding});
   window.draw(backgroundPatch);
 
   if (fontLoaded) {
@@ -282,19 +277,18 @@ void GridRenderer::draw(sf::RenderWindow &window) const {
             gridOffset.x - (k * slotHeight) - (slotHeight / 2.0f);
         slotCenter -= 16.0f * uiScale;
         unsigned int fontSize = static_cast<unsigned int>(
-          std::min(28.f * uiScale, cellSize * 0.5f));
+            std::min(28.f * uiScale, cellSize * 0.5f));
 
         if (grid.isHintWebbed(true, i, j)) {
-          //Web logic
+          // Web logic
           sf::Sprite webSprite(webTexture);
           float scale =
               (cellSize * 0.6f) / static_cast<float>(webTexture.getSize().x);
           webSprite.setScale({scale, scale});
           webSprite.setOrigin(
-            {
-              static_cast<float>(webTexture.getSize().x) / 2.f,
-              static_cast<float>(webTexture.getSize().y) / 2.f
-            });
+              {static_cast<float>(webTexture.getSize().x) / 2.f,
+                static_cast<float>(webTexture.getSize().y) / 2.f
+              });
 
           sf::Text tempText(font, std::to_string(rowHints[i][j]));
           tempText.setCharacterSize(fontSize);
@@ -404,8 +398,7 @@ void GridRenderer::draw(sf::RenderWindow &window) const {
 
           webSprite.setPosition({
             textX + bounds.size.x / 2.f,
-            textY + bounds.size.y / 2.f + 4.0f * uiScale
-          });
+            textY + bounds.size.y / 2.f + 4.0f * uiScale});
           window.draw(webSprite);
 
           // Draw break texture
@@ -457,18 +450,18 @@ void GridRenderer::draw(sf::RenderWindow &window) const {
 
       // Draw slot texture
       sf::Sprite slotSprite(blockTexture);
-      float scaleX = cellSize / blockTexture.getSize().x;
-      float scaleY = cellSize / blockTexture.getSize().y;
-      slotSprite.setScale({scaleX, scaleY});
+      float slotScaleX = cellSize / blockTexture.getSize().x;
+      float slotScaleY = cellSize / blockTexture.getSize().y;
+      slotSprite.setScale({slotScaleX, slotScaleY});
       slotSprite.setPosition(pos);
       window.draw(slotSprite);
 
       if (grid.get_block(i, j).is_completed()) {
         // Draw filled block (black square inside slot)
-        float padding = cellSize * 0.15f;
-        sf::RectangleShape rect(
-          sf::Vector2f(cellSize - 2 * padding, cellSize - 2 * padding));
-        rect.setPosition({pos.x + padding, pos.y + padding});
+        float blockPadding = cellSize * 0.15f;
+        sf::RectangleShape rect(sf::Vector2f(cellSize - 2 * blockPadding,
+                                             cellSize - 2 * blockPadding));
+        rect.setPosition({pos.x + blockPadding, pos.y + blockPadding});
         rect.setFillColor(sf::Color::Black);
         window.draw(rect);
       }
@@ -488,7 +481,8 @@ void GridRenderer::handleClick(const sf::Vector2i &mousePos) const {
 
   sf::Vector2f gridOffset = {
     offset.x + rowHintsWidth,
-    offset.y + colHintsHeight};
+    offset.y + colHintsHeight
+  };
 
   if (mousePos.x < gridOffset.x || mousePos.y < gridOffset.y)
     return;

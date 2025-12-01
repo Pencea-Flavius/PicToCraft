@@ -26,11 +26,6 @@ void NinePatch::setCornerSize(int size) {
     updateLayout();
 }
 
-void NinePatch::setEdgeThickness(int thickness) {
-    m_edgeThickness = thickness;
-    updateLayout();
-}
-
 void NinePatch::setSize(float width, float height) {
     m_size = {width, height};
     updateLayout();
