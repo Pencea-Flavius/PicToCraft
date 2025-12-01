@@ -7,6 +7,7 @@
 
 #include "Grid.h"
 #include "HeartDisplay.h"
+#include "NinePatch.h"
 #include <SFML/Graphics.hpp>
 #include <optional>
 
@@ -23,6 +24,12 @@ class GridRenderer {
     sf::Texture webTexture;
     std::vector<sf::Texture> breakTextures;
 
+    sf::Texture backgroundTexture;
+    sf::Texture blockTexture;
+    sf::Texture hintTabTexture;
+    NinePatch backgroundPatch;
+    NinePatch hintTabPatch;
+
 public:
     explicit GridRenderer(Grid &g, float size = 40.f,
                           sf::Vector2f offset = {50.f, 50.f});
@@ -30,6 +37,8 @@ public:
     ~GridRenderer() = default;
 
     void draw(sf::RenderWindow &window) const;
+
+    void drawHintTabs(sf::RenderWindow &window) const;
 
     void drawGameInfo(sf::RenderWindow &window) const;
 

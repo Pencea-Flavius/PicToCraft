@@ -90,6 +90,8 @@ add_executable(${MAIN_EXECUTABLE_NAME}
         src/ParticleSystem.h
         src/GameModeFactory.cpp
         src/GameModeFactory.h
+        src/NinePatch.cpp
+        src/NinePatch.h
 )
 
 target_include_directories(${MAIN_EXECUTABLE_NAME} SYSTEM PRIVATE ${SFML_SOURCE_DIR}/include)
