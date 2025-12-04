@@ -18,7 +18,7 @@ class WinScreen {
 
   float scrollOffset;
   float fadeAlpha;
-  sf::Clock clock;
+  ::sf::Clock clock;
 
   float baseWidth = 1280.0f;
   float baseHeight = 720.0f;

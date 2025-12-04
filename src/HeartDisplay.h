@@ -3,7 +3,6 @@
 
 #include <SFML/Graphics.hpp>
 #include <optional>
-#include <vector>
 
 class HeartDisplay {
   sf::Texture containerTexture;

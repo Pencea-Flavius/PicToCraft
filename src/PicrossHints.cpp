@@ -32,8 +32,8 @@ PicrossHints::PicrossHints(const std::vector<std::vector<bool> > &grid) {
     for (size_t j = 0; j < cols; ++j) {
         std::vector<int> current_col_hints;
         int count = 0;
-        for (size_t i = 0; i < grid.size(); ++i) {
-            if (grid[i][j]) {
+        for (const auto & i : grid) {
+            if (i[j]) {
                 count++;
             } else if (count > 0) {
                 current_col_hints.push_back(count);

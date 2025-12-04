@@ -30,9 +30,9 @@ public:
   void reset();
   void setScore(int score);
   GameOverAction handleEvent(const sf::Event &event,
-                             const sf::RenderWindow &window);
+                             const sf::RenderWindow &window) const;
   void update(const sf::RenderWindow &window);
-  void draw(sf::RenderWindow &window);
+  void draw(sf::RenderWindow &window) const;
 };
 
 #endif // OOP_GAMEOVERSCREEN_H

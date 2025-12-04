@@ -1,6 +1,5 @@
 #include "MenuPanorama.h"
 #include "Exceptions.h"
-#include <iostream>
 
 MenuPanorama::MenuPanorama() : loaded(false), offset(0.0f), speed(30.0f) {
   if (!panoramaTexture.loadFromFile("assets/cherry.jpg")) {

@@ -2,28 +2,34 @@
 #include "Grid.h"
 #include "GridRenderer.h"
 #include <algorithm>
-#include <cmath>
 #include <filesystem>
 #include <iostream>
 #include <random>
 
 // Helper for random numbers
-static float randomFloat(float min, float max) {
+static float randomFloat(float max) {
   static std::random_device rd;
   static std::mt19937 gen(rd());
-  std::uniform_real_distribution<float> dis(min, max);
+  std::uniform_real_distribution<float> dis(0.0f, max);
+  return dis(gen);
+}
+
+static int getRandomEdge() {
+  static std::random_device rd;
+  static std::mt19937 gen(rd());
+  std::uniform_int_distribution<> dis(0, 3);
   return dis(gen);
 }
 
 // SpidersMode Implementation
 SpidersMode::SpidersMode(std::unique_ptr<GameMode> mode)
-  : GameModeDecorator(std::move(mode)), spawnTimer(0.0f), damageTimer(0.0f) {
+    : GameModeDecorator(std::move(mode)), spawnTimer(0.0f), damageTimer(0.0f) {
   std::filesystem::path cwd = std::filesystem::current_path();
   std::cout << "Current working directory: " << cwd << std::endl;
 
   if (!walkTexture.loadFromFile("assets/enemy/spider_walk.png")) {
     std::cerr << "Failed to load spider_walk.png from "
-        << cwd / "assets/enemy/spider_walk.png" << std::endl;
+              << cwd / "assets/enemy/spider_walk.png" << std::endl;
   }
   if (!idleTexture.loadFromFile("assets/enemy/spider_idle.png")) {
     std::cerr << "Failed to load spider_idle.png" << std::endl;
@@ -65,7 +71,7 @@ void SpidersMode::update(float deltaTime) {
     // Retarget logic removed as per user request
     // Spiders will now roam freely after their first target
 
-    for (auto &spider: spiders) {
+    for (auto &spider : spiders) {
       spider.update(deltaTime, windowSize);
 
       // Check if spider reached target
@@ -85,7 +91,7 @@ void SpidersMode::update(float deltaTime) {
     }
   } else {
     // Just update if no grid
-    for (auto &spider: spiders) {
+    for (auto &spider : spiders) {
       spider.update(deltaTime, windowSize);
     }
   }
@@ -106,7 +112,6 @@ void SpidersMode::update(float deltaTime) {
     }
   }
 
-  // Remove dead spiders
   spiders.erase(std::remove_if(spiders.begin(), spiders.end(),
                                [](const Spider &s) { return s.isDead(); }),
                 spiders.end());
@@ -117,7 +122,7 @@ void SpidersMode::draw(sf::RenderWindow &window) const {
 
   const_cast<SpidersMode *>(this)->windowSize = window.getSize();
 
-  for (auto &spider: spiders) {
+  for (auto &spider : spiders) {
     auto &s = const_cast<Spider &>(spider);
     s.draw(window);
   }
@@ -129,20 +134,17 @@ bool SpidersMode::handleInput(const sf::Event &event,
   if (GameModeDecorator::handleInput(event, window))
     return true;
 
-  if (event.is<sf::Event::MouseMoved>()) {
-    auto m = event.getIf<sf::Event::MouseMoved>();
-    if (m) {
-      lastMousePos = m->position;
-    }
+  if (auto m = event.getIf<sf::Event::MouseMoved>()) {
+    lastMousePos = m->position;
   }
 
   if (event.is<sf::Event::MouseButtonPressed>()) {
-    auto m = event.getIf<sf::Event::MouseButtonPressed>();
-    if (m && m->button == sf::Mouse::Button::Left) {
+    if (auto m = event.getIf<sf::Event::MouseButtonPressed>();
+        m && m->button == sf::Mouse::Button::Left) {
       sf::Vector2f mousePos = window.mapPixelToCoords(m->position);
 
       // Spider clicking
-      for (auto &spider: spiders) {
+      for (auto &spider : spiders) {
         if (!spider.isDying() && !spider.isDead() &&
             spider.contains(mousePos)) {
           spider.die();
@@ -164,28 +166,32 @@ void SpidersMode::spawnSpider() {
   float spiderScale = 0.3f * baseScale * 1.5f;
 
   // Spawn from edges
-  float x, y;
-  int edge = rand() % 4; // 0: Top, 1: Right, 2: Bottom, 3: Left
+  // Spawn from edges
+  float x = 0.0f;
+  float y = 0.0f;
+  int edge = getRandomEdge(); // 0: Top, 1: Right, 2: Bottom, 3: Left
 
   float padding = 50.0f * baseScale; // Spawn slightly outside
 
   switch (edge) {
-    case 0: // Top
-      x = randomFloat(0.0f, (float) windowSize.x);
-      y = -padding;
-      break;
-    case 1: // Right
-      x = (float) windowSize.x + padding;
-      y = randomFloat(0.0f, (float) windowSize.y);
-      break;
-    case 2: // Bottom
-      x = randomFloat(0.0f, (float) windowSize.x);
-      y = (float) windowSize.y + padding;
-      break;
-    case 3: // Left
-      x = -padding;
-      y = randomFloat(0.0f, (float) windowSize.y);
-      break;
+  case 0: // Top
+    x = randomFloat(static_cast<float>(windowSize.x));
+    y = -padding;
+    break;
+  case 1: // Right
+    x = static_cast<float>(windowSize.x) + padding;
+    y = randomFloat(static_cast<float>(windowSize.y));
+    break;
+  case 2: // Bottom
+    x = randomFloat(static_cast<float>(windowSize.x));
+    y = static_cast<float>(windowSize.y) + padding;
+    break;
+  case 3: // Left
+    x = -padding;
+    y = randomFloat(static_cast<float>(windowSize.y));
+    break;
+  default:
+    break;
   }
 
   spiders.emplace_back(sf::Vector2f(x, y), walkTexture, idleTexture,
@@ -198,7 +204,7 @@ void SpidersMode::spawnSpider() {
     const auto &rowHints = hints.get_row_hints();
     const auto &colHints = hints.get_col_hints();
 
-    bool pickRow = randomFloat(0, 1) > 0.5f;
+    bool pickRow = randomFloat(1) > 0.5f; // Changed from randomFloat(0, 1)
     if (rowHints.empty())
       pickRow = false;
     if (colHints.empty() && !pickRow)
@@ -211,17 +217,21 @@ void SpidersMode::spawnSpider() {
     int attempts = 10;
     while (attempts-- > 0) {
       if (pickRow) {
-        line = static_cast<int>(randomFloat(0, rowHints.size() - 0.1f));
+        line = static_cast<int>(
+            randomFloat(static_cast<float>(rowHints.size()) - 0.1f));
         if (rowHints[line].empty())
           continue;
-        index = static_cast<int>(randomFloat(0, rowHints[line].size() - 0.1f));
+        index = static_cast<int>(
+            randomFloat(static_cast<float>(rowHints[line].size()) - 0.1f));
         if (!grid->isHintWebbed(true, line, index))
           break;
       } else {
-        line = static_cast<int>(randomFloat(0, colHints.size() - 0.1f));
+        line = static_cast<int>(
+            randomFloat(static_cast<float>(colHints.size()) - 0.1f));
         if (colHints[line].empty())
           continue;
-        index = static_cast<int>(randomFloat(0, colHints[line].size() - 0.1f));
+        index = static_cast<int>(
+            randomFloat(static_cast<float>(colHints[line].size()) - 0.1f));
         if (!grid->isHintWebbed(false, line, index))
           break;
       }

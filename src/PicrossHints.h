@@ -7,8 +7,6 @@
 #include <iosfwd>
 #include <vector>
 
-#include "Block.h"
-
 class PicrossHints {
     std::vector<std::vector<int> > row_hints;
     std::vector<std::vector<int> > col_hints;

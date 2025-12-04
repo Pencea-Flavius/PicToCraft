@@ -31,7 +31,7 @@ private:
   std::optional<sf::Cursor> cursorSystem;
 
   std::optional<sf::Cursor> loadCursor(const std::string &path,
-                                       sf::Vector2i hotspot);
+                                       sf::Vector2i hotspot) const;
 };
 
 #endif // CUSTOM_CURSOR_H

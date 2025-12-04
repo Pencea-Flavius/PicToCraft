@@ -2,7 +2,6 @@
 #define OOP_GAMEMENU_H
 
 #include <SFML/Graphics.hpp>
-#include <memory>
 #include <optional>
 #include <string>
 #include <vector>

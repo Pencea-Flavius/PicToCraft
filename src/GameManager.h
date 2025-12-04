@@ -6,11 +6,9 @@
 #include "GameOverScreen.h"
 #include "Grid.h"
 #include "GridRenderer.h"
-#include "MenuResolution.h"
 #include "WinScreen.h"
 #include <SFML/Graphics.hpp>
 #include <memory>
-#include <optional>
 
 class GameManager {
   sf::RenderWindow window;

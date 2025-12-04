@@ -1,9 +1,7 @@
 #include "SplashText.h"
 #include "Exceptions.h"
 #include "ShadowedText.h"
-#include <cmath>
 #include <fstream>
-#include <iostream>
 #include <random>
 
 SplashText::SplashText()
@@ -28,7 +26,7 @@ void SplashText::loadMessages() {
   file.close();
 
   if (messages.empty()) {
-    messages.push_back("Picross Fun!");
+    messages.emplace_back("Picross Fun!");
   }
 }
 

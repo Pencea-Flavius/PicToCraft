@@ -59,8 +59,6 @@ add_executable(${MAIN_EXECUTABLE_NAME}
         src/MenuPanorama.cpp
         src/MenuPanorama.h
         src/SplashText.cpp
-        src/MenuPanorama.cpp
-        src/SplashText.cpp
         src/MenuButton.cpp
         src/MenuButton.h
         src/MenuButtonManager.cpp

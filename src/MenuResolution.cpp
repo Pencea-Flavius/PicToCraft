@@ -15,7 +15,7 @@ std::vector<sf::VideoMode> MenuResolution::getAvailableResolutions() {
   auto desktop = sf::VideoMode::getDesktopMode();
 
   // Check if desktop resolution already exists
-  auto it = std::find_if(
+  auto it = std::ranges::find_if(
       modes.begin(), modes.end(),
       [&desktop](const sf::VideoMode &m) { return m.size == desktop.size; });
 
@@ -23,7 +23,7 @@ std::vector<sf::VideoMode> MenuResolution::getAvailableResolutions() {
     modes.push_back(desktop);
   }
 
-  std::sort(modes.begin(), modes.end(),
+  std::ranges::sort(modes.begin(), modes.end(),
             [](const sf::VideoMode &a, const sf::VideoMode &b) {
               return (a.size.x != b.size.x) ? (a.size.x < b.size.x)
                                             : (a.size.y < b.size.y);

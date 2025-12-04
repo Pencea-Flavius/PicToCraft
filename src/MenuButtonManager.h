@@ -20,24 +20,25 @@ public:
   void addSlider(const std::string &label, float initialValue, int steps,
                  unsigned int fontSize);
   void addButton(const std::string &label, unsigned int fontSize);
-  void setButtonText(int index, const std::string &text);
-  void setButtonEnabled(int index, bool enabled);
+  void setButtonText(int index, const std::string &text) const;
+  void setButtonEnabled(int index, bool enabled) const;
 
   void layoutMainMenu(const sf::RenderWindow &window, float scale,
-                      float scaleY);
+                      float scaleY) const;
   void layoutGameSetup(const sf::RenderWindow &window, float scale,
                        float scaleY, int selectedTab, bool isTimeModeAvailable,
                        const sf::Texture &buttonTexture,
-                       const sf::Texture &buttonDisabledTexture);
-  void layoutOptions(const sf::RenderWindow &window, float scale, float scaleY);
+                       const sf::Texture &buttonDisabledTexture) const;
+  void layoutOptions(const sf::RenderWindow &window, float scale,
+                     float scaleY) const;
 
-  void handleDrag(const sf::Vector2f &mousePos);
-  void stopDrag();
+  void handleDrag(const sf::Vector2f &mousePos) const;
+  void stopDrag() const;
   float getSliderValue(int index) const;
 
-  int handleClick(const sf::Vector2f &mousePos);
-  void update(const sf::Vector2f &mousePos);
-  void draw(sf::RenderWindow &window);
+  int handleClick(const sf::Vector2f &mousePos) const;
+  void update(const sf::Vector2f &mousePos) const;
+  void draw(sf::RenderWindow &window) const;
 
   size_t getButtonCount() const { return buttons.size(); }
 

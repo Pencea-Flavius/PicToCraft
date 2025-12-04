@@ -1,6 +1,5 @@
 #include "TorchMode.h"
 #include "Exceptions.h"
-#include <iostream>
 #include <random>
 
 TorchMode::TorchMode(std::unique_ptr<GameMode> mode)
@@ -56,7 +55,8 @@ void TorchMode::playNextFireSound() {
 
   static std::random_device rd;
   static std::mt19937 gen(rd());
-  std::uniform_int_distribution<> dis(0, fireBuffers.size() - 1);
+  std::uniform_int_distribution<> dis(0,
+                                      static_cast<int>(fireBuffers.size()) - 1);
 
   int index = dis(gen);
   fireSound.setBuffer(fireBuffers[index]);
@@ -69,14 +69,14 @@ void TorchMode::createLightTexture() const {
   sf::Image image;
   image.resize({size, size}, sf::Color::Transparent);
 
-  float centerX = size / 2.0f;
-  float centerY = size / 2.0f;
-  float radius = size / 2.0f;
+  float centerX = static_cast<float>(size) / 2.0f;
+  float centerY = static_cast<float>(size) / 2.0f;
+  float radius = static_cast<float>(size) / 2.0f;
 
   for (unsigned int y = 0; y < size; ++y) {
     for (unsigned int x = 0; x < size; ++x) {
-      float dx = x - centerX;
-      float dy = y - centerY;
+      float dx = static_cast<float>(x) - centerX;
+      float dy = static_cast<float>(y) - centerY;
       float distance = std::sqrt(dx * dx + dy * dy);
 
       if (distance <= radius) {
@@ -111,8 +111,8 @@ void TorchMode::draw(sf::RenderWindow &window) const {
   if (!lightSprite) {
     lightSprite.emplace(lightTexture);
   }
-  lightSprite->setOrigin(
-      {lightTexture.getSize().x / 2.0f, lightTexture.getSize().y / 2.0f});
+  lightSprite->setOrigin({static_cast<float>(lightTexture.getSize().x) / 2.0f,
+                          static_cast<float>(lightTexture.getSize().y) / 2.0f});
 
   sf::Vector2i mousePos = sf::Mouse::getPosition(window);
   // Use screen coordinates for the light on the overlay
@@ -146,11 +146,11 @@ void TorchMode::draw(sf::RenderWindow &window) const {
 
   // Emit particles at mouse position
   sf::Vector2i mousePosI = sf::Mouse::getPosition(window);
-  sf::Vector2f mousePosF = static_cast<sf::Vector2f>(mousePosI);
+  auto mousePosF = static_cast<sf::Vector2f>(mousePosI);
 
   float scaleFactor = static_cast<float>(window.getSize().x) / 1920.0f;
 
-  sf::Vector2f offset(0.f, 0.f);
+  sf::Vector2f offset;
 
   if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left)) {
     // Clicked position
@@ -170,7 +170,11 @@ void TorchMode::draw(sf::RenderWindow &window) const {
                                                        ParticleType::Fire);
   }
   // Smoke (less frequent)
-  if (rand() % 2 == 0) {
+  // Smoke (less frequent)
+  static std::random_device rd;
+  static std::mt19937 gen(rd());
+  std::uniform_int_distribution<> dis(0, 1);
+  if (dis(gen) == 0) {
     const_cast<TorchMode *>(this)->particleSystem.emit(emitPos,
                                                        ParticleType::Smoke);
   }

@@ -116,7 +116,7 @@ void HeartDisplay::draw(sf::RenderWindow &window, int currentMistakes,
   float heartSpacing = 9.0f * scale;
 
   for (int i = 0; i < totalHearts; ++i) {
-    float x = position.x + i * heartSpacing;
+    float x = position.x + static_cast<float>(i) * heartSpacing;
     float y = position.y;
 
     containerSprite->setPosition({x, y});

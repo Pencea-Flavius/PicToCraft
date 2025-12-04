@@ -3,7 +3,6 @@
 #include <SFML/Graphics/RenderTexture.hpp>
 #include <SFML/Graphics/Sprite.hpp>
 #include <SFML/Graphics/Texture.hpp>
-#include <iostream>
 
 CustomCursor::CustomCursor(sf::Window &window)
     : window(window), isEnabled(true), currentScale(0.2f), hotspotIdle(20, 100),
@@ -90,7 +89,7 @@ void CustomCursor::handleEvent(const sf::Event &event) const {
 }
 
 std::optional<sf::Cursor> CustomCursor::loadCursor(const std::string &path,
-                                                   sf::Vector2i hotspot) {
+                                                   sf::Vector2i hotspot) const {
   sf::Image img;
   if (!img.loadFromFile(path))
     throw AssetLoadException(path, "Cursor Image");
@@ -98,8 +97,8 @@ std::optional<sf::Cursor> CustomCursor::loadCursor(const std::string &path,
   float baseScale = 0.2f;
   float scaleRatio = currentScale / baseScale;
 
-  hotspot.x = static_cast<int>(hotspot.x * scaleRatio);
-  hotspot.y = static_cast<int>(hotspot.y * scaleRatio);
+  hotspot.x = static_cast<int>(static_cast<float>(hotspot.x) * scaleRatio);
+  hotspot.y = static_cast<int>(static_cast<float>(hotspot.y) * scaleRatio);
 
   if (currentScale != 1.0f || hotspot.x < 0 || hotspot.y < 0) {
     sf::Texture tex;
@@ -117,9 +116,13 @@ std::optional<sf::Cursor> CustomCursor::loadCursor(const std::string &path,
         {static_cast<float>(paddingX), static_cast<float>(paddingY)});
 
     unsigned int newWidth =
-        static_cast<unsigned int>(img.getSize().x * currentScale) + paddingX;
+        static_cast<unsigned int>(static_cast<float>(img.getSize().x) *
+                                  currentScale) +
+        static_cast<unsigned int>(paddingX);
     unsigned int newHeight =
-        static_cast<unsigned int>(img.getSize().y * currentScale) + paddingY;
+        static_cast<unsigned int>(static_cast<float>(img.getSize().y) *
+                                  currentScale) +
+        static_cast<unsigned int>(paddingY);
 
     sf::RenderTexture rt;
     if (!rt.resize({newWidth, newHeight}))

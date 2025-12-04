@@ -3,7 +3,6 @@
 
 #include <SFML/Audio.hpp>
 #include <SFML/Graphics.hpp>
-#include <array>
 #include <memory>
 #include <string>
 
@@ -24,8 +23,6 @@ public:
     void draw(sf::RenderWindow &window);
 
     bool isClicked(const sf::Vector2f &mousePos);
-
-    void setColor(const sf::Color &color);
 
     void setStyle(Style style);
 

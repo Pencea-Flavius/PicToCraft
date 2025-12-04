@@ -1,18 +1,17 @@
 #include "GridRenderer.h"
 #include "ShadowedText.h"
-#include <SFML/Graphics/BlendMode.hpp>
-#include <SFML/Graphics/Image.hpp>
+
 #include <SFML/Graphics/RenderTexture.hpp>
 #include <SFML/Graphics/Sprite.hpp>
 #include <algorithm>
 #include <cmath>
-#include <cstdint>
 #include <iostream>
 #include <sstream>
 
 GridRenderer::GridRenderer(Grid &g, float size, sf::Vector2f off)
     : grid(g), cellSize(size), offset(off), fontLoaded(false), lastMistakes(0),
-      backgroundPatch(sf::Texture(), 4, 10), hintTabPatch(sf::Texture(), 4, 0) {
+      animationClock(), backgroundPatch(sf::Texture(), 4, 10),
+      hintTabPatch(sf::Texture(), 4, 0) {
   fontLoaded = font.openFromFile("assets/Monocraft.ttf");
   if (!webTexture.loadFromFile("assets/cobweb.png")) {
     std::cerr << "Failed to load cobweb texture" << std::endl;
@@ -54,7 +53,8 @@ void GridRenderer::drawGameInfo(sf::RenderWindow &window) const {
 
   auto winSize = window.getSize();
 
-  unsigned int fontSize = static_cast<unsigned int>(winSize.y * 0.035f);
+  auto fontSize =
+      static_cast<unsigned int>(static_cast<float>(winSize.y) * 0.035f);
   fontSize = std::max(18u, std::min(fontSize, 40u));
 
   sf::Text infoText(font, "");
@@ -66,13 +66,13 @@ void GridRenderer::drawGameInfo(sf::RenderWindow &window) const {
     oss << "Scor: " << grid.get_score();
     infoText.setString(oss.str());
 
-    float padding = winSize.x * 0.015f;
+    float padding = static_cast<float>(winSize.x) * 0.015f;
     padding = std::max(10.f, std::min(padding, 30.f));
 
     auto bounds = infoText.getLocalBounds();
-    infoText.setPosition(
-        {winSize.x - bounds.size.x - bounds.position.x - padding,
-         padding - bounds.position.y});
+    infoText.setPosition({static_cast<float>(winSize.x) - bounds.size.x -
+                              bounds.position.x - padding,
+                          padding - bounds.position.y});
 
     float scaleX = static_cast<float>(winSize.x) / 1280.0f;
     float scaleY = static_cast<float>(winSize.y) / 720.0f;
@@ -92,15 +92,16 @@ void GridRenderer::drawGameInfo(sf::RenderWindow &window) const {
 
     float heartScale = baseScale * 2.5f; // Make hearts 2.5x larger
 
-    float padding = winSize.x * 0.015f;
+    float padding = static_cast<float>(winSize.x) * 0.015f;
     padding = std::max(10.f, std::min(padding, 30.f));
 
     int maxMistakes = grid.get_max_mistakes();
     int totalHearts = (maxMistakes + 1) / 2;
     float heartWidth = 9.0f * heartScale;
-    float totalWidth = totalHearts * heartWidth;
+    float totalWidth = static_cast<float>(totalHearts) * heartWidth;
 
-    sf::Vector2f pos(winSize.x - totalWidth - padding, padding);
+    sf::Vector2f pos(static_cast<float>(winSize.x) - totalWidth - padding,
+                     padding);
 
     heartDisplay.update(animationClock.restart().asSeconds());
     heartDisplay.draw(window, currentMistakes, maxMistakes, pos, heartScale,
@@ -113,8 +114,8 @@ void GridRenderer::drawHintTabs(sf::RenderWindow &window) const {
   size_t maxRowWidth = hints.get_max_row_width();
   size_t maxColHeight = hints.get_max_col_height();
 
-  float rowHintsWidth = maxRowWidth * cellSize * 0.8f;
-  float colHintsHeight = maxColHeight * cellSize * 0.8f;
+  float rowHintsWidth = static_cast<float>(maxRowWidth) * cellSize * 0.8f;
+  float colHintsHeight = static_cast<float>(maxColHeight) * cellSize * 0.8f;
 
   sf::Vector2f gridOffset = {offset.x + rowHintsWidth,
                              offset.y + colHintsHeight};
@@ -133,8 +134,8 @@ void GridRenderer::drawHintTabs(sf::RenderWindow &window) const {
   sf::Sprite capSprite(hintTabTexture);
   sf::Sprite bodySprite(hintTabTexture);
 
-  int texW = hintTabTexture.getSize().x;
-  int texH = hintTabTexture.getSize().y;
+  int texW = static_cast<int>(hintTabTexture.getSize().x);
+  int texH = static_cast<int>(hintTabTexture.getSize().y);
   int capH = 6; // Guessing
   int bodyH = texH - capH;
 
@@ -151,7 +152,7 @@ void GridRenderer::drawHintTabs(sf::RenderWindow &window) const {
 
   const auto &colHints = hints.get_col_hints();
   for (int j = 0; j < n; ++j) {
-    float x = gridOffset.x + j * cellSize + padding / 2.0f;
+    float x = gridOffset.x + static_cast<float>(j) * cellSize + padding / 2.0f;
 
     float bottomY = gridOffset.y - 8.0f * uiScale;
 
@@ -160,12 +161,12 @@ void GridRenderer::drawHintTabs(sf::RenderWindow &window) const {
       currentColHeight = 1;
 
     for (size_t k = 0; k < currentColHeight; ++k) {
-      float y = bottomY - (k + 1) * slotHeight;
+      float y = bottomY - static_cast<float>(k + 1) * slotHeight;
       bodySprite.setPosition({x, y});
       window.draw(bodySprite);
     }
 
-    float capY = bottomY - currentColHeight * slotHeight -
+    float capY = bottomY - static_cast<float>(currentColHeight) * slotHeight -
                  (static_cast<float>(capH) * spriteScaleY_Cap);
 
     capSprite.setPosition({x, capY});
@@ -181,7 +182,7 @@ void GridRenderer::drawHintTabs(sf::RenderWindow &window) const {
 
   const auto &rowHints = hints.get_row_hints();
   for (int i = 0; i < n; ++i) {
-    float y = gridOffset.y + i * cellSize + padding / 2.0f;
+    float y = gridOffset.y + static_cast<float>(i) * cellSize + padding / 2.0f;
     // Shifted left further as requested (was -8.0f, now -14.0f)
     float rightX = gridOffset.x - 14.0f * uiScale;
 
@@ -193,7 +194,7 @@ void GridRenderer::drawHintTabs(sf::RenderWindow &window) const {
       float visualBodyWidth = bodySprite.getGlobalBounds().size.x;
       float visualBodyHeight = bodySprite.getGlobalBounds().size.y;
 
-      float slotX = rightX - (k + 1) * visualBodyWidth;
+      float slotX = rightX - static_cast<float>(k + 1) * visualBodyWidth;
       float slotY = y + visualBodyHeight;
 
       bodySprite.setPosition({slotX, slotY});
@@ -204,7 +205,9 @@ void GridRenderer::drawHintTabs(sf::RenderWindow &window) const {
     float visualCapHeight = capSprite.getGlobalBounds().size.y;
 
     float visualBodyWidth = bodySprite.getGlobalBounds().size.x;
-    float capX = rightX - currentRowWidth * visualBodyWidth - visualCapWidth;
+    float capX = rightX -
+                 static_cast<float>(currentRowWidth) * visualBodyWidth -
+                 visualCapWidth;
     float capY = y + visualCapHeight;
 
     capSprite.setPosition({capX, capY});
@@ -224,8 +227,8 @@ void GridRenderer::draw(sf::RenderWindow &window) const {
   size_t maxRowWidth = hints.get_max_row_width();
   size_t maxColHeight = hints.get_max_col_height();
 
-  float rowHintsWidth = maxRowWidth * cellSize * 0.8f;
-  float colHintsHeight = maxColHeight * cellSize * 0.8f;
+  float rowHintsWidth = static_cast<float>(maxRowWidth) * cellSize * 0.8f;
+  float colHintsHeight = static_cast<float>(maxColHeight) * cellSize * 0.8f;
 
   sf::Vector2f gridOffset = {offset.x + rowHintsWidth,
                              offset.y + colHintsHeight};
@@ -233,7 +236,7 @@ void GridRenderer::draw(sf::RenderWindow &window) const {
   drawHintTabs(window);
 
   // Draw Background
-  float gridWidth = n * cellSize;
+  float gridWidth = static_cast<float>(n) * cellSize;
   float gridHeight = gridWidth;
   float padding = 16.0f;
 
@@ -262,19 +265,20 @@ void GridRenderer::draw(sf::RenderWindow &window) const {
   if (fontLoaded) {
     const auto &rowHints = hints.get_row_hints();
     for (size_t i = 0; i < rowHints.size(); ++i) {
-      float rowY = gridOffset.y + i * cellSize + cellSize * 0.5f;
+      float rowY =
+          gridOffset.y + static_cast<float>(i) * cellSize + cellSize * 0.5f;
       float slotHeight = cellSize * 0.8f;
 
       for (int j = static_cast<int>(rowHints[i].size()) - 1; j >= 0; --j) {
-        int k = rowHints[i].size() - 1 - j;
+        int k = static_cast<int>(rowHints[i].size()) - 1 - j;
 
-        float slotCenter =
-            gridOffset.x - (k * slotHeight) - (slotHeight / 2.0f);
+        float slotCenter = gridOffset.x - (static_cast<float>(k) * slotHeight) -
+                           (slotHeight / 2.0f);
         slotCenter -= 16.0f * uiScale;
         unsigned int fontSize = static_cast<unsigned int>(
             std::min(28.f * uiScale, cellSize * 0.5f));
 
-        if (grid.isHintWebbed(true, i, j)) {
+        if (grid.isHintWebbed(true, static_cast<int>(i), j)) {
           // Web logic
           sf::Sprite webSprite(webTexture);
           float scale =
@@ -306,7 +310,8 @@ void GridRenderer::draw(sf::RenderWindow &window) const {
           window.draw(webSprite);
 
           // Draw break texture
-          int health = grid.get_hints().getWebHealth(true, i, j);
+          int health =
+              grid.get_hints().getWebHealth(true, static_cast<int>(i), j);
           if (health < 10) {
             int stage = 9 - health; // 9 down to 0
             if (stage >= 0 && stage < static_cast<int>(breakTextures.size())) {
@@ -346,22 +351,24 @@ void GridRenderer::draw(sf::RenderWindow &window) const {
 
     const auto &colHints = hints.get_col_hints();
     for (size_t j = 0; j < colHints.size(); ++j) {
-      float colX = gridOffset.x + j * cellSize + cellSize * 0.5f;
+      float colX =
+          gridOffset.x + static_cast<float>(j) * cellSize + cellSize * 0.5f;
       float slotHeight = cellSize * 0.8f;
 
       for (int i = static_cast<int>(colHints[j].size()) - 1; i >= 0; --i) {
         // k=0 is closest to grid (bottom).
-        int k = colHints[j].size() - 1 - i;
+        int k = static_cast<int>(colHints[j].size()) - 1 - i;
 
-        float slotCenterY =
-            gridOffset.y - (k * slotHeight) - (slotHeight / 2.0f);
+        float slotCenterY = gridOffset.y -
+                            (static_cast<float>(k) * slotHeight) -
+                            (slotHeight / 2.0f);
         slotCenterY -= 16.0f * uiScale;
 
         // Dynamic font size
         unsigned int fontSize = static_cast<unsigned int>(
             std::min(28.f * uiScale, cellSize * 0.5f));
 
-        if (grid.isHintWebbed(false, j, i)) {
+        if (grid.isHintWebbed(false, static_cast<int>(j), i)) {
           sf::Sprite webSprite(webTexture);
           float scale =
               (cellSize * 0.6f) / static_cast<float>(webTexture.getSize().x);
@@ -391,7 +398,8 @@ void GridRenderer::draw(sf::RenderWindow &window) const {
           window.draw(webSprite);
 
           // Draw break texture
-          int health = grid.get_hints().getWebHealth(false, j, i);
+          int health =
+              grid.get_hints().getWebHealth(false, static_cast<int>(j), i);
           if (health < 10) {
             int stage = 9 - health; // 9 down to 0
             if (stage >= 0 && stage < static_cast<int>(breakTextures.size())) {
@@ -432,13 +440,15 @@ void GridRenderer::draw(sf::RenderWindow &window) const {
 
   for (int i = 0; i < n; ++i) {
     for (int j = 0; j < n; ++j) {
-      sf::Vector2f pos = {gridOffset.x + j * cellSize,
-                          gridOffset.y + i * cellSize};
+      sf::Vector2f pos = {gridOffset.x + static_cast<float>(j) * cellSize,
+                          gridOffset.y + static_cast<float>(i) * cellSize};
 
       // Draw slot texture
       sf::Sprite slotSprite(blockTexture);
-      float slotScaleX = cellSize / blockTexture.getSize().x;
-      float slotScaleY = cellSize / blockTexture.getSize().y;
+      float slotScaleX =
+          cellSize / static_cast<float>(blockTexture.getSize().x);
+      float slotScaleY =
+          cellSize / static_cast<float>(blockTexture.getSize().y);
       slotSprite.setScale({slotScaleX, slotScaleY});
       slotSprite.setPosition(pos);
       window.draw(slotSprite);
@@ -463,18 +473,21 @@ void GridRenderer::handleClick(const sf::Vector2i &mousePos) const {
   size_t maxRowWidth = hints.get_max_row_width();
   size_t maxColHeight = hints.get_max_col_height();
 
-  float rowHintsWidth = maxRowWidth * cellSize * 0.8f;
-  float colHintsHeight = maxColHeight * cellSize * 0.8f;
+  float rowHintsWidth = static_cast<float>(maxRowWidth) * cellSize * 0.8f;
+  float colHintsHeight = static_cast<float>(maxColHeight) * cellSize * 0.8f;
 
   sf::Vector2f gridOffset = {offset.x + rowHintsWidth,
                              offset.y + colHintsHeight};
 
-  if (mousePos.x < gridOffset.x || mousePos.y < gridOffset.y)
+  if (static_cast<float>(mousePos.x) < gridOffset.x ||
+      static_cast<float>(mousePos.y) < gridOffset.y)
     return;
 
   int n = grid.get_size();
-  int x = static_cast<int>((mousePos.y - gridOffset.y) / cellSize);
-  int y = static_cast<int>((mousePos.x - gridOffset.x) / cellSize);
+  int x = static_cast<int>((static_cast<float>(mousePos.y) - gridOffset.y) /
+                           cellSize);
+  int y = static_cast<int>((static_cast<float>(mousePos.x) - gridOffset.x) /
+                           cellSize);
 
   if (x >= 0 && x < n && y >= 0 && y < n)
     grid.toggle_block(x, y);
@@ -486,8 +499,8 @@ sf::Vector2f GridRenderer::getHintCenter(bool isRow, int line,
   size_t maxRowWidth = hints.get_max_row_width();
   size_t maxColHeight = hints.get_max_col_height();
 
-  float rowHintsWidth = maxRowWidth * cellSize * 0.8f;
-  float colHintsHeight = maxColHeight * cellSize * 0.8f;
+  float rowHintsWidth = static_cast<float>(maxRowWidth) * cellSize * 0.8f;
+  float colHintsHeight = static_cast<float>(maxColHeight) * cellSize * 0.8f;
 
   sf::Vector2f gridOffset = {offset.x + rowHintsWidth,
                              offset.y + colHintsHeight};
@@ -497,12 +510,14 @@ sf::Vector2f GridRenderer::getHintCenter(bool isRow, int line,
     if (line >= rowHints.size() || index >= rowHints[line].size())
       return {0, 0};
 
-    float rowY = gridOffset.y + line * cellSize + cellSize * 0.5f;
+    float rowY =
+        gridOffset.y + static_cast<float>(line) * cellSize + cellSize * 0.5f;
     float startX = gridOffset.x - 20.f;
 
     // Calculate X position based on index (reverse order)
-    int reverseIndex = rowHints[line].size() - 1 - index;
-    float currentX = startX - reverseIndex * (cellSize * 0.8f);
+    int reverseIndex = static_cast<int>(rowHints[line].size()) - 1 - index;
+    float currentX =
+        startX - static_cast<float>(reverseIndex) * (cellSize * 0.8f);
 
     sf::Text tempText(font, std::to_string(rowHints[line][index]));
     tempText.setCharacterSize(static_cast<unsigned int>(cellSize * 0.5f));
@@ -517,11 +532,13 @@ sf::Vector2f GridRenderer::getHintCenter(bool isRow, int line,
     if (line >= colHints.size() || index >= colHints[line].size())
       return {0, 0};
 
-    float colX = gridOffset.x + line * cellSize + cellSize * 0.5f;
+    float colX =
+        gridOffset.x + static_cast<float>(line) * cellSize + cellSize * 0.5f;
     float startY = gridOffset.y - 10.f;
 
-    int reverseIndex = colHints[line].size() - 1 - index;
-    float currentY = startY - reverseIndex * (cellSize * 0.8f);
+    int reverseIndex = static_cast<int>(colHints[line].size()) - 1 - index;
+    float currentY =
+        startY - static_cast<float>(reverseIndex) * (cellSize * 0.8f);
 
     sf::Text tempText(font, std::to_string(colHints[line][index]));
     tempText.setCharacterSize(static_cast<unsigned int>(cellSize * 0.5f));
@@ -541,14 +558,16 @@ void GridRenderer::handleHintClick(const sf::Vector2i &mousePos) const {
   const auto &rowHints = hints.get_row_hints();
   for (size_t i = 0; i < rowHints.size(); ++i) {
     for (size_t j = 0; j < rowHints[i].size(); ++j) {
-      if (grid.isHintWebbed(true, i, j)) {
-        sf::Vector2f center = getHintCenter(true, i, j);
+      if (grid.isHintWebbed(true, static_cast<int>(i), static_cast<int>(j))) {
+        sf::Vector2f center =
+            getHintCenter(true, static_cast<int>(i), static_cast<int>(j));
         float radius = cellSize * 0.4f; // Approximate hit radius
 
-        float dx = mousePos.x - center.x;
-        float dy = mousePos.y - center.y;
+        float dx = static_cast<float>(mousePos.x) - center.x;
+        float dy = static_cast<float>(mousePos.y) - center.y;
         if (dx * dx + dy * dy <= radius * radius) {
-          const_cast<Grid &>(grid).damageWeb(true, i, j); // Use damageWeb
+          const_cast<Grid &>(grid).damageWeb(
+              true, static_cast<int>(i), static_cast<int>(j)); // Use damageWeb
           return; // Handle one click at a time
         }
       }
@@ -558,14 +577,16 @@ void GridRenderer::handleHintClick(const sf::Vector2i &mousePos) const {
   const auto &colHints = hints.get_col_hints();
   for (size_t j = 0; j < colHints.size(); ++j) {
     for (size_t i = 0; i < colHints[j].size(); ++i) {
-      if (grid.isHintWebbed(false, j, i)) {
-        sf::Vector2f center = getHintCenter(false, j, i);
+      if (grid.isHintWebbed(false, static_cast<int>(j), static_cast<int>(i))) {
+        sf::Vector2f center =
+            getHintCenter(false, static_cast<int>(j), static_cast<int>(i));
         float radius = cellSize * 0.4f;
 
-        float dx = mousePos.x - center.x;
-        float dy = mousePos.y - center.y;
+        float dx = static_cast<float>(mousePos.x) - center.x;
+        float dy = static_cast<float>(mousePos.y) - center.y;
         if (dx * dx + dy * dy <= radius * radius) {
-          const_cast<Grid &>(grid).damageWeb(false, j, i); // Use damageWeb
+          const_cast<Grid &>(grid).damageWeb(
+              false, static_cast<int>(j), static_cast<int>(i)); // Use damageWeb
           return;
         }
       }

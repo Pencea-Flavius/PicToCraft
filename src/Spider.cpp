@@ -1,5 +1,4 @@
 #include "Spider.h"
-#include <algorithm>
 #include <cmath>
 #include <random>
 
@@ -16,17 +15,17 @@ void Spider::updateRotation() {
   if (velocity.x != 0.f || velocity.y != 0.f) {
     float angle = std::atan2(velocity.y, velocity.x) * 180.0f / 3.14159f;
     sprite.setRotation(sf::degrees(
-      angle - 90.0f)); // Sprite faces down (90 deg), so subtract 90
+        angle - 90.0f)); // Sprite faces down (90 deg), so subtract 90
   }
 }
 
 Spider::Spider(sf::Vector2f startPos, const sf::Texture &walkTex,
                const sf::Texture &idleTex, const sf::Texture &deathTex,
                float scale)
-  : walkTexture(&walkTex), idleTexture(&idleTex), deathTexture(&deathTex),
-    state(State::Walking), stateTimer(randomFloat(2.0f, 5.0f)),
-    animationTimer(0.0f), currentFrame(0), numFrames(1), frameTime(0.03f),
-    sprite(walkTex), scale(scale) {
+    : sprite(walkTex), walkTexture(&walkTex), idleTexture(&idleTex),
+      deathTexture(&deathTex), state(State::Walking),
+      stateTimer(randomFloat(2.0f, 5.0f)), scale(scale), animationTimer(0.0f),
+      currentFrame(0), numFrames(1), frameTime(0.03f) {
   sprite.setPosition(startPos);
   sprite.setScale({scale, scale});
 
@@ -62,7 +61,7 @@ void Spider::changeState(State newState) {
     stateTimer = randomFloat(1.0f, 3.0f);
     velocity = {0.f, 0.f};
     numFrames = 50; // 5 cols * 10 rows
-  } else if (state == State::Dying) {
+  } else {          // State::Dying
     sprite.setTexture(*deathTexture);
     stateTimer = 100.0f; // Long enough to finish animation
     velocity = {0.f, 0.f};
@@ -87,6 +86,7 @@ void Spider::update(float dt, const sf::Vector2u &windowSize) {
       if (currentFrame >= numFrames) {
         state = State::Dead;
         currentFrame = numFrames - 1;
+        return;
       }
     } else {
       currentFrame %= numFrames;
@@ -95,8 +95,6 @@ void Spider::update(float dt, const sf::Vector2u &windowSize) {
 
   updateAnimation(dt);
 
-  if (state == State::Dead)
-    return;
   if (state == State::Dying)
     return;
 
@@ -133,22 +131,18 @@ void Spider::update(float dt, const sf::Vector2u &windowSize) {
     if (stateTimer <= 0) {
       if (state == State::Idle) {
         changeState(State::Walking);
-        stateTimer = static_cast<float>(rand() % 20 + 10) / 10.0f;
+        stateTimer = randomFloat(1.0f, 2.9f);
 
-        sf::Vector2f dir;
-        if (hasTarget) {
-        } else {
-          // Random movement
-          float angle = static_cast<float>(rand() % 360) * 3.14159f / 180.f;
-          dir = {std::cos(angle), std::sin(angle)};
-        }
-
+        // Random movement
+        float angle = randomFloat(0.0f, 360.0f) * 3.14159f / 180.f;
+        sf::Vector2f dir = {std::cos(angle), std::sin(angle)};
         velocity = dir * 100.0f;
-        float angle = std::atan2(velocity.y, velocity.x) * 180.f / 3.14159f;
-        sprite.setRotation(sf::degrees(angle - 90.f));
+        float rotationAngle =
+            std::atan2(velocity.y, velocity.x) * 180.f / 3.14159f;
+        sprite.setRotation(sf::degrees(rotationAngle - 90.f));
       } else {
         changeState(State::Idle);
-        stateTimer = static_cast<float>(rand() % 10 + 5) / 10.0f;
+        stateTimer = randomFloat(0.5f, 1.4f);
         velocity = {0.f, 0.f};
       }
     }
@@ -157,18 +151,17 @@ void Spider::update(float dt, const sf::Vector2u &windowSize) {
       sprite.move(velocity * dt);
 
       sf::Vector2f pos = sprite.getPosition();
-      if (pos.x < 0 || pos.x > windowSize.x || pos.y < 0 ||
-          pos.y > windowSize.y) {
+      if (pos.x < 0 || pos.x > static_cast<float>(windowSize.x) || pos.y < 0 ||
+          pos.y > static_cast<float>(windowSize.y)) {
         velocity = -velocity;
         sprite.setRotation(
-          sf::degrees(sprite.getRotation().asDegrees() + 180.f));
+            sf::degrees(sprite.getRotation().asDegrees() + 180.f));
       }
     }
   }
 }
 
 void Spider::updateAnimation(float dt) {
-  const sf::Texture &tex = sprite.getTexture();
 
   int cols = 5;
   int frameWidth = 350;
@@ -185,7 +178,7 @@ void Spider::updateAnimation(float dt) {
   sprite.setScale({scale, scale});
 }
 
-void Spider::draw(sf::RenderWindow &window) { window.draw(sprite); }
+void Spider::draw(sf::RenderWindow &window) const { window.draw(sprite); }
 
 bool Spider::contains(sf::Vector2f point) const {
   return sprite.getGlobalBounds().contains(point);

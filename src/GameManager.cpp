@@ -61,18 +61,26 @@ void GameManager::resetGame() {
   size_t maxRowWidth = hints.get_max_row_width();
   size_t maxColHeight = hints.get_max_col_height();
 
-  float availableWidth = winSize.x * 0.85f;
-  float availableHeight = winSize.y * 0.85f;
+  float availableWidth = static_cast<float>(winSize.x) * 0.85f;
+  float availableHeight = static_cast<float>(winSize.y) * 0.85f;
 
-  float cellSizeByWidth = availableWidth / (n + maxRowWidth * 0.8f);
-  float cellSizeByHeight = availableHeight / (n + maxColHeight * 0.8f);
+  float cellSizeByWidth =
+      availableWidth /
+      (static_cast<float>(n) + static_cast<float>(maxRowWidth) * 0.8f);
+  float cellSizeByHeight =
+      availableHeight /
+      (static_cast<float>(n) + static_cast<float>(maxColHeight) * 0.8f);
   float cellSize = std::min(cellSizeByWidth, cellSizeByHeight);
 
-  float totalWidth = (n + maxRowWidth * 0.8f) * cellSize;
-  float totalHeight = (n + maxColHeight * 0.8f) * cellSize;
+  float totalWidth =
+      (static_cast<float>(n) + static_cast<float>(maxRowWidth) * 0.8f) *
+      cellSize;
+  float totalHeight =
+      (static_cast<float>(n) + static_cast<float>(maxColHeight) * 0.8f) *
+      cellSize;
 
-  float offsetX = (winSize.x - totalWidth) / 2.f;
-  float offsetY = (winSize.y - totalHeight) / 2.f;
+  float offsetX = (static_cast<float>(winSize.x) - totalWidth) / 2.f;
+  float offsetY = (static_cast<float>(winSize.y) - totalHeight) / 2.f;
 
   renderer = std::make_unique<GridRenderer>(grid, cellSize,
                                             sf::Vector2f(offsetX, offsetY));
@@ -100,7 +108,7 @@ void GameManager::run() {
         sf::FloatRect visibleArea({0.f, 0.f},
                                   {static_cast<float>(resized->size.x),
                                    static_cast<float>(resized->size.y)});
-        window.setView(sf::View(visibleArea));
+        window.setView(::sf::View(visibleArea));
 
         if (!inMenu && !inGameOver && !inWinScreen) {
           resetGame();
@@ -121,8 +129,7 @@ void GameManager::run() {
         menu->handleEvent(*event, window);
 
         if (auto res = menu->getPendingResolutionChange()) {
-          bool fullscreen = menu->getPendingFullscreen();
-          if (fullscreen) {
+          if (menu->getPendingFullscreen()) {
             window.create(*res, "PictoCraft", sf::State::Fullscreen);
           } else {
             window.create(*res, "PictoCraft", sf::Style::Close,
@@ -196,7 +203,7 @@ void GameManager::run() {
       menu->update(deltaTime);
       menu->draw(window);
     } else if (inWinScreen) {
-      window.clear(sf::Color::Black);
+      window.clear(::sf::Color::Black);
       winScreen->update(deltaTime);
       winScreen->draw(window);
       if (winScreen->isFinished()) {

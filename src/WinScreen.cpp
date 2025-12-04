@@ -4,7 +4,7 @@
 #include <fstream>
 #include <iostream>
 
-WinScreen::WinScreen() : scrollOffset(0.0f), fadeAlpha(255.0f) {
+WinScreen::WinScreen() : scrollOffset(0.0f), fadeAlpha(255.0f), clock() {
   if (!font.openFromFile("assets/Monocraft.ttf")) {
     throw AssetLoadException("assets/Monocraft.ttf", "Font");
   }
@@ -130,7 +130,7 @@ void WinScreen::draw(sf::RenderWindow &window) {
 
   currentY += scoreBounds.size.y + 60.0f * scale;
 
-  unsigned int fontSize = static_cast<unsigned int>(24.0f * scale);
+  auto fontSize = static_cast<unsigned int>(24.0f * scale);
 
   for (size_t i = 0; i < paragraphs.size(); ++i) {
     sf::Text text(font);

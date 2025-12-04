@@ -45,8 +45,9 @@ void GameOverScreen::setScore(int score) {
   scoreValue.setString(std::to_string(score));
 }
 
-GameOverAction GameOverScreen::handleEvent(const sf::Event &event,
-                                           const sf::RenderWindow &window) {
+GameOverAction
+GameOverScreen::handleEvent(const sf::Event &event,
+                            const sf::RenderWindow &window) const {
   if (const auto *mouseButton = event.getIf<sf::Event::MouseButtonPressed>()) {
     if (mouseButton->button == sf::Mouse::Button::Left) {
       sf::Vector2f mousePos = window.mapPixelToCoords(
@@ -85,8 +86,9 @@ void GameOverScreen::update(const sf::RenderWindow &window) {
   titleText.setCharacterSize(static_cast<unsigned int>(60.0f * scale));
   auto titleBounds = titleText.getLocalBounds();
   titleText.setPosition(
-      {(winSize.x - titleBounds.size.x) / 2.0f - titleBounds.position.x,
-       winSize.y * 0.3f});
+      {(static_cast<float>(winSize.x) - titleBounds.size.x) / 2.0f -
+           titleBounds.position.x,
+       static_cast<float>(winSize.y) * 0.3f});
 
   // Scale and Position Score
   scoreLabel.setCharacterSize(static_cast<unsigned int>(30.0f * scale));
@@ -96,24 +98,24 @@ void GameOverScreen::update(const sf::RenderWindow &window) {
   auto valueBounds = scoreValue.getLocalBounds();
   float totalWidth = labelBounds.size.x + valueBounds.size.x;
 
-  float startX = (winSize.x - totalWidth) / 2.0f;
-  float scoreY = winSize.y * 0.45f;
+  float startX = (static_cast<float>(winSize.x) - totalWidth) / 2.0f;
+  float scoreY = static_cast<float>(winSize.y) * 0.45f;
 
   scoreLabel.setPosition({startX, scoreY});
   scoreValue.setPosition({startX + labelBounds.size.x, scoreY});
 
   // Update Buttons
-  float buttonY = winSize.y * 0.6f;
+  float buttonY = static_cast<float>(winSize.y) * 0.6f;
   float spacing = 60.0f * scaleY;
 
   for (size_t i = 0; i < buttons.size(); ++i) {
-    float x = winSize.x / 2.0f;
-    float y = buttonY + i * spacing;
+    float x = static_cast<float>(winSize.x) / 2.0f;
+    float y = buttonY + static_cast<float>(i) * spacing;
     buttons[i]->update(scale, x, y, 1.2f, 1.2f, mousePos);
   }
 }
 
-void GameOverScreen::draw(sf::RenderWindow &window) {
+void GameOverScreen::draw(sf::RenderWindow &window) const {
   auto [scale, scaleY] = calculateScale(window);
 
   window.draw(overlay);
@@ -127,6 +129,4 @@ void GameOverScreen::draw(sf::RenderWindow &window) {
   }
 }
 
-void GameOverScreen::reset() {
-  // Reset any state if needed
-}
+void GameOverScreen::reset() { scoreValue.setString(""); }

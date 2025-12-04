@@ -4,7 +4,7 @@
 
 TimeMode::TimeMode(std::unique_ptr<GameMode> mode, int gridSize)
     : GameModeDecorator(std::move(mode)), decayTimer(0.0f), timeLeft(0.0f),
-      totalTime(gridSize * 15.0f), hurtSound(hurtBuffer) {
+      totalTime(static_cast<float>(gridSize) * 15.0f), hurtSound(hurtBuffer) {
 
   if (gridSize <= 5) {
     maxHearts = 6;

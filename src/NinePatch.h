@@ -34,7 +34,7 @@ public:
     void setPixelSnapping(bool enabled);
 
 private:
-    virtual void draw(sf::RenderTarget &target,
+    void draw(sf::RenderTarget &target,
                       sf::RenderStates states) const override;
 
     void updateLayout();
