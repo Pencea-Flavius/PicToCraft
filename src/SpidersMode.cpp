@@ -2,6 +2,7 @@
 #include "Grid.h"
 #include "GridRenderer.h"
 #include <algorithm>
+#include <cmath>
 #include <filesystem>
 #include <iostream>
 #include <random>
@@ -66,11 +67,7 @@ void SpidersMode::update(float deltaTime) {
   if (windowSize.x == 0)
     windowSize = {1280, 720};
 
-  // Assign target if grid/renderer available
   if (grid && renderer) {
-    // Retarget logic removed as per user request
-    // Spiders will now roam freely after their first target
-
     for (auto &spider : spiders) {
       spider.update(deltaTime, windowSize);
 
@@ -84,7 +81,7 @@ void SpidersMode::update(float deltaTime) {
           // Reached target
           grid->webHint(spider.getIsRowTarget(), spider.getTargetLine(),
                         spider.getTargetIndex());
-          spider.clearTarget(); // Don't die, just clear target
+          spider.clearTarget();
           // Spider will now wander until retargeted
         }
       }
@@ -112,9 +109,7 @@ void SpidersMode::update(float deltaTime) {
     }
   }
 
-  spiders.erase(std::remove_if(spiders.begin(), spiders.end(),
-                               [](const Spider &s) { return s.isDead(); }),
-                spiders.end());
+  std::erase_if(spiders, [](const Spider &s) { return s.isDead(); });
 }
 
 void SpidersMode::draw(sf::RenderWindow &window) const {

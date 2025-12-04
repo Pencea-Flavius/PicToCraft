@@ -1,7 +1,6 @@
 #include "GameOverScreen.h"
 #include "Exceptions.h"
 #include "ShadowedText.h"
-#include <iostream>
 
 GameOverScreen::GameOverScreen()
     : font(), titleText(font), scoreLabel(font), scoreValue(font) {

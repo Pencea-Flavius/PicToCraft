@@ -1,7 +1,6 @@
 #include "GameManager.h"
 #include "Exceptions.h"
 #include <SFML/Graphics/RenderTexture.hpp>
-#include <iostream>
 #include <optional>
 
 GameManager::GameManager()
