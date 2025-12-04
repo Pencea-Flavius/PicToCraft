@@ -122,9 +122,8 @@ void SpidersMode::draw(sf::RenderWindow &window) const {
 
   const_cast<SpidersMode *>(this)->windowSize = window.getSize();
 
-  for (auto &spider : spiders) {
-    auto &s = const_cast<Spider &>(spider);
-    s.draw(window);
+  for (const auto &spider : spiders) {
+    spider.draw(window);
   }
 }
 
