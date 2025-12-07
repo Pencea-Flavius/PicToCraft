@@ -6,12 +6,14 @@
 #include <algorithm>
 #include <cmath>
 #include <iostream>
+#include <random>
 #include <sstream>
 
 GridRenderer::GridRenderer(Grid &g, float size, sf::Vector2f off)
     : grid(g), cellSize(size), offset(off), fontLoaded(false), lastMistakes(0),
       animationClock(), backgroundPatch(sf::Texture(), 4, 10),
-      hintTabPatch(sf::Texture(), 4, 0) {
+      hintTabPatch(sf::Texture(), 4, 0), isDementiaMode(false),
+      defaultGlassColorIndex(0) {
   fontLoaded = font.openFromFile("assets/Monocraft.ttf");
   if (!webTexture.loadFromFile("assets/cobweb.png")) {
     std::cerr << "Failed to load cobweb texture" << std::endl;
@@ -45,7 +47,35 @@ GridRenderer::GridRenderer(Grid &g, float size, sf::Vector2f off)
     }
     breakTextures.push_back(tex);
   }
+
+  // Load glass textures
+  std::vector<std::string> glassColors = {
+      "black",      "blue",       "brown", "cyan",    "gray",   "green",
+      "light_blue", "light_gray", "lime",  "magenta", "orange", "pink",
+      "purple",     "red",        "white", "yellow"};
+
+  for (const auto &color : glassColors) {
+    sf::Texture tex;
+    std::string path = "assets/glass/" + color + "_stained_glass.png";
+    if (!tex.loadFromFile(path)) {
+      std::cerr << "Failed to load " << path << std::endl;
+    }
+    glassTextures.push_back(tex);
+  }
+
+  // Randomize default glass color (exclude gray at index 4)
+  static std::random_device rd;
+  static std::mt19937 gen(rd());
+  std::vector<int> validIndices;
+  for (int i = 0; i < 16; ++i) {
+    if (i != 4)
+      validIndices.push_back(i);
+  }
+  std::uniform_int_distribution<> dis(0, validIndices.size() - 1);
+  defaultGlassColorIndex = validIndices[dis(gen)];
 }
+
+void GridRenderer::setDementiaMode(bool enabled) { isDementiaMode = enabled; }
 
 void GridRenderer::drawGameInfo(sf::RenderWindow &window) const {
   if (!fontLoaded)
@@ -59,11 +89,11 @@ void GridRenderer::drawGameInfo(sf::RenderWindow &window) const {
 
   sf::Text infoText(font, "");
   infoText.setCharacterSize(fontSize);
-  infoText.setFillColor(sf::Color::Black);
+  infoText.setFillColor(sf::Color::Yellow);
 
   if (grid.shouldDisplayScore()) {
     std::ostringstream oss;
-    oss << "Scor: " << grid.get_score();
+    oss << "Score: " << grid.get_score();
     infoText.setString(oss.str());
 
     float padding = static_cast<float>(winSize.x) * 0.015f;
@@ -454,13 +484,44 @@ void GridRenderer::draw(sf::RenderWindow &window) const {
       window.draw(slotSprite);
 
       if (grid.get_block(i, j).is_completed()) {
-        // Draw filled block (black square inside slot)
-        float blockPadding = cellSize * 0.15f;
-        sf::RectangleShape rect(sf::Vector2f(cellSize - 2 * blockPadding,
-                                             cellSize - 2 * blockPadding));
-        rect.setPosition({pos.x + blockPadding, pos.y + blockPadding});
-        rect.setFillColor(sf::Color::Black);
-        window.draw(rect);
+        if (!glassTextures.empty()) {
+          int textureIndex = defaultGlassColorIndex;
+          if (isDementiaMode) {
+            size_t h = std::hash<int>{}(i) ^ (std::hash<int>{}(j) << 1);
+            textureIndex = h % glassTextures.size();
+          }
+
+          sf::Sprite glassSprite(glassTextures[textureIndex]);
+
+          float glassScaleFactor = 0.9f;
+          float targetSize = cellSize * glassScaleFactor;
+
+          float glassScaleX =
+              targetSize /
+              static_cast<float>(glassTextures[textureIndex].getSize().x);
+          float glassScaleY =
+              targetSize /
+              static_cast<float>(glassTextures[textureIndex].getSize().y);
+
+          glassSprite.setScale({glassScaleX, glassScaleY});
+
+          glassSprite.setOrigin(
+              {static_cast<float>(glassTextures[textureIndex].getSize().x) /
+                   2.0f,
+               static_cast<float>(glassTextures[textureIndex].getSize().y) /
+                   2.0f});
+          glassSprite.setPosition(
+              {pos.x + cellSize / 2.0f, pos.y + cellSize / 2.0f});
+
+          window.draw(glassSprite);
+        } else {
+          float blockPadding = cellSize * 0.15f;
+          sf::RectangleShape rect(sf::Vector2f(cellSize - 2 * blockPadding,
+                                               cellSize - 2 * blockPadding));
+          rect.setPosition({pos.x + blockPadding, pos.y + blockPadding});
+          rect.setFillColor(sf::Color::Black);
+          window.draw(rect);
+        }
       }
     }
   }

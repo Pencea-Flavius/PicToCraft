@@ -2,6 +2,7 @@
 #define OOP_GAMEMANAGER_H
 
 #include "CustomCursor.h"
+#include "GameBackground.h"
 #include "GameMenu.h"
 #include "GameOverScreen.h"
 #include "Grid.h"
@@ -26,6 +27,8 @@ class GameManager {
 
   sf::SoundBuffer deathBuffer;
   sf::Sound deathSound;
+
+  std::unique_ptr<GameBackground> background;
 
 public:
   GameManager();

@@ -24,13 +24,13 @@ GameManager::GameManager()
   winScreen = std::make_unique<WinScreen>();
 
   bool enableCustomCursor = true;
-  float cursorScale = (static_cast<float>(width) / 1920.0f) * 0.2f;
   customCursor = std::make_unique<CustomCursor>(window);
-  customCursor->setScale(cursorScale);
   customCursor->setEnabled(enableCustomCursor);
   if (!deathBuffer.loadFromFile("assets/sound/hurt2.mp3")) {
     throw AssetLoadException("assets/sound/hurt2.mp3", "Sound");
   }
+
+  background = std::make_unique<GameBackground>();
 }
 
 void GameManager::startGame() {
@@ -44,6 +44,10 @@ void GameManager::startGame() {
 
   if (customCursor) {
     customCursor->setTorchMode(config.torchMode);
+  }
+
+  if (background) {
+    background->selectBackground(config);
   }
 
   resetGame();
@@ -112,13 +116,6 @@ void GameManager::run() {
         if (!inMenu && !inGameOver && !inWinScreen) {
           resetGame();
         }
-
-        if (customCursor) {
-          // Base width 1920, base scale 0.2f
-          float newScale =
-              (static_cast<float>(resized->size.x) / 1920.0f) * 0.2f;
-          customCursor->setScale(newScale);
-        }
       }
       if (customCursor) {
         customCursor->handleEvent(*event);
@@ -135,11 +132,6 @@ void GameManager::run() {
                           sf::State::Windowed);
           }
           window.setFramerateLimit(60);
-          if (customCursor) {
-            float newScale =
-                (static_cast<float>(window.getSize().x) / 1920.0f) * 0.2f;
-            customCursor->setScale(newScale);
-          }
         }
 
         if (menu->shouldQuit()) {
@@ -198,6 +190,10 @@ void GameManager::run() {
       }
     }
 
+    if (customCursor) {
+      customCursor->update(deltaTime);
+    }
+
     if (inMenu) {
       menu->update(deltaTime);
       menu->draw(window);
@@ -229,6 +225,9 @@ void GameManager::run() {
           deathSound.play();
         }
       }
+      if (background) {
+        background->draw(window);
+      }
       renderer->draw(window);
       renderer->drawGameInfo(window);
 
@@ -236,6 +235,11 @@ void GameManager::run() {
         gameOverScreen->update(window);
         gameOverScreen->draw(window);
       }
+    }
+
+    // Draw custom cursor debug
+    if (customCursor) {
+      customCursor->drawDebug(window);
     }
 
     window.display();

@@ -144,21 +144,15 @@ void TorchMode::draw(sf::RenderWindow &window) const {
   window.setView(window.getDefaultView());
   window.draw(overlay);
 
-  // Emit particles at mouse position
   sf::Vector2i mousePosI = sf::Mouse::getPosition(window);
   auto mousePosF = static_cast<sf::Vector2f>(mousePosI);
-
-  float scaleFactor = static_cast<float>(window.getSize().x) / 1920.0f;
 
   sf::Vector2f offset;
 
   if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left)) {
-    // Clicked position
-    offset = sf::Vector2f(20.f, -60.f) * scaleFactor;
+    offset = sf::Vector2f(8.f, -48.f);
   } else {
-    // Normal position
-    // Adjusted for better alignment
-    offset = sf::Vector2f(40.f, -90.f) * scaleFactor;
+    offset = sf::Vector2f(15.f, -40.f);
   }
 
   sf::Vector2f emitPos = mousePosF + offset;

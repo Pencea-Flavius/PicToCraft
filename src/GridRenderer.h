@@ -29,11 +29,17 @@ class GridRenderer {
   NinePatch backgroundPatch;
   NinePatch hintTabPatch;
 
+  std::vector<sf::Texture> glassTextures;
+  bool isDementiaMode;
+  int defaultGlassColorIndex;
+
 public:
   explicit GridRenderer(Grid &g, float size = 40.f,
                         sf::Vector2f offset = {50.f, 50.f});
 
   ~GridRenderer() = default;
+
+  void setDementiaMode(bool enabled);
 
   void draw(sf::RenderWindow &window) const;
 

@@ -2,7 +2,6 @@
 #include "Grid.h"
 #include "GridRenderer.h"
 #include <algorithm>
-#include <cmath>
 #include <filesystem>
 #include <iostream>
 #include <random>

@@ -5,19 +5,19 @@
 #include <optional>
 
 class MenuPanorama {
-    sf::Texture panoramaTexture;
-    std::optional<sf::Sprite> panoramaSprite1;
-    std::optional<sf::Sprite> panoramaSprite2;
-    bool loaded;
-    float offset;
-    float speed;
+  sf::Texture panoramaTexture;
+  std::optional<sf::Sprite> panoramaSprite1;
+  std::optional<sf::Sprite> panoramaSprite2;
+  bool loaded;
+  float offset;
+  float speed;
+
 public:
-    MenuPanorama();
-    ~MenuPanorama() = default;
+  MenuPanorama();
+  ~MenuPanorama() = default;
 
-    void update(float deltaTime);
-    void draw(sf::RenderWindow& window);
-
+  void update(float deltaTime);
+  void draw(sf::RenderWindow &window);
 };
 
-#endif //OOP_MENUPANORAMA_H
+#endif // OOP_MENUPANORAMA_H

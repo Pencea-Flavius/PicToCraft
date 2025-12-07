@@ -30,6 +30,7 @@ GameMenu::GameMenu()
   gameConfig.baseMode = GameModeType::Score;
   gameConfig.timeMode = false;
   gameConfig.torchMode = false;
+  gameConfig.dementiaMode = false;
 
   loadAssets();
 
@@ -163,6 +164,8 @@ void GameMenu::setupGameSetupScreen() {
     labels.emplace_back(gameConfig.torchMode ? "Torch: ON" : "Torch: OFF");
     labels.emplace_back(gameConfig.spidersMode ? "Spiders: ON"
                                                : "Spiders: OFF");
+    labels.emplace_back(gameConfig.dementiaMode ? "Dementia: ON"
+                                                : "Dementia: OFF");
   }
 
   labels.emplace_back("Play Selected Game");
@@ -353,6 +356,9 @@ void GameMenu::handleGameSetupClick(int buttonIndex) {
       setupGameSetupScreen();
     } else if (buttonIndex == 4) {
       gameConfig.spidersMode = !gameConfig.spidersMode;
+      setupGameSetupScreen();
+    } else if (buttonIndex == 5) {
+      gameConfig.dementiaMode = !gameConfig.dementiaMode;
       setupGameSetupScreen();
     }
   }

@@ -1,12 +1,14 @@
+
 #include "CustomCursor.h"
 #include "Exceptions.h"
 #include <SFML/Graphics/RenderTexture.hpp>
 #include <SFML/Graphics/Sprite.hpp>
 #include <SFML/Graphics/Texture.hpp>
+#include <random>
 
 CustomCursor::CustomCursor(sf::Window &window)
-    : window(window), isEnabled(true), currentScale(0.2f), hotspotIdle(20, 100),
-      hotspotClick(20, 100) {
+    : window(window), isEnabled(true), currentScale(0.1f), hotspotIdle(30, 85),
+      hotspotClick(30, 130) {
 
   cursorIdle = loadCursor("assets/mouse/idle.png", hotspotIdle);
   cursorClick = loadCursor("assets/mouse/click.png", hotspotClick);
@@ -37,6 +39,7 @@ void CustomCursor::setScale(float scale) {
 
 void CustomCursor::setTorchMode(bool enabled) {
   torchMode = enabled;
+  emissionTimer = 0.0f;
   if (isEnabled) {
     if (torchMode) {
       if (cursorIdleTorch)
@@ -144,4 +147,18 @@ std::optional<sf::Cursor> CustomCursor::loadCursor(const std::string &path,
 
   return sf::Cursor::createFromPixels(img.getPixelsPtr(), img.getSize(),
                                       {hx, hy});
+}
+
+void CustomCursor::update(float dt) const {
+  if (!isEnabled)
+    return;
+
+  particleSystem.update(dt);
+}
+
+void CustomCursor::drawDebug(sf::RenderWindow &renderWindow) const {
+  if (!isEnabled)
+    return;
+
+  const_cast<ParticleSystem &>(particleSystem).draw(renderWindow);
 }

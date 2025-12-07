@@ -14,8 +14,8 @@ static float randomFloat(float min, float max) {
 void Spider::updateRotation() {
   if (velocity.x != 0.f || velocity.y != 0.f) {
     float angle = std::atan2(velocity.y, velocity.x) * 180.0f / 3.14159f;
-    sprite.setRotation(sf::degrees(
-        angle - 90.0f)); // Sprite faces down (90 deg), so subtract 90
+    sprite.setRotation(
+        sf::degrees(angle - 90.0f)); // Sprite faces down (90 deg)
   }
 }
 
@@ -174,14 +174,21 @@ void Spider::updateAnimation(float dt) {
                    {frameWidth, frameHeight});
   sprite.setTextureRect(rect);
 
-  // Ensure scale is positive (no flipping)
+  // Ensure scale is positive
   sprite.setScale({scale, scale});
 }
 
 void Spider::draw(sf::RenderWindow &window) const { window.draw(sprite); }
 
 bool Spider::contains(sf::Vector2f point) const {
-  return sprite.getGlobalBounds().contains(point);
+  // Transform the point to the sprite's local coordinate system
+  sf::Transform inverseTransform = sprite.getInverseTransform();
+  sf::Vector2f localPoint = inverseTransform.transformPoint(point);
+
+  // Define the local hitbox
+  sf::FloatRect localHitbox({75.f, 220.f}, {200.f, 200.f});
+
+  return localHitbox.contains(localPoint);
 }
 
 void Spider::die() {
