@@ -30,7 +30,7 @@ public:
   Grid();
 
   Grid(int grid_size, const std::vector<std::vector<bool>> &pattern,
-       GameConfig config = {});
+       const GameConfig &config = {});
 
   Grid(const Grid &other);
 
@@ -40,9 +40,10 @@ public:
 
   ~Grid();
 
-  void load_from_file(const std::string &filename, GameConfig config = {});
+  void load_from_file(const std::string &filename,
+                      const GameConfig &config = {});
 
-  void generate_random(int grid_size, GameConfig config = {},
+  void generate_random(int grid_size, const GameConfig &config = {},
                        double density = 0.5);
 
   void toggle_block(int x, int y);

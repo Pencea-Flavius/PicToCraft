@@ -2,9 +2,7 @@
 #include <iostream>
 #include <random>
 
-#include "GameBackground.h"
-#include <iostream>
-#include <random>
+
 
 GameBackground::GameBackground() : currentType(BackgroundType::Desert), offset(0.0f), speed(30.0f), loaded(false), ambientTimer(10.0f) {
   loadTextures();

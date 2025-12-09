@@ -21,7 +21,7 @@ Grid::Grid()
 }
 
 Grid::Grid(int grid_size, const std::vector<std::vector<bool>> &pattern,
-           GameConfig config)
+           const GameConfig &config)
     : size{grid_size}, total_correct_blocks{0}, completed_blocks{0},
       correct_completed_blocks{0},
       gameMode(GameModeFactory::createGameMode(config, grid_size)) {
@@ -90,7 +90,7 @@ Grid &Grid::operator=(Grid other) {
 
 Grid::~Grid() = default;
 
-void Grid::load_from_file(const std::string &filename, GameConfig config) {
+void Grid::load_from_file(const std::string &filename, const GameConfig &config) {
   std::ifstream file(filename);
   if (!file) {
     throw FileLoadException(filename);
@@ -127,7 +127,7 @@ void Grid::load_from_file(const std::string &filename, GameConfig config) {
 }
 
 // Generate random grid
-void Grid::generate_random(int grid_size, GameConfig config, double density) {
+void Grid::generate_random(int grid_size, const GameConfig &config, double density) {
   size = grid_size;
   blocks.clear();
   blocks.resize(size);
