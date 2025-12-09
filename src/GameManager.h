@@ -29,6 +29,15 @@ class GameManager {
   sf::Sound deathSound;
 
   std::unique_ptr<GameBackground> background;
+  
+  // Audio
+  sf::Music alphaMusic;
+  sf::Music c418Music;
+  std::vector<std::string> c418Tracks;
+  float musicPauseTimer;
+  float nextPauseDuration;
+  
+  void updateMusic(float deltaTime);
 
 public:
   GameManager();

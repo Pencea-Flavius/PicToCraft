@@ -23,8 +23,10 @@ class Grid {
   PicrossHints hints;
   std::unique_ptr<GameMode> gameMode;
   static int totalGridsCreated;
-
+  
 public:
+  enum class WebDamageResult { None, Damaged, Destroyed };
+  
   Grid();
 
   Grid(int grid_size, const std::vector<std::vector<bool>> &pattern,
@@ -76,7 +78,7 @@ public:
 
   void unwebHint(bool isRow, int line, int index);
 
-  void damageWeb(bool isRow, int line, int index);
+  WebDamageResult damageWeb(bool isRow, int line, int index);
 
   void healWebs(); // Added healWebs
   [[nodiscard]] bool isHintWebbed(bool isRow, int line, int index) const;
@@ -84,6 +86,10 @@ public:
   void setRenderer(const class GridRenderer *r) const;
 
   friend std::ostream &operator<<(std::ostream &os, const Grid &g);
+  
+  void setSfxVolume(float volume) {
+      if (gameMode) gameMode->setSfxVolume(volume);
+  }
 
 };
 

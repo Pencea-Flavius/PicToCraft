@@ -2,6 +2,7 @@
 #define OOP_SPIDER_H
 
 #include <SFML/Graphics.hpp>
+#include <SFML/Audio.hpp>
 
 class Spider {
 public:
@@ -9,11 +10,15 @@ public:
 
   Spider(sf::Vector2f startPos, const sf::Texture &walkTex,
          const sf::Texture &idleTex, const sf::Texture &deathTex,
-         float scale = 0.3f);
+         const sf::SoundBuffer *deathSnd,
+         const std::vector<sf::SoundBuffer> *idleSnds,
+         const std::vector<sf::SoundBuffer> *stepSnds, float scale = 0.3f);
 
   void update(float dt, const sf::Vector2u &windowSize);
 
   void draw(sf::RenderWindow &window) const;
+  
+  void setVolume(float volume) { currentVolume = volume; if(audioSource) audioSource->setVolume(volume); }
 
   bool contains(sf::Vector2f point) const;
 
@@ -62,6 +67,15 @@ private:
   void updateAnimation(float dt);
 
   void updateRotation();
+
+  const sf::SoundBuffer *deathSoundBuffer;
+  const std::vector<sf::SoundBuffer> *idleSoundBuffers;
+  const std::vector<sf::SoundBuffer> *stepSoundBuffers;
+  std::optional<sf::Sound> audioSource;
+  int currentStepSoundIndex = 0;
+  float idleSoundTimer = 0.0f;
+  float stepTimer = 0.0f;
+  float currentVolume = 100.0f;
 };
 
 #endif // OOP_SPIDER_H

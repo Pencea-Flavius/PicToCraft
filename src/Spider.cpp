@@ -21,11 +21,14 @@ void Spider::updateRotation() {
 
 Spider::Spider(sf::Vector2f startPos, const sf::Texture &walkTex,
                const sf::Texture &idleTex, const sf::Texture &deathTex,
-               float scale)
+               const sf::SoundBuffer *deathSnd,
+               const std::vector<sf::SoundBuffer> *idleSnds,
+               const std::vector<sf::SoundBuffer> *stepSnds, float scale)
     : sprite(walkTex), walkTexture(&walkTex), idleTexture(&idleTex),
-      deathTexture(&deathTex), state(State::Walking),
-      stateTimer(randomFloat(2.0f, 5.0f)), scale(scale), animationTimer(0.0f),
-      currentFrame(0), numFrames(1), frameTime(0.03f) {
+      deathTexture(&deathTex), deathSoundBuffer(deathSnd),
+      idleSoundBuffers(idleSnds), stepSoundBuffers(stepSnds),
+      state(State::Walking), stateTimer(randomFloat(2.0f, 5.0f)), scale(scale),
+      animationTimer(0.0f), currentFrame(0), numFrames(1), frameTime(0.03f) {
   sprite.setPosition(startPos);
   sprite.setScale({scale, scale});
 
@@ -56,16 +59,44 @@ void Spider::changeState(State newState) {
     velocity = {std::cos(angle) * speed, std::sin(angle) * speed};
 
     updateRotation();
+
+    // Start walking sound
+    if (stepSoundBuffers && !stepSoundBuffers->empty()) {
+      static std::random_device rd;
+      static std::mt19937 gen(rd());
+      std::uniform_int_distribution<> dis(0, stepSoundBuffers->size() - 1);
+      
+      currentStepSoundIndex = dis(gen);
+      audioSource.emplace((*stepSoundBuffers)[currentStepSoundIndex]);
+      audioSource->setVolume(currentVolume);
+      audioSource->play();
+
+      std::uniform_real_distribution<float> timeDis(1.0f, 2.0f);
+      stepTimer = timeDis(gen);
+    }
   } else if (state == State::Idle) {
     sprite.setTexture(*idleTexture);
     stateTimer = randomFloat(1.0f, 3.0f);
     velocity = {0.f, 0.f};
     numFrames = 50; // 5 cols * 10 rows
+    
+    // Stop walking sound if playing
+    if (audioSource.has_value() && audioSource->getStatus() == sf::Sound::Status::Playing) {
+        audioSource->stop();
+    }
+    idleSoundTimer = 0.0f; // Reset idle timer
   } else {          // State::Dying
     sprite.setTexture(*deathTexture);
     stateTimer = 100.0f; // Long enough to finish animation
     velocity = {0.f, 0.f};
     numFrames = 20; // 5 cols * 4 rows
+    
+    // Play death sound
+    if (deathSoundBuffer) {
+        audioSource.emplace(*deathSoundBuffer);
+        audioSource->setVolume(currentVolume);
+        audioSource->play();
+    }
   }
 
   updateAnimation(0.0f);
@@ -158,6 +189,41 @@ void Spider::update(float dt, const sf::Vector2u &windowSize) {
             sf::degrees(sprite.getRotation().asDegrees() + 180.f));
       }
     }
+    }
+
+  // Audio update
+  if (state == State::Walking) {
+      stepTimer -= dt;
+      if (stepTimer <= 0.0f && stepSoundBuffers && !stepSoundBuffers->empty()) {
+          // Play random step sound
+          if (!audioSource.has_value() || audioSource->getStatus() != sf::Sound::Status::Playing) {
+              static std::random_device rd;
+              static std::mt19937 gen(rd());
+              std::uniform_int_distribution<> dis(0, stepSoundBuffers->size() - 1);
+              std::uniform_real_distribution<float> timeDis(1.5f, 3.0f); // "Rarer" - delay between steps
+              
+              currentStepSoundIndex = dis(gen);
+              audioSource.emplace((*stepSoundBuffers)[currentStepSoundIndex]);
+              audioSource->setVolume(currentVolume);
+              audioSource->play();
+              
+              stepTimer = timeDis(gen);
+          }
+      }
+  } else if (state == State::Idle) {
+      if ((!audioSource.has_value() || audioSource->getStatus() == sf::Sound::Status::Stopped) && idleSoundBuffers && !idleSoundBuffers->empty()) {
+          static std::random_device rd;
+          static std::mt19937 gen(rd());
+          std::uniform_int_distribution<> dis(0, 300);
+          
+          if (dis(gen) == 0) {
+             std::uniform_int_distribution<> idxDis(0, idleSoundBuffers->size() - 1);
+             int idx = idxDis(gen);
+             audioSource.emplace((*idleSoundBuffers)[idx]);
+             audioSource->setVolume(currentVolume);
+             audioSource->play();
+          }
+      }
   }
 }
 

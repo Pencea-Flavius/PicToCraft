@@ -3,6 +3,7 @@
 
 #include "GameMode.h"
 #include <SFML/Graphics.hpp>
+#include <SFML/Audio.hpp>
 #include <vector>
 
 #include "Spider.h"
@@ -16,6 +17,8 @@ public:
     void update(float deltaTime) override;
 
     void draw(sf::RenderWindow &window) const override;
+  
+    void setSfxVolume(float volume) override;
 
     bool handleInput(const sf::Event &event,
                      const sf::RenderWindow &window) override;
@@ -39,8 +42,21 @@ private:
     sf::Texture idleTexture;
     sf::Texture deathTexture;
 
+    sf::SoundBuffer deathBuffer;
+    std::vector<sf::SoundBuffer> idleBuffers;
+    std::vector<sf::SoundBuffer> stepBuffers;
+    
+    sf::SoundBuffer brokenWebBuffer;
+    std::vector<sf::SoundBuffer> hitWebBuffers;
+    
+    // Use a separate audio source for web interaction to avoid cutting off spiders maybe? 
+    // Or just one for logic. Let's start with one on the mode or use fire-and-forget logic if possible?
+    // Actually SpidersMode shouldn't probably own the audioSource for *spiders*, but it needs one for *webs*.
+    std::optional<sf::Sound> webAudioSource;
+
     float spawnTimer;
     float damageTimer; // For hold-to-break
+    float currentVolume = 100.0f;
     sf::Vector2i lastMousePos; // Store last mouse position
     mutable sf::Vector2u windowSize; // Cache window size for updates
 

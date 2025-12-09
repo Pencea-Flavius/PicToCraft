@@ -264,14 +264,17 @@ void Grid::unwebHint(bool isRow, int line, int index) {
   hints.setWebHealth(isRow, line, index, 0);
 }
 
-void Grid::damageWeb(bool isRow, int line, int index) {
+Grid::WebDamageResult Grid::damageWeb(bool isRow, int line, int index) {
   int currentHealth = hints.getWebHealth(isRow, line, index);
   if (currentHealth > 0) {
     hints.setWebHealth(isRow, line, index, currentHealth - 1);
     if (currentHealth - 1 <= 0) {
       unwebHint(isRow, line, index);
+      return WebDamageResult::Destroyed;
     }
+    return WebDamageResult::Damaged;
   }
+  return WebDamageResult::None;
 }
 
 void Grid::healWebs() {

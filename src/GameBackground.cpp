@@ -2,23 +2,31 @@
 #include <iostream>
 #include <random>
 
-GameBackground::GameBackground() : currentType(BackgroundType::Plains) {
+#include "GameBackground.h"
+#include <iostream>
+#include <random>
+
+GameBackground::GameBackground() : currentType(BackgroundType::Desert), offset(0.0f), speed(30.0f), loaded(false) {
   loadTextures();
 }
 
 void GameBackground::loadTextures() {
-  if (!plainsTexture.loadFromFile("assets/backgrounds/plains.png")) {
-    std::cerr << "Failed to load plains background" << std::endl;
-  }
-  if (!desertTexture.loadFromFile("assets/backgrounds/desert.png")) {
+  if (!desertTexture.loadFromFile("assets/backgrounds/desert.jpg")) {
     std::cerr << "Failed to load desert background" << std::endl;
   }
-  if (!caveTexture.loadFromFile("assets/backgrounds/cave.png")) {
+  desertTexture.setRepeated(true);
+
+  if (!caveTexture.loadFromFile("assets/backgrounds/cave.jpg")) {
     std::cerr << "Failed to load cave background" << std::endl;
   }
-  if (!mineshaftTexture.loadFromFile("assets/backgrounds/mineshaft.png")) {
+  caveTexture.setRepeated(true);
+
+  if (!mineshaftTexture.loadFromFile("assets/backgrounds/mineshaft.jpg")) {
     std::cerr << "Failed to load mineshaft background" << std::endl;
   }
+  mineshaftTexture.setRepeated(true);
+  
+  loaded = true;
 }
 
 void GameBackground::selectBackground(const GameConfig &config) {
@@ -32,40 +40,67 @@ void GameBackground::selectBackground(const GameConfig &config) {
     static std::random_device rd;
     static std::mt19937 gen(rd());
     std::uniform_int_distribution<> dis(0, 1);
-    selectedType =
-        (dis(gen) == 0) ? BackgroundType::Plains : BackgroundType::Desert;
+    selectedType = BackgroundType::Desert; 
   }
 
   currentType = selectedType;
+  offset = 0.0f;
 
+  const sf::Texture* tex = nullptr;
   switch (currentType) {
-  case BackgroundType::Plains:
-    currentBackground = sf::Sprite(plainsTexture);
-    break;
   case BackgroundType::Desert:
-    currentBackground = sf::Sprite(desertTexture);
+    tex = &desertTexture;
     break;
   case BackgroundType::Cave:
-    currentBackground = sf::Sprite(caveTexture);
+    tex = &caveTexture;
     break;
   case BackgroundType::Mineshaft:
-    currentBackground = sf::Sprite(mineshaftTexture);
+    tex = &mineshaftTexture;
+
+    {
+        static std::random_device rd_mineshaft;
+        static std::mt19937 gen_mineshaft(rd_mineshaft());
+        std::uniform_int_distribution<> dis_mineshaft(0, 1);
+        int idx = dis_mineshaft(gen_mineshaft);
+
+    }
     break;
+  }
+  
+  if (tex) {
+      currentBackground1.emplace(*tex);
+      currentBackground2.emplace(*tex);
   }
 }
 
+void GameBackground::update(float deltaTime) {
+    if (!loaded) return;
+    if (!currentBackground1.has_value()) return;
+    
+    offset += speed * deltaTime;
+    float textureWidth = static_cast<float>(currentBackground1->getTexture().getSize().x);
+    if (offset >= textureWidth) {
+       offset -= textureWidth;
+    }
+}
+
 void GameBackground::draw(sf::RenderWindow &window) const {
-  if (!currentBackground)
+  if (!loaded || !currentBackground1.has_value() || !currentBackground2.has_value())
     return;
 
   auto winSize = window.getSize();
-  auto texSize = currentBackground->getTexture().getSize();
+  auto texSize = currentBackground1->getTexture().getSize();
 
-  float scaleX = static_cast<float>(winSize.x) / static_cast<float>(texSize.x);
   float scaleY = static_cast<float>(winSize.y) / static_cast<float>(texSize.y);
+  
+  float textureWidth = static_cast<float>(texSize.x) * scaleY;
 
-  currentBackground->setScale({scaleX, scaleY});
-  currentBackground->setPosition({0.f, 0.f});
+  currentBackground1->setScale({scaleY, scaleY});
+  currentBackground1->setPosition({-offset * scaleY, 0.f});
 
-  window.draw(*currentBackground);
+  currentBackground2->setScale({scaleY, scaleY});
+  currentBackground2->setPosition({textureWidth - offset * scaleY, 0.f});
+
+  window.draw(*currentBackground1);
+  window.draw(*currentBackground2);
 }

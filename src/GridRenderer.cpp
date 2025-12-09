@@ -612,7 +612,7 @@ sf::Vector2f GridRenderer::getHintCenter(bool isRow, int line,
   }
 }
 
-void GridRenderer::handleHintClick(const sf::Vector2i &mousePos) const {
+Grid::WebDamageResult GridRenderer::handleHintClick(const sf::Vector2i &mousePos) const {
   const auto &hints = grid.get_hints();
 
   // Check all webbed hints to see if clicked
@@ -627,9 +627,8 @@ void GridRenderer::handleHintClick(const sf::Vector2i &mousePos) const {
         float dx = static_cast<float>(mousePos.x) - center.x;
         float dy = static_cast<float>(mousePos.y) - center.y;
         if (dx * dx + dy * dy <= radius * radius) {
-          const_cast<Grid &>(grid).damageWeb(
+          return const_cast<Grid &>(grid).damageWeb(
               true, static_cast<int>(i), static_cast<int>(j)); // Use damageWeb
-          return; // Handle one click at a time
         }
       }
     }
@@ -646,11 +645,11 @@ void GridRenderer::handleHintClick(const sf::Vector2i &mousePos) const {
         float dx = static_cast<float>(mousePos.x) - center.x;
         float dy = static_cast<float>(mousePos.y) - center.y;
         if (dx * dx + dy * dy <= radius * radius) {
-          const_cast<Grid &>(grid).damageWeb(
+          return const_cast<Grid &>(grid).damageWeb(
               false, static_cast<int>(j), static_cast<int>(i)); // Use damageWeb
-          return;
         }
       }
     }
   }
+  return Grid::WebDamageResult::None;
 }

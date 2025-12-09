@@ -37,6 +37,45 @@ SpidersMode::SpidersMode(std::unique_ptr<GameMode> mode)
   if (!deathTexture.loadFromFile("assets/enemy/spider_death.png")) {
     std::cerr << "Failed to load spider_death.png" << std::endl;
   }
+
+  if (!deathBuffer.loadFromFile("assets/sound/Spider_death.ogg")) {
+      std::cerr << "Failed to load Spider_death.ogg" << std::endl;
+  }
+
+  idleBuffers.reserve(4);
+  for (int i = 1; i <= 4; ++i) {
+      sf::SoundBuffer buf;
+      if (buf.loadFromFile("assets/sound/Spider_idle" + std::to_string(i) + ".ogg")) {
+          idleBuffers.push_back(buf);
+      } else {
+           std::cerr << "Failed to load Spider_idle" << i << ".ogg" << std::endl;
+      }
+  }
+
+  stepBuffers.reserve(4);
+  for (int i = 1; i <= 4; ++i) {
+      sf::SoundBuffer buf;
+      if (buf.loadFromFile("assets/sound/Spider_step" + std::to_string(i) + ".ogg")) {
+          stepBuffers.push_back(buf);
+      } else {
+           std::cerr << "Failed to load Spider_step" << i << ".ogg" << std::endl;
+      }
+  }
+  
+  // Web sounds
+  if (!brokenWebBuffer.loadFromFile("assets/sound/break.ogg")) {
+      std::cerr << "Failed to load break.ogg" << std::endl;
+  }
+  
+  hitWebBuffers.reserve(5);
+  for (int i = 1; i <= 5; ++i) {
+      sf::SoundBuffer buf;
+      if (buf.loadFromFile("assets/sound/Stone_hit" + std::to_string(i) + ".ogg")) {
+          hitWebBuffers.push_back(buf);
+      } else {
+           std::cerr << "Failed to load Stone_hit" << i << ".ogg" << std::endl;
+      }
+  }
 }
 
 void SpidersMode::setGrid(Grid *g) {
@@ -98,7 +137,27 @@ void SpidersMode::update(float deltaTime) {
       damageTimer = 0.0f;
       if (renderer) {
         // Use last known mouse position
-        renderer->handleHintClick(lastMousePos);
+        Grid::WebDamageResult result = renderer->handleHintClick(lastMousePos);
+        
+        if (result == Grid::WebDamageResult::Destroyed) {
+             webAudioSource.emplace(brokenWebBuffer);
+             webAudioSource->setVolume(currentVolume);
+             webAudioSource->play();
+        } else if (result == Grid::WebDamageResult::Damaged) {
+             if (!hitWebBuffers.empty()) {
+                 static std::random_device rd;
+                 static std::mt19937 gen(rd());
+                 std::uniform_int_distribution<> dis(0, hitWebBuffers.size() - 1);
+                 
+                 // Play random stone hit
+                 static int hitIdx = 0;
+                 webAudioSource.emplace(hitWebBuffers[hitIdx]);
+                 webAudioSource->setVolume(currentVolume);
+                 webAudioSource->play();
+                 
+                 hitIdx = (hitIdx + 1) % hitWebBuffers.size();
+             }
+        }
       }
     }
   } else {
@@ -119,6 +178,24 @@ void SpidersMode::draw(sf::RenderWindow &window) const {
   for (const auto &spider : spiders) {
     spider.draw(window);
   }
+}
+
+void SpidersMode::setSfxVolume(float volume) {
+    if (wrappedMode) wrappedMode->setSfxVolume(volume);
+    
+    // Store volume? Or just set? 
+    // Spiders need to know volume when they emulate sound inside update
+    // But Spider has audioSource. 
+    // We update existing spiders
+    for (auto &spider : spiders) {
+        spider.setVolume(volume);
+    }
+    
+    // Web audio
+    if (webAudioSource) webAudioSource->setVolume(volume);
+    // Also need to store it for future plays?
+    // webAudioSource is a single optional.
+    currentVolume = volume;
 }
 
 bool SpidersMode::handleInput(const sf::Event &event,
@@ -187,9 +264,10 @@ void SpidersMode::spawnSpider() {
     break;
   }
 
-  spiders.emplace_back(sf::Vector2f(x, y), walkTexture, idleTexture,
-                       deathTexture, spiderScale);
-
+  Spider newSpider(sf::Vector2f(x, y), walkTexture, idleTexture,
+                       deathTexture, &deathBuffer, &idleBuffers, &stepBuffers, spiderScale);
+  newSpider.setVolume(currentVolume);
+  spiders.push_back(std::move(newSpider));
   // Assign target if grid/renderer available
   if (grid && renderer) {
     // Pick random hint

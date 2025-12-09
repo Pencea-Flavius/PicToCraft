@@ -3,27 +3,51 @@
 
 #include "GameMode.h"
 #include <SFML/Graphics.hpp>
+#include <SFML/Audio.hpp>
 #include <optional>
+#include <vector>
 
-enum class BackgroundType { Plains, Desert, Cave, Mineshaft };
+enum class BackgroundType { Desert, Cave, Mineshaft };
 
 class GameBackground {
 public:
   GameBackground();
 
   void selectBackground(const GameConfig &config);
+  void update(float deltaTime);
   void draw(sf::RenderWindow &window) const;
 
 private:
-  sf::Texture plainsTexture;
   sf::Texture desertTexture;
   sf::Texture caveTexture;
   sf::Texture mineshaftTexture;
 
-  mutable std::optional<sf::Sprite> currentBackground;
+  mutable std::optional<sf::Sprite> currentBackground1;
+  mutable std::optional<sf::Sprite> currentBackground2;
   BackgroundType currentType;
+  
+  float offset;
+  float speed;
+  bool loaded;
+
+  // Audio
+  std::vector<sf::SoundBuffer> caveBuffers;
+  std::optional<sf::Sound> ambientSound;
+  float ambientTimer;
 
   void loadTextures();
+  void loadSounds();
+  
+public:
+  void setVolume(float volume) {
+      if (ambientSound) ambientSound->setVolume(volume);
+      // Also store for future plays? 
+      // Yes, if we play a new sound, it needs the volume. 
+      // But we construct ambientSound using emplace. We can just set volume immediately after playing or store a member `currentVolume`.
+      currentVolume = volume;
+  }
+private:
+  float currentVolume = 100.0f;
 };
 
 #endif // GAMEBACKGROUND_H

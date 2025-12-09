@@ -13,6 +13,10 @@ struct GameConfig {
   bool torchMode = false;
   bool spidersMode = false;
   bool dementiaMode = false;
+  
+  float masterVolume = 1.0f;
+  float musicVolume = 1.0f;
+  float sfxVolume = 1.0f;
 };
 
 namespace sf {
@@ -70,6 +74,8 @@ public:
   virtual void setGrid(class Grid *g) {}
 
   virtual void setRenderer(const class GridRenderer *r) {}
+
+  virtual void setSfxVolume(float volume) {} // Default empty
 
   void reset();
 };
@@ -154,6 +160,10 @@ public:
   }
 
   [[nodiscard]] GameMode *getWrappedMode() const { return wrappedMode.get(); }
+  
+  void setSfxVolume(float volume) override {
+      if (wrappedMode) wrappedMode->setSfxVolume(volume);
+  }
 };
 
 #endif // OOP_GAMEMODE_H

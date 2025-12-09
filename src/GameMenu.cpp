@@ -177,6 +177,21 @@ void GameMenu::setupGameSetupScreen() {
 void GameMenu::setupOptionsScreen() {
   buttonManager.createButtons({}, 20); // Clear buttons
 
+  buttonManager.createButtons({}, 20); // Clear buttons
+
+  // 0: Master Volume
+  buttonManager.addSlider("Master Volume: " + std::to_string(static_cast<int>(gameConfig.masterVolume * 100)) + "%", 
+                          gameConfig.masterVolume, 100, 20);
+  
+  // 1: Music Volume
+  buttonManager.addSlider("Music: " + std::to_string(static_cast<int>(gameConfig.musicVolume * 100)) + "%", 
+                          gameConfig.musicVolume, 100, 20);
+                          
+  // 2: SFX Volume
+  buttonManager.addSlider("SFX: " + std::to_string(static_cast<int>(gameConfig.sfxVolume * 100)) + "%", 
+                          gameConfig.sfxVolume, 100, 20);
+
+  // 3: Resolution
   float sliderVal = 0.0f;
   if (availableResolutions.size() > 1) {
     sliderVal = static_cast<float>(currentResolutionIndex) /
@@ -189,13 +204,15 @@ void GameMenu::setupOptionsScreen() {
   buttonManager.addSlider(resLabel, sliderVal,
                           static_cast<int>(availableResolutions.size()), 20);
 
+  // 4: Fullscreen
   if (pendingFullscreen) {
-    buttonManager.setButtonEnabled(0, false);
+    buttonManager.setButtonEnabled(3, false); // Disable Resolution slider if fullscreen
   }
 
   buttonManager.addButton(
       pendingFullscreen ? "Fullscreen: ON" : "Fullscreen: OFF", 20);
 
+  // 5: Done
   buttonManager.addButton("Done", 20);
 }
 
@@ -235,7 +252,24 @@ void GameMenu::handleEvent(const sf::Event &event,
       buttonManager.handleDrag(mousePos);
 
       if (buttonManager.getButtonCount() > 0) {
-        float val = buttonManager.getSliderValue(0);
+      if (buttonManager.getButtonCount() > 5) { // Ensure we have options loaded
+        // Master
+        float masterVal = buttonManager.getSliderValue(0);
+        gameConfig.masterVolume = masterVal;
+        buttonManager.setButtonText(0, "Master Volume: " + std::to_string(static_cast<int>(masterVal * 100)) + "%");
+        
+        // Music
+        float musicVal = buttonManager.getSliderValue(1);
+        gameConfig.musicVolume = musicVal;
+        buttonManager.setButtonText(1, "Music: " + std::to_string(static_cast<int>(musicVal * 100)) + "%");
+        
+        // SFX
+        float sfxVal = buttonManager.getSliderValue(2);
+        gameConfig.sfxVolume = sfxVal;
+        buttonManager.setButtonText(2, "SFX: " + std::to_string(static_cast<int>(sfxVal * 100)) + "%");
+        
+        // Resolution (Index 3)
+        float val = buttonManager.getSliderValue(3);
         int steps = static_cast<int>(availableResolutions.size());
         if (steps > 1) {
           int index =
@@ -246,11 +280,23 @@ void GameMenu::handleEvent(const sf::Event &event,
                 "Resolution: " +
                 MenuResolution::resolutionToString(
                     availableResolutions[currentResolutionIndex]);
-            buttonManager.setButtonText(0, resLabel);
+            buttonManager.setButtonText(3, resLabel);
           }
         }
       }
+      }
     }
+  } else if (const auto *keyPress = event.getIf<sf::Event::KeyPressed>()) {
+      if (keyPress->code == sf::Keyboard::Key::Enter) {
+        if (menuState == MenuState::Options) {
+          handleOptionsClick(5, window);
+        } else if (menuState == MenuState::GameSetup) {
+          if (buttonManager.getButtonCount() >= 2) {
+              int playIndex = static_cast<int>(buttonManager.getButtonCount() - 2);
+              handleGameSetupClick(playIndex);
+          }
+        }
+      }
   }
 }
 
@@ -269,15 +315,15 @@ void GameMenu::handleMainMenuClick(int buttonIndex) {
 
 void GameMenu::handleOptionsClick(int buttonIndex,
                                   const sf::RenderWindow &window) {
-  if (buttonIndex == 0) {
-    // Resolution slider - handled in update()
-  } else if (buttonIndex == 1) {
+  if (buttonIndex <= 3) {
+    // Sliders handled in update/drag
+  } else if (buttonIndex == 4) {
     // Fullscreen: toggle
     pendingFullscreen = !pendingFullscreen;
-    buttonManager.setButtonText(1, pendingFullscreen ? "Fullscreen: ON"
+    buttonManager.setButtonText(4, pendingFullscreen ? "Fullscreen: ON"
                                                      : "Fullscreen: OFF");
-    buttonManager.setButtonEnabled(0, !pendingFullscreen);
-  } else if (buttonIndex == 2) {
+    buttonManager.setButtonEnabled(3, !pendingFullscreen); // Disable resolution slider
+  } else if (buttonIndex == 5) {
     auto selectedRes = availableResolutions[currentResolutionIndex];
     if (selectedRes.size.x != window.getSize().x ||
         selectedRes.size.y != window.getSize().y ||
@@ -377,7 +423,7 @@ void GameMenu::draw(sf::RenderWindow &window) {
       float logoScale = scale * 0.5f;
       titleSprite->setScale({logoScale, logoScale});
       titleSprite->setPosition(
-          {static_cast<float>(window.getSize().x) / 2.0f, 100.0f * scaleY});
+          {static_cast<float>(window.getSize().x) / 2.0f, 120.0f * scaleY});
       window.draw(*titleSprite);
       splashText.draw(window, *titleSprite, scale, scaleY, logoOriginalWidth,
                       logoOriginalHeight);

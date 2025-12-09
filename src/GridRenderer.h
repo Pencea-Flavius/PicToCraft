@@ -49,7 +49,7 @@ public:
 
   void handleClick(const sf::Vector2i &mousePos) const;
 
-  void handleHintClick(const sf::Vector2i &mousePos) const;
+  Grid::WebDamageResult handleHintClick(const sf::Vector2i &mousePos) const;
 
   sf::Vector2f getHintCenter(bool isRow, int line, int index) const;
 };

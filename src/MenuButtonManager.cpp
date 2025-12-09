@@ -137,22 +137,31 @@ void MenuButtonManager::layoutGameSetup(
 
 void MenuButtonManager::layoutOptions(const sf::RenderWindow &window,
                                       float scale, float scaleY) const {
-  if (buttons.size() < 3)
+  if (buttons.size() < 6)
     return;
 
   float centerX = static_cast<float>(window.getSize().x) / 2.0f;
-  float startY = 200.0f * scaleY;
-  float spacing = 60.0f * scaleY;
+  float startY = 150.0f * scaleY;
+  float spacing = 80.0f * scaleY; // Increased from 50 to 80 to fix overlap
 
   sf::Vector2f mousePos =
       window.mapPixelToCoords(sf::Mouse::getPosition(window));
 
   buttons[0]->update(scale, centerX, startY, 1.5f, 1.5f, mousePos);
 
-  buttons[1]->update(scale, centerX, startY + spacing * 1.5f, 1.5f, 1.5f,
-                     mousePos);
+  float row2Y = startY + spacing;
+
+  buttons[1]->update(scale, centerX - 155.0f * scale, row2Y, 0.725f, 1.5f, mousePos);
+  buttons[2]->update(scale, centerX + 155.0f * scale, row2Y, 0.725f, 1.5f, mousePos);
+
+  float row3Y = row2Y + spacing;
+  buttons[3]->update(scale, centerX, row3Y, 1.5f, 1.5f, mousePos);
+
+  // Fullscreen (Index 4)
+  buttons[4]->update(scale, centerX, row3Y + spacing, 1.5f, 1.5f, mousePos);
+
   float footerY = static_cast<float>(window.getSize().y) - 50.0f * scaleY;
-  buttons[2]->update(scale, centerX, footerY, 1.5f, 1.5f, mousePos);
+  buttons[5]->update(scale, centerX, footerY, 1.5f, 1.5f, mousePos);
 }
 
 void MenuButtonManager::handleDrag(const sf::Vector2f &mousePos) const {
