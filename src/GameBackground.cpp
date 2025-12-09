@@ -6,7 +6,7 @@
 #include <iostream>
 #include <random>
 
-GameBackground::GameBackground() : currentType(BackgroundType::Desert), offset(0.0f), speed(30.0f), loaded(false) {
+GameBackground::GameBackground() : currentType(BackgroundType::Desert), offset(0.0f), speed(30.0f), loaded(false), ambientTimer(10.0f) {
   loadTextures();
 }
 
@@ -57,13 +57,7 @@ void GameBackground::selectBackground(const GameConfig &config) {
   case BackgroundType::Mineshaft:
     tex = &mineshaftTexture;
 
-    {
-        static std::random_device rd_mineshaft;
-        static std::mt19937 gen_mineshaft(rd_mineshaft());
-        std::uniform_int_distribution<> dis_mineshaft(0, 1);
-        int idx = dis_mineshaft(gen_mineshaft);
 
-    }
     break;
   }
   
@@ -74,13 +68,38 @@ void GameBackground::selectBackground(const GameConfig &config) {
 }
 
 void GameBackground::update(float deltaTime) {
-    if (!loaded) return;
+        if (!loaded) return;
     if (!currentBackground1.has_value()) return;
     
     offset += speed * deltaTime;
     float textureWidth = static_cast<float>(currentBackground1->getTexture().getSize().x);
     if (offset >= textureWidth) {
        offset -= textureWidth;
+    }
+
+    // Ambient sound update
+    if (currentType == BackgroundType::Cave || currentType == BackgroundType::Mineshaft) {
+        ambientTimer -= deltaTime;
+        if (ambientTimer <= 0.0f) {
+            // Play random cave sound
+            if (!caveBuffers.empty()) {
+                static std::random_device rd;
+                static std::mt19937 gen(rd());
+                std::uniform_int_distribution<> dis(0, caveBuffers.size() - 1);
+                
+                int idx = dis(gen);
+                ambientSound.emplace(caveBuffers[idx]);
+                ambientSound->setVolume(currentVolume);
+                ambientSound->play();
+                // std::cout << "Playing ambient sound index " << idx << std::endl;
+            }
+            
+            // Result 1-3 mins (60-180s)
+            static std::random_device rd;
+            static std::mt19937 gen(rd());
+            std::uniform_real_distribution<float> timeDis(60.0f, 180.0f);
+            ambientTimer = timeDis(gen);
+        }
     }
 }
 
