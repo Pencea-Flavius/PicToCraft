@@ -8,7 +8,7 @@ class TimeMode : public GameModeDecorator {
   float decayTimer;
   float timeLeft;
   float totalTime;
-  const float DECAY_INTERVAL = 10.0f;
+  float decayInterval;
   int maxHearts;
 
   sf::SoundBuffer hurtBuffer;

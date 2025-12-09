@@ -1,6 +1,6 @@
 #include "HeartDisplay.h"
 #include "Exceptions.h"
-#include <iostream>
+#include <random>
 
 HeartDisplay::HeartDisplay() : isFlashing(false), flashTimer(0.0f) {
   if (!containerTexture.loadFromFile("assets/hearts/container_hardcore.png")) {
@@ -115,9 +115,21 @@ void HeartDisplay::draw(sf::RenderWindow &window, int currentMistakes,
   int totalHearts = (totalHalfHearts + 1) / 2;
   float heartSpacing = 9.0f * scale;
 
+  bool isLowHealth =
+      (static_cast<float>(currentHalfHearts) / totalHalfHearts) <= 0.2f ||
+      currentHalfHearts <= 1;
+
+  static std::mt19937 rng(std::random_device{}());
+  std::uniform_real_distribution<float> dist(-1.0f, 1.0f);
+
   for (int i = 0; i < totalHearts; ++i) {
     float x = position.x + static_cast<float>(i) * heartSpacing;
     float y = position.y;
+
+    if (isLowHealth) {
+      float shakeOffset = dist(rng) * scale;
+      y += shakeOffset;
+    }
 
     containerSprite->setPosition({x, y});
     window.draw(*containerSprite);
