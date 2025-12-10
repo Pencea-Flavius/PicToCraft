@@ -6,6 +6,8 @@
 #include "TimeMode.h"
 #include "TorchMode.h"
 
+#include "Exceptions.h"
+
 std::unique_ptr<GameMode>
 GameModeFactory::createGameMode(const GameConfig &config, int gridSize) {
   std::unique_ptr<GameMode> baseMode;
@@ -13,8 +15,10 @@ GameModeFactory::createGameMode(const GameConfig &config, int gridSize) {
   // Create base mode
   if (config.baseMode == GameModeType::Mistakes) {
     baseMode = std::make_unique<MistakesMode>();
-  } else {
+  } else if (config.baseMode == GameModeType::Score) {
     baseMode = std::make_unique<ScoreMode>();
+  } else {
+    throw GameException("Invalid base game mode selected");
   }
 
   // Apply decorators

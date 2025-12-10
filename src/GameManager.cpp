@@ -1,7 +1,7 @@
 #include "GameManager.h"
 #include "Exceptions.h"
-#include <SFML/Graphics/RenderTexture.hpp>
 #include <SFML/Audio.hpp>
+#include <SFML/Graphics/RenderTexture.hpp>
 #include <optional>
 #include <random>
 
@@ -19,6 +19,9 @@ GameManager::GameManager()
 
   window.create(sf::VideoMode({width, height}), "PictoCraft", sf::Style::Close,
                 sf::State::Windowed);
+  if (!window.isOpen()) {
+    throw GameException("Failed to create game window");
+  }
   window.setFramerateLimit(60);
 
   menu = std::make_unique<GameMenu>();
@@ -33,67 +36,70 @@ GameManager::GameManager()
   }
 
   background = std::make_unique<GameBackground>();
-  
+
   if (!alphaMusic.openFromFile("assets/sound/Alpha.mp3")) {
+    throw AssetLoadException("assets/sound/Alpha.mp3", "Music");
   }
   alphaMusic.setLooping(true);
-  
+
   c418Tracks = {
       "assets/sound/C418  - Sweden - Minecraft Volume Alpha.mp3",
       "assets/sound/C418 - Dry Hands - Minecraft Volume Alpha.mp3",
       "assets/sound/C418 - Haggstrom - Minecraft Volume Alpha.mp3",
       "assets/sound/C418 - Mice on Venus - Minecraft Volume Alpha.mp3",
-      "assets/sound/C418 - Wet Hands - Minecraft Volume Alpha.mp3"
-  };
-  
+      "assets/sound/C418 - Wet Hands - Minecraft Volume Alpha.mp3"};
+
   musicPauseTimer = 0.0f;
   nextPauseDuration = 0.0f;
 }
 
 void GameManager::updateMusic(float deltaTime) {
-    if (inWinScreen) {
-        if (c418Music.getStatus() == sf::Music::Status::Playing) {
-            c418Music.stop();
-        }
-        
-        if (alphaMusic.getStatus() != sf::Music::Status::Playing) {
-            alphaMusic.play();
-        }
-    } else {
-        if (alphaMusic.getStatus() == sf::Music::Status::Playing) {
-            alphaMusic.stop();
-        }
-        
-        if (!inMenu && !inGameOver) {
-            if (c418Music.getStatus() == sf::Music::Status::Stopped) {
-                musicPauseTimer += deltaTime;
-                if (musicPauseTimer >= nextPauseDuration) {
-                    // Play random track
-                    static std::random_device rd;
-                    static std::mt19937 gen(rd());
-                    std::uniform_int_distribution<> dis(0, c418Tracks.size() - 1);
-                    
-                    if (!c418Tracks.empty()) {
-                        int idx = dis(gen);
-                        if (c418Music.openFromFile(c418Tracks[idx])) {
-                             c418Music.play();
-                        }
-                    }
-                    
-                    musicPauseTimer = 0.0f;
-                    std::uniform_real_distribution<float> timeDis(20.0f, 30.0f);
-                    nextPauseDuration = timeDis(gen);
-                }
-            }
-        } else {
-             if (c418Music.getStatus() == sf::Music::Status::Playing) {
-                 c418Music.pause(); 
-             }
-        }
+  if (inWinScreen) {
+    if (c418Music.getStatus() == sf::Music::Status::Playing) {
+      c418Music.stop();
     }
+
+    if (alphaMusic.getStatus() != sf::Music::Status::Playing) {
+      alphaMusic.play();
+    }
+  } else {
+    if (alphaMusic.getStatus() == sf::Music::Status::Playing) {
+      alphaMusic.stop();
+    }
+
+    if (!inMenu && !inGameOver) {
+      if (c418Music.getStatus() == sf::Music::Status::Stopped) {
+        musicPauseTimer += deltaTime;
+        if (musicPauseTimer >= nextPauseDuration) {
+          // Play random track
+          static std::random_device rd;
+          static std::mt19937 gen(rd());
+          std::uniform_int_distribution<> dis(0, c418Tracks.size() - 1);
+
+          if (!c418Tracks.empty()) {
+            int idx = dis(gen);
+            if (c418Music.openFromFile(c418Tracks[idx])) {
+              c418Music.play();
+            }
+          }
+
+          musicPauseTimer = 0.0f;
+          std::uniform_real_distribution<float> timeDis(20.0f, 30.0f);
+          nextPauseDuration = timeDis(gen);
+        }
+      }
+    } else {
+      if (c418Music.getStatus() == sf::Music::Status::Playing) {
+        c418Music.pause();
+      }
+    }
+  }
 }
 
 void GameManager::startGame() {
+  if (!menu) {
+    throw GameStateException("Menu is not initialized");
+  }
   GameConfig config = menu->getGameConfig();
 
   if (menu->getSourceMode() == SourceMode::File) {
@@ -297,18 +303,19 @@ void GameManager::run() {
         gameOverScreen->draw(window);
       }
     }
-    
+
     updateMusic(deltaTime);
 
     // Apply volumes
     GameConfig cfg = menu->getGameConfig();
     sf::Listener::setGlobalVolume(cfg.masterVolume * 100.0f);
-    
+
     alphaMusic.setVolume(cfg.musicVolume * 100.0f);
     c418Music.setVolume(cfg.musicVolume * 100.0f);
-    
+
     deathSound.setVolume(cfg.sfxVolume * 100.0f);
-    if (background) background->setVolume(cfg.sfxVolume * 100.0f);
+    if (background)
+      background->setVolume(cfg.sfxVolume * 100.0f);
     grid.setSfxVolume(cfg.sfxVolume * 100.0f);
 
     // Draw custom cursor debug

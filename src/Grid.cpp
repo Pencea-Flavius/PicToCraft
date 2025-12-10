@@ -25,6 +25,10 @@ Grid::Grid(int grid_size, const std::vector<std::vector<bool>> &pattern,
     : size{grid_size}, total_correct_blocks{0}, completed_blocks{0},
       correct_completed_blocks{0},
       gameMode(GameModeFactory::createGameMode(config, grid_size)) {
+  if (grid_size <= 0) {
+    throw InvalidGridException("Grid size must be positive: " +
+                               std::to_string(grid_size));
+  }
   totalGridsCreated++;
   if (gameMode)
     gameMode->setGrid(this);
@@ -90,13 +94,18 @@ Grid &Grid::operator=(Grid other) {
 
 Grid::~Grid() = default;
 
-void Grid::load_from_file(const std::string &filename, const GameConfig &config) {
+void Grid::load_from_file(const std::string &filename,
+                          const GameConfig &config) {
   std::ifstream file(filename);
   if (!file) {
     throw FileLoadException(filename);
   }
 
   file >> size;
+  if (size <= 0) {
+    throw InvalidGridException("Invalid grid size in file: " +
+                               std::to_string(size));
+  }
   blocks.clear();
   blocks.resize(size);
   total_correct_blocks = 0;
@@ -127,7 +136,12 @@ void Grid::load_from_file(const std::string &filename, const GameConfig &config)
 }
 
 // Generate random grid
-void Grid::generate_random(int grid_size, const GameConfig &config, double density) {
+void Grid::generate_random(int grid_size, const GameConfig &config,
+                           double density) {
+  if (grid_size <= 0) {
+    throw InvalidGridException("Grid size must be positive: " +
+                               std::to_string(grid_size));
+  }
   size = grid_size;
   blocks.clear();
   blocks.resize(size);
@@ -252,7 +266,14 @@ void Grid::drawMode(sf::RenderWindow &window) const {
 }
 
 int Grid::get_size() const { return size; }
-const Block &Grid::get_block(int x, int y) const { return blocks[x][y]; }
+const Block &Grid::get_block(int x, int y) const {
+  if (x < 0 || y < 0 || x >= size || y >= size) {
+    throw OutOfBoundsException("Block coordinates out of bounds: (" +
+                               std::to_string(x) + ", " + std::to_string(y) +
+                               ")");
+  }
+  return blocks[x][y];
+}
 
 const PicrossHints &Grid::get_hints() const { return hints; }
 

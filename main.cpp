@@ -7,7 +7,7 @@ int main() {
         GameManager game;
         game.run();
     } catch (const std::exception &e) {
-        std::cerr << "Eroare: " << e.what() << "\n";
+        std::cerr << "Error GameManager " << e.what() << "\n";
         return -1;
     }
 

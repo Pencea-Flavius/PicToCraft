@@ -29,4 +29,16 @@ public:
       : GameException("Failed to load " + type + " from file: " + filename) {}
 };
 
+class GameStateException : public GameException {
+public:
+  explicit GameStateException(const std::string &details)
+      : GameException("Invalid game state: " + details) {}
+};
+
+class OutOfBoundsException : public GameException {
+public:
+  explicit OutOfBoundsException(const std::string &details)
+      : GameException("Out of bounds access: " + details) {}
+};
+
 #endif // EXCEPTIONS_H
