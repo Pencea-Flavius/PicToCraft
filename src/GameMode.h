@@ -8,162 +8,178 @@
 enum class GameModeType { Score, Mistakes, Time, Torch, Spiders };
 
 struct GameConfig {
-  GameModeType baseMode = GameModeType::Score;
-  bool timeMode = false;
-  bool torchMode = false;
-  bool spidersMode = false;
-  bool dementiaMode = false;
-  
-  float masterVolume = 1.0f;
-  float musicVolume = 1.0f;
-  float sfxVolume = 1.0f;
+    GameModeType baseMode = GameModeType::Score;
+    bool timeMode = false;
+    bool torchMode = false;
+    bool spidersMode = false;
+    bool dementiaMode = false;
+    bool endermanMode = false;
+
+    float masterVolume = 1.0f;
+    float musicVolume = 1.0f;
+    float sfxVolume = 1.0f;
 };
 
 namespace sf {
-class RenderWindow;
-class Event;
+    class RenderWindow;
+    class Event;
 } // namespace sf
 
 class GameMode {
 protected:
-  int score;
-  int mistakes;
-  static int totalGameModesCreated;
-  static int activeGameModes;
+    int score;
+    int mistakes;
+    static int totalGameModesCreated;
+    static int activeGameModes;
 
 public:
-  GameMode();
+    GameMode();
 
-  virtual ~GameMode();
+    virtual ~GameMode();
 
-  virtual void onBlockToggled(bool isCorrect, bool isCompleted,
-                              bool wasCompleted);
+    virtual void onBlockToggled(bool isCorrect, bool isCompleted,
+                                bool wasCompleted);
 
-  [[nodiscard]] virtual bool isLost() const = 0;
+    [[nodiscard]] virtual bool isLost() const = 0;
 
-  [[nodiscard]] virtual int getMaxMistakes() const { return 0; }
+    [[nodiscard]] virtual int getMaxMistakes() const { return 0; }
 
-  [[nodiscard]] virtual bool shouldDisplayScore() const = 0;
+    [[nodiscard]] virtual bool shouldDisplayScore() const = 0;
 
-  virtual void update(float deltaTime) {}
+    virtual void update(float deltaTime) {
+    }
 
-  virtual void draw(class sf::RenderWindow &window) const {}
+    virtual void draw(class sf::RenderWindow &window) const {
+    }
 
-  virtual bool handleInput(const sf::Event &event,
-                           const sf::RenderWindow &window) {
-    return false;
-  }
+    virtual bool handleInput(const sf::Event &event,
+                             const sf::RenderWindow &window) {
+        return false;
+    }
 
-  [[nodiscard]] virtual int getScore() const;
+    [[nodiscard]] virtual int getScore() const;
 
-  [[nodiscard]] virtual int getMistakes() const;
+    [[nodiscard]] virtual int getMistakes() const;
 
-  [[nodiscard]] virtual std::unique_ptr<GameMode> clone() const = 0;
+    [[nodiscard]] virtual std::unique_ptr<GameMode> clone() const = 0;
 
-  [[nodiscard]] virtual std::string getName() const = 0;
+    [[nodiscard]] virtual std::string getName() const = 0;
 
-  virtual void print(std::ostream &os) const {
-    os << "GameMode (Score: " << score << ", Mistakes: " << mistakes << ")";
-  }
+    virtual void print(std::ostream &os) const {
+        os << "GameMode (Score: " << score << ", Mistakes: " << mistakes << ")";
+    }
 
-  friend std::ostream &operator<<(std::ostream &os, const GameMode &gm) {
-    gm.print(os);
-    return os;
-  }
+    friend std::ostream &operator<<(std::ostream &os, const GameMode &gm) {
+        gm.print(os);
+        return os;
+    }
 
-  virtual void setGrid(class Grid *g) {}
+    virtual void setGrid(class Grid *g) {
+    }
 
-  virtual void setRenderer(const class GridRenderer *r) {}
+    virtual void setRenderer(const class GridRenderer *r) {
+    }
 
-  virtual void setSfxVolume(float volume) {} // Default empty
+    virtual void setSfxVolume(float volume) {
+    } // Default empty
 
-  void reset();
+    virtual void setMistakes(int m) { mistakes = m; }
+
+    void reset();
 };
 
 class GameModeDecorator : public GameMode {
 protected:
-  std::unique_ptr<GameMode> wrappedMode;
+    std::unique_ptr<GameMode> wrappedMode;
 
 public:
-  explicit GameModeDecorator(std::unique_ptr<GameMode> mode)
-      : wrappedMode(std::move(mode)) {}
-
-  ~GameModeDecorator() override = default;
-
-  [[nodiscard]] std::unique_ptr<GameMode> clone() const override = 0;
-
-  void setGrid(Grid *g) override {
-    if (wrappedMode)
-      wrappedMode->setGrid(g);
-  }
-
-  void setRenderer(const GridRenderer *r) override {
-    if (wrappedMode)
-      wrappedMode->setRenderer(r);
-  }
-
-  void onBlockToggled(bool isCorrect, bool isCompleted,
-                      bool wasCompleted) override {
-    if (wrappedMode) {
-      wrappedMode->onBlockToggled(isCorrect, isCompleted, wasCompleted);
+    explicit GameModeDecorator(std::unique_ptr<GameMode> mode)
+        : wrappedMode(std::move(mode)) {
     }
-  }
 
-  [[nodiscard]] bool isLost() const override {
-    return wrappedMode ? wrappedMode->isLost() : false;
-  }
+    ~GameModeDecorator() override = default;
 
-  [[nodiscard]] int getMaxMistakes() const override {
-    return wrappedMode ? wrappedMode->getMaxMistakes() : 0;
-  }
+    [[nodiscard]] std::unique_ptr<GameMode> clone() const override = 0;
 
-  [[nodiscard]] bool shouldDisplayScore() const override {
-    return wrappedMode ? wrappedMode->shouldDisplayScore() : false;
-  }
-
-  void update(float deltaTime) override {
-    if (wrappedMode) {
-      wrappedMode->update(deltaTime);
+    void setGrid(Grid *g) override {
+        if (wrappedMode)
+            wrappedMode->setGrid(g);
     }
-  }
 
-  void draw(sf::RenderWindow &window) const override {
-    if (wrappedMode) {
-      wrappedMode->draw(window);
+    void setRenderer(const GridRenderer *r) override {
+        if (wrappedMode)
+            wrappedMode->setRenderer(r);
     }
-  }
 
-  bool handleInput(const sf::Event &event,
-                   const sf::RenderWindow &window) override {
-    if (wrappedMode) {
-      return wrappedMode->handleInput(event, window);
+    void onBlockToggled(bool isCorrect, bool isCompleted,
+                        bool wasCompleted) override {
+        if (wrappedMode) {
+            wrappedMode->onBlockToggled(isCorrect, isCompleted, wasCompleted);
+        }
     }
-    return false;
-  }
 
-  [[nodiscard]] int getScore() const override {
-    return wrappedMode ? wrappedMode->getScore() : 0;
-  }
-
-  [[nodiscard]] int getMistakes() const override {
-    return wrappedMode ? wrappedMode->getMistakes() : 0;
-  }
-
-  void print(std::ostream &os) const override {
-    if (wrappedMode) {
-      wrappedMode->print(os);
+    [[nodiscard]] bool isLost() const override {
+        return wrappedMode ? wrappedMode->isLost() : false;
     }
-  }
 
-  [[nodiscard]] std::string getName() const override {
-    return wrappedMode ? wrappedMode->getName() : "Decorator";
-  }
+    [[nodiscard]] int getMaxMistakes() const override {
+        return wrappedMode ? wrappedMode->getMaxMistakes() : 0;
+    }
 
-  [[nodiscard]] GameMode *getWrappedMode() const { return wrappedMode.get(); }
-  
-  void setSfxVolume(float volume) override {
-      if (wrappedMode) wrappedMode->setSfxVolume(volume);
-  }
+    [[nodiscard]] bool shouldDisplayScore() const override {
+        return wrappedMode ? wrappedMode->shouldDisplayScore() : false;
+    }
+
+    void update(float deltaTime) override {
+        if (wrappedMode) {
+            wrappedMode->update(deltaTime);
+        }
+    }
+
+    void draw(sf::RenderWindow &window) const override {
+        if (wrappedMode) {
+            wrappedMode->draw(window);
+        }
+    }
+
+    bool handleInput(const sf::Event &event,
+                     const sf::RenderWindow &window) override {
+        if (wrappedMode) {
+            return wrappedMode->handleInput(event, window);
+        }
+        return false;
+    }
+
+    [[nodiscard]] int getScore() const override {
+        return wrappedMode ? wrappedMode->getScore() : 0;
+    }
+
+    [[nodiscard]] int getMistakes() const override {
+        return wrappedMode ? wrappedMode->getMistakes() : 0;
+    }
+
+    void print(std::ostream &os) const override {
+        if (wrappedMode) {
+            wrappedMode->print(os);
+        }
+    }
+
+    [[nodiscard]] std::string getName() const override {
+        return wrappedMode ? wrappedMode->getName() : "Decorator";
+    }
+
+    [[nodiscard]] GameMode *getWrappedMode() const { return wrappedMode.get(); }
+
+    void setSfxVolume(float volume) override {
+        if (wrappedMode)
+            wrappedMode->setSfxVolume(volume);
+    }
+
+    void setMistakes(int m) override {
+        mistakes = m;
+        if (wrappedMode)
+            wrappedMode->setMistakes(m);
+    }
 };
 
 #endif // OOP_GAMEMODE_H
