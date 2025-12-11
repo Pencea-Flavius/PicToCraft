@@ -29,13 +29,28 @@ Jocul creează automat o grilă unică de fiecare dată, folosind reguli logice 
 
 ## Moduri de dificultate
 
-### Mod-Scor  
+### Mod-Scor (Score Mode)
 Jucătorul trebuie să rezolve cât mai corect pentru a obține un scor cât mai mare, fără limită de vieți.
 
-### Mod-3 Greșeli  
+### Mod-3 Greșeli (Mistakes Mode)
 Jucătorul are voie să greșească de cel mult trei ori, după a treia eroare, jocul se încheie.
 
+### Moduri Speciale
+*   **Mod-Timp (Time Mode):** Adaugă o limită de timp pentru completarea puzzle-ului.
+*   **Mod-Torță (Torch Mode):** Vizibilitatea este redusă drastic. Jucătorul vede doar o zonă circulară în jurul cursorului, simulând lumina unei torțe.
+*   **Mod-Păianjen (Spiders Mode):** Păianjenii apar pe ecran și încearcă să acopere indiciile numerice cu pânză. Jucătorul trebuie să elimine păianjenii și să curețe pânza pentru a vedea din nou cifrele.
+*   **Mod-DiscoFever (DiscoFever Mode):** Blocurile plasate corect își schimbă continuu culoarea, creând un efect vizual dinamic.
+*   **Mod-Enderman (Enderman Mode):** Un Enderman bântuie ecranul. Dacă jucătorul ține cursorul pe el prea mult timp (îl "privește"), acesta va ataca (jumpscare).
+
 Aceste moduri oferă varietate și motive de rejucare, combinând logica nonogramelor cu un sistem de progres și provocare.
+
+## Asseturi și Credite
+
+Jocul a fost realizat folosind asset-uri și resurse externe pentru a captura estetica Minecraft:
+
+*   **Asset-uri vizuale (Blocuri, UI):** Luate din jocul original **Minecraft**.
+*   **Animații Mob-uri:** Bazate pe texture pack-ul [Squishy's Reanimated Mobs](https://www.curseforge.com/minecraft/texture-packs/squishys-reanimated-mobs).
+*   **Font:** [Monocraft](https://github.com/IdreesInc/Monocraft) de IdreesInc.
 
 ## Exemplu de puzzle 5x5
 

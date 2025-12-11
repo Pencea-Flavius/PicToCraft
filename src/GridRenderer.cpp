@@ -12,8 +12,8 @@
 GridRenderer::GridRenderer(Grid &g, float size, sf::Vector2f off)
     : grid(g), cellSize(size), offset(off), fontLoaded(false), lastMistakes(0),
       animationClock(), backgroundPatch(sf::Texture(), 4, 10),
-      hintTabPatch(sf::Texture(), 4, 0), isDementiaMode(false),
-      defaultGlassColorIndex(0) {
+      hintTabPatch(sf::Texture(), 4, 0), isDiscoFeverMode(false),
+      defaultGlassColorIndex(0), colorTimer(0.0f), currentColorOffset(0) {
   fontLoaded = font.openFromFile("assets/Monocraft.ttf");
   if (!webTexture.loadFromFile("assets/cobweb.png")) {
     std::cerr << "Failed to load cobweb texture" << std::endl;
@@ -75,7 +75,9 @@ GridRenderer::GridRenderer(Grid &g, float size, sf::Vector2f off)
   defaultGlassColorIndex = validIndices[dis(gen)];
 }
 
-void GridRenderer::setDementiaMode(bool enabled) { isDementiaMode = enabled; }
+void GridRenderer::setDiscoFeverMode(bool enabled) {
+  isDiscoFeverMode = enabled;
+}
 
 void GridRenderer::drawGameInfo(sf::RenderWindow &window) const {
   if (!fontLoaded)
@@ -251,6 +253,27 @@ void GridRenderer::drawHintTabs(sf::RenderWindow &window) const {
 }
 
 void GridRenderer::draw(sf::RenderWindow &window) const {
+  if (isDiscoFeverMode) {
+    // We use a static clock to track time between frames
+    // This is a bit of a hack since draw is const and we don't have deltaTime
+    // passed in
+    static sf::Clock discoClock;
+    static float lastTime = 0.0f;
+    float currentTime = discoClock.getElapsedTime().asSeconds();
+    float deltaTime = currentTime - lastTime;
+    lastTime = currentTime;
+
+    // Avoid huge delta times (e.g. first frame or after pause)
+    if (deltaTime > 0.1f)
+      deltaTime = 0.016f;
+
+    colorTimer += deltaTime;
+    if (colorTimer >= 0.1f) { // Change color every 0.1 seconds
+      colorTimer = 0.0f;
+      currentColorOffset++;
+    }
+  }
+
   const auto &hints = grid.get_hints();
   int n = grid.get_size();
 
@@ -486,9 +509,10 @@ void GridRenderer::draw(sf::RenderWindow &window) const {
       if (grid.get_block(i, j).is_completed()) {
         if (!glassTextures.empty()) {
           int textureIndex = defaultGlassColorIndex;
-          if (isDementiaMode) {
+          if (isDiscoFeverMode) {
             size_t h = std::hash<int>{}(i) ^ (std::hash<int>{}(j) << 1);
-            textureIndex = h % glassTextures.size();
+            // Add time-based offset to the hash to animate it
+            textureIndex = (h + currentColorOffset) % glassTextures.size();
           }
 
           sf::Sprite glassSprite(glassTextures[textureIndex]);
@@ -612,7 +636,8 @@ sf::Vector2f GridRenderer::getHintCenter(bool isRow, int line,
   }
 }
 
-Grid::WebDamageResult GridRenderer::handleHintClick(const sf::Vector2i &mousePos) const {
+Grid::WebDamageResult
+GridRenderer::handleHintClick(const sf::Vector2i &mousePos) const {
   const auto &hints = grid.get_hints();
 
   // Check all webbed hints to see if clicked

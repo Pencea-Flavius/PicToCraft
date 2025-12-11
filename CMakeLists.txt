@@ -90,8 +90,8 @@ add_executable(${MAIN_EXECUTABLE_NAME}
         src/GameModeFactory.h
         src/NinePatch.cpp
         src/NinePatch.h
-        src/DementiaMode.cpp
-        src/DementiaMode.h
+        src/DiscoFeverMode.cpp
+        src/DiscoFeverMode.h
         src/EndermanMode.cpp
         src/EndermanMode.h
         src/GameBackground.cpp

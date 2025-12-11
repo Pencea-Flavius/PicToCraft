@@ -30,8 +30,12 @@ class GridRenderer {
   NinePatch hintTabPatch;
 
   std::vector<sf::Texture> glassTextures;
-  bool isDementiaMode;
+  bool isDiscoFeverMode;
   int defaultGlassColorIndex;
+
+  // Animation for DiscoFeverMode
+  mutable float colorTimer;
+  mutable int currentColorOffset;
 
 public:
   explicit GridRenderer(Grid &g, float size = 40.f,
@@ -39,7 +43,7 @@ public:
 
   ~GridRenderer() = default;
 
-  void setDementiaMode(bool enabled);
+  void setDiscoFeverMode(bool enabled);
 
   void draw(sf::RenderWindow &window) const;
 
