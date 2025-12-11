@@ -32,7 +32,7 @@ Jocul creează automat o grilă unică de fiecare dată, folosind reguli logice 
 ### Mod-Scor (Score Mode)
 Jucătorul trebuie să rezolve cât mai corect pentru a obține un scor cât mai mare, fără limită de vieți.
 
-### Mod-3 Greșeli (Mistakes Mode)
+### Mod-3 Greșeli (Damage Mode)
 Jucătorul are voie să greșească de cel mult trei ori, după a treia eroare, jocul se încheie.
 
 ### Moduri Speciale
