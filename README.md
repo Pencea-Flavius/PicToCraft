@@ -29,11 +29,11 @@ Jocul creează automat o grilă unică de fiecare dată, folosind reguli logice 
 
 ## Moduri de dificultate
 
-### Mod-Scor (Score Mode)
-Jucătorul trebuie să rezolve cât mai corect pentru a obține un scor cât mai mare, fără limită de vieți.
+### Mod-Creativ (Creative Mode)
+Jucătorul trebuie să rezolve puzzle-ul în propriul ritm, fără limită de vieți. Accentul este pe relaxare și rezolvarea corectă a imaginii.
 
-### Mod-3 Greșeli (Damage Mode)
-Jucătorul are voie să greșească de cel mult trei ori, după a treia eroare, jocul se încheie.
+### Mod-Supraviețuire (Survival Mode)
+Jucătorul are voie să greșească de cel mult trei ori; după a treia eroare, jocul se încheie. Este modul clasic de provocare.
 
 ### Moduri Speciale
 *   **Mod-Timp (Time Mode):** Adaugă o limită de timp pentru completarea puzzle-ului.
@@ -41,6 +41,7 @@ Jucătorul are voie să greșească de cel mult trei ori, după a treia eroare, 
 *   **Mod-Păianjen (Spiders Mode):** Păianjenii apar pe ecran și încearcă să acopere indiciile numerice cu pânză. Jucătorul trebuie să elimine păianjenii și să curețe pânza pentru a vedea din nou cifrele.
 *   **Mod-DiscoFever (DiscoFever Mode):** Blocurile plasate corect își schimbă continuu culoarea, creând un efect vizual dinamic.
 *   **Mod-Enderman (Enderman Mode):** Un Enderman bântuie ecranul. Dacă jucătorul ține cursorul pe el prea mult timp (îl "privește"), acesta va ataca (jumpscare).
+*   **Mod-Alchimie (Alchemy Mode):** Jucătorul este afectat de poțiuni cu efecte negative sau pozitive 
 
 Aceste moduri oferă varietate și motive de rejucare, combinând logica nonogramelor cu un sistem de progres și provocare.
 
