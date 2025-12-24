@@ -13,6 +13,10 @@ sf::Texture MenuButton::sliderHandleTexture;
 sf::Texture MenuButton::sliderHandleHighlightedTexture;
 bool MenuButton::sliderTexturesLoaded = false;
 
+sf::Texture MenuButton::textFieldTexture;
+sf::Texture MenuButton::textFieldHighlightedTexture;
+bool MenuButton::textFieldTexturesLoaded = false;
+
 MenuButton::MenuButton(const std::string &label, const sf::Font &font,
                        const sf::Texture &texture, unsigned int fontSize)
     : currentTexture(&texture), m_ninePatch(texture, 4, 0),
@@ -29,15 +33,24 @@ MenuButton::MenuButton(const std::string &label, const sf::Font &font,
 
   if (!sliderTexturesLoaded) {
     if (!sliderHandleTexture.loadFromFile("assets/buttons/slider_handle.png")) {
-      throw std::runtime_error(
-          "Failed to load assets/buttons/slider_handle.png");
+      throw AssetLoadException("assets/buttons/slider_handle.png", "Texture");
     }
     if (!sliderHandleHighlightedTexture.loadFromFile(
             "assets/buttons/slider_handle_highlighted.png")) {
-      throw std::runtime_error(
-          "Failed to load assets/buttons/slider_handle_highlighted.png");
+      throw AssetLoadException(
+          "assets/buttons/slider_handle_highlighted.png", "Texture");
     }
     sliderTexturesLoaded = true;
+  }
+
+  if (!textFieldTexturesLoaded) {
+      if (!textFieldTexture.loadFromFile("assets/buttons/text_field.png")) {
+          throw AssetLoadException("assets/buttons/text_field.png", "Texture");
+      }
+      if (!textFieldHighlightedTexture.loadFromFile("assets/buttons/text_field_highlighted.png")) {
+          throw AssetLoadException("assets/buttons/text_field_highlighted.png", "Texture");
+      }
+      textFieldTexturesLoaded = true;
   }
 
   // setupNinePatch(); // Removed
@@ -196,6 +209,27 @@ void MenuButton::draw(sf::RenderWindow &window) {
     text.setPosition({textX, textY});
 
     ShadowedText::draw(window, text, currentScale);
+  } else if (style == Style::TextField) {
+      const sf::Texture* texToUse = (hovered || selected) ? &textFieldHighlightedTexture : &textFieldTexture;
+      if (currentTexture != texToUse) {
+          const_cast<MenuButton*>(this)->setTexture(*texToUse);
+      }
+      
+      m_ninePatch.setColor(sf::Color::White);
+      window.draw(m_ninePatch);
+
+      text.setCharacterSize(static_cast<unsigned int>(
+          static_cast<float>(baseFontSize) * currentScale));
+
+      auto textBounds = text.getLocalBounds();
+      // Center text
+      float textX = std::round(position.x - textBounds.size.x / 2.0f - textBounds.position.x);
+      float textY = std::round(position.y - textBounds.size.y / 2.0f - textBounds.position.y);
+      
+      text.setFillColor(sf::Color::White);
+      text.setPosition({textX, textY});
+      
+      ShadowedText::draw(window, text, currentScale);
   } else {
     sf::Color spriteColor =
         hovered ? sf::Color(160, 190, 240) : sf::Color::White;

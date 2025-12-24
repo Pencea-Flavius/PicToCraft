@@ -64,7 +64,11 @@ void WinScreen::reset() {
   clock.restart();
 }
 
-void WinScreen::setScore(int score) { finalScore = score; }
+void WinScreen::setScore(int score, const Leaderboard& leaderboard) {
+  finalScore = score;
+  topScores = leaderboard.getEntries();
+  loadPoemText();
+}
 
 sf::Vector2f WinScreen::calculateScale(const sf::RenderWindow &window) const {
   float scaleX = static_cast<float>(window.getSize().x) / baseWidth;
@@ -123,12 +127,37 @@ void WinScreen::draw(sf::RenderWindow &window) {
                  scoreBounds.position.x;
   scoreText.setPosition({scoreX, currentY});
 
-  if (currentY > -scoreBounds.size.y &&
-      currentY < static_cast<float>(winSize.y)) {
+  if (currentY > -scoreBounds.size.y && currentY < static_cast<float>(winSize.y)) {
     ShadowedText::draw(window, scoreText, scale);
   }
 
-  currentY += scoreBounds.size.y + 60.0f * scale;
+  currentY += scoreBounds.size.y + 20.0f * scale;
+
+  // Draw Leaderboard
+  if (!topScores.empty()) {
+      sf::Text lbHeader(font, "=== LEADERBOARD ===");
+      lbHeader.setCharacterSize(static_cast<unsigned int>(30.0f * scale));
+      lbHeader.setFillColor(sf::Color::Cyan);
+      auto lbHeaderBounds = lbHeader.getLocalBounds();
+      lbHeader.setPosition({(static_cast<float>(winSize.x) - lbHeaderBounds.size.x) / 2.0f, currentY});
+      ShadowedText::draw(window, lbHeader, scale);
+      
+      currentY += lbHeaderBounds.size.y + 20.0f * scale;
+      
+      for (const auto& entry : topScores) {
+          std::string line = entry.name + " ........ " + std::to_string(entry.score);
+          sf::Text entryText(font, line);
+          entryText.setCharacterSize(static_cast<unsigned int>(24.0f * scale));
+          entryText.setFillColor(sf::Color::White);
+          auto entryBounds = entryText.getLocalBounds();
+          entryText.setPosition({(static_cast<float>(winSize.x) - entryBounds.size.x) / 2.0f, currentY});
+          ShadowedText::draw(window, entryText, scale);
+          currentY += entryBounds.size.y + 10.0f * scale;
+      }
+      currentY += 40.0f * scale;
+  } else {
+       currentY += 40.0f * scale;
+  }
 
   auto fontSize = static_cast<unsigned int>(24.0f * scale);
 

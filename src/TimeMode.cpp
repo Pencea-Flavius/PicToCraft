@@ -15,7 +15,7 @@ TimeMode::TimeMode(std::unique_ptr<GameMode> mode, int gridSize)
   } else if (gridSize <= 12) {
     decayInterval = 20.0f;
   } else {
-    decayInterval = 60.0f;
+    decayInterval = 30.0f;
   }
 
   mistakes = 0;

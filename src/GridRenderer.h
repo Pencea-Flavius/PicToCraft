@@ -7,6 +7,9 @@
 
 #include "Grid.h"
 #include "HeartDisplay.h"
+#include "MinecraftHUD.h"
+#include "EffectDisplay.h"
+#include "AlchemyMode.h"
 #include "NinePatch.h"
 #include <SFML/Graphics.hpp>
 
@@ -17,6 +20,8 @@ class GridRenderer {
   sf::Font font;
   bool fontLoaded;
   mutable HeartDisplay heartDisplay;
+  mutable MinecraftHUD minecraftHUD;
+  mutable EffectDisplay effectDisplay;
   mutable int lastMistakes;
   mutable ::sf::Clock animationClock;
 
@@ -56,6 +61,12 @@ public:
   Grid::WebDamageResult handleHintClick(const sf::Vector2i &mousePos) const;
 
   sf::Vector2f getHintCenter(bool isRow, int line, int index) const;
+  
+  // MinecraftHUD controls
+  void setShowHearts(bool show) { minecraftHUD.setShowHearts(show); }
+  void setShowHunger(bool show) { minecraftHUD.setShowHunger(show); }
+  MinecraftHUD& getHUD() { return minecraftHUD; }
+  const MinecraftHUD& getHUD() const { return minecraftHUD; }
 };
 
 #endif // OOP_GRIDRENDERER_H

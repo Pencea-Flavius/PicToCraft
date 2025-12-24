@@ -1,4 +1,5 @@
 #include "TorchMode.h"
+#include "AlchemyMode.h"
 #include "Exceptions.h"
 #include <random>
 
@@ -100,7 +101,57 @@ void TorchMode::draw(sf::RenderWindow &window) const {
   if (wrappedMode) {
     wrappedMode->draw(window);
   }
+  
+  // Check for Blindness/Night Vision from AlchemyMode in wrapped chain
+  bool hasNightVision = false;
+  
+  if (wrappedMode) {
+    // Try to get AlchemyMode by traversing decorator chain
+    GameMode* current = wrappedMode.get();
+    while (current) {
+      if (auto* alchemyMode = dynamic_cast<AlchemyMode*>(current)) {
+        hasNightVision = alchemyMode->hasEffect(EffectType::NightVision);
+        break;
+      }
+      if (auto* decorator = dynamic_cast<GameModeDecorator*>(current)) {
+        current = decorator->getWrappedMode();
+      } else {
+        break;
+      }
+    }
+  }
+  
+  // Night Vision disables darkness completely
+  if (hasNightVision) {
+    // Draw particles but no darkness
+    sf::View originalView = window.getView();
+    window.setView(window.getDefaultView());
+    
+    sf::Vector2i mousePosI = sf::Mouse::getPosition(window);
+    auto mousePosF = static_cast<sf::Vector2f>(mousePosI);
+    sf::Vector2f offset = sf::Mouse::isButtonPressed(sf::Mouse::Button::Left) 
+                          ? sf::Vector2f(8.f, -48.f) 
+                          : sf::Vector2f(15.f, -40.f);
+    sf::Vector2f emitPos = mousePosF + offset;
+    
+    for (int i = 0; i < 5; ++i) {
+      const_cast<TorchMode *>(this)->particleSystem.emit(emitPos, ParticleType::Fire);
+    }
+    
+    static std::random_device rd;
+    static std::mt19937 gen(rd());
+    std::uniform_int_distribution<> dis(0, 1);
+    if (dis(gen) == 0) {
+      const_cast<TorchMode *>(this)->particleSystem.emit(emitPos, ParticleType::Smoke);
+    }
+    
+    const_cast<TorchMode *>(this)->particleSystem.draw(window);
+    window.setView(originalView);
+    return; // Skip darkness rendering
+  }
 
+
+  // Show darkness (torch off or blindness)
   sf::Vector2u windowSize = window.getSize();
   if (lightLayer.getSize() != windowSize) {
     (void)lightLayer.resize(windowSize);
@@ -115,10 +166,8 @@ void TorchMode::draw(sf::RenderWindow &window) const {
                           static_cast<float>(lightTexture.getSize().y) / 2.0f});
 
   sf::Vector2i mousePos = sf::Mouse::getPosition(window);
-  // Use screen coordinates for the light on the overlay
   lightSprite->setPosition(static_cast<sf::Vector2f>(mousePos));
 
-  // Scale light based on resolution
   float scale = static_cast<float>(window.getSize().x) / 1920.0f;
   lightSprite->setScale({scale, scale});
 
@@ -127,7 +176,7 @@ void TorchMode::draw(sf::RenderWindow &window) const {
       sf::BlendMode::Equation::Add, sf::BlendMode::Factor::One,
       sf::BlendMode::Factor::One, sf::BlendMode::Equation::ReverseSubtract);
 
-  lightSprite->setColor(sf::Color::White); // Reset color for alpha subtraction
+  lightSprite->setColor(sf::Color::White);
   lightLayer.draw(*lightSprite, subtractAlpha);
 
   sf::BlendMode addColor(sf::BlendMode::Factor::SrcAlpha,
@@ -147,30 +196,21 @@ void TorchMode::draw(sf::RenderWindow &window) const {
   sf::Vector2i mousePosI = sf::Mouse::getPosition(window);
   auto mousePosF = static_cast<sf::Vector2f>(mousePosI);
 
-  sf::Vector2f offset;
-
-  if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left)) {
-    offset = sf::Vector2f(8.f, -48.f);
-  } else {
-    offset = sf::Vector2f(15.f, -40.f);
-  }
+  sf::Vector2f offset = sf::Mouse::isButtonPressed(sf::Mouse::Button::Left)
+                        ? sf::Vector2f(8.f, -48.f)
+                        : sf::Vector2f(15.f, -40.f);
 
   sf::Vector2f emitPos = mousePosF + offset;
 
-  // Emit multiple particles for denser effect
-  // Fire
   for (int i = 0; i < 5; ++i) {
-    const_cast<TorchMode *>(this)->particleSystem.emit(emitPos,
-                                                       ParticleType::Fire);
+    const_cast<TorchMode *>(this)->particleSystem.emit(emitPos, ParticleType::Fire);
   }
-  // Smoke (less frequent)
-  // Smoke (less frequent)
+  
   static std::random_device rd;
   static std::mt19937 gen(rd());
   std::uniform_int_distribution<> dis(0, 1);
   if (dis(gen) == 0) {
-    const_cast<TorchMode *>(this)->particleSystem.emit(emitPos,
-                                                       ParticleType::Smoke);
+    const_cast<TorchMode *>(this)->particleSystem.emit(emitPos, ParticleType::Smoke);
   }
 
   const_cast<TorchMode *>(this)->particleSystem.draw(window);

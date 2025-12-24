@@ -25,10 +25,10 @@ Spider::Spider(sf::Vector2f startPos, const sf::Texture &walkTex,
                const std::vector<sf::SoundBuffer> *idleSnds,
                const std::vector<sf::SoundBuffer> *stepSnds, float scale)
     : sprite(walkTex), walkTexture(&walkTex), idleTexture(&idleTex),
-      deathTexture(&deathTex), deathSoundBuffer(deathSnd),
-      idleSoundBuffers(idleSnds), stepSoundBuffers(stepSnds),
-      state(State::Walking), stateTimer(randomFloat(2.0f, 5.0f)), scale(scale),
-      animationTimer(0.0f), currentFrame(0), numFrames(1), frameTime(0.03f) {
+      deathTexture(&deathTex),
+      state(State::Walking), velocity(0.f, 0.f), stateTimer(randomFloat(2.0f, 5.0f)), scale(scale),
+      animationTimer(0.0f), currentFrame(0), numFrames(1), frameTime(0.03f),
+      deathSoundBuffer(deathSnd), idleSoundBuffers(idleSnds), stepSoundBuffers(stepSnds) {
   sprite.setPosition(startPos);
   sprite.setScale({scale, scale});
 
@@ -64,7 +64,7 @@ void Spider::changeState(State newState) {
     if (stepSoundBuffers && !stepSoundBuffers->empty()) {
       static std::random_device rd;
       static std::mt19937 gen(rd());
-      std::uniform_int_distribution<> dis(0, stepSoundBuffers->size() - 1);
+      std::uniform_int_distribution<> dis(0, static_cast<int>(stepSoundBuffers->size()) - 1);
       
       currentStepSoundIndex = dis(gen);
       audioSource.emplace((*stepSoundBuffers)[currentStepSoundIndex]);
@@ -199,7 +199,7 @@ void Spider::update(float dt, const sf::Vector2u &windowSize) {
           if (!audioSource.has_value() || audioSource->getStatus() != sf::Sound::Status::Playing) {
               static std::random_device rd;
               static std::mt19937 gen(rd());
-              std::uniform_int_distribution<> dis(0, stepSoundBuffers->size() - 1);
+              std::uniform_int_distribution<> dis(0, static_cast<int>(stepSoundBuffers->size()) - 1);
               std::uniform_real_distribution<float> timeDis(1.5f, 3.0f); // "Rarer" - delay between steps
               
               currentStepSoundIndex = dis(gen);
@@ -217,7 +217,7 @@ void Spider::update(float dt, const sf::Vector2u &windowSize) {
           std::uniform_int_distribution<> dis(0, 300);
           
           if (dis(gen) == 0) {
-             std::uniform_int_distribution<> idxDis(0, idleSoundBuffers->size() - 1);
+             std::uniform_int_distribution<> idxDis(0, static_cast<int>(idleSoundBuffers->size()) - 1);
              int idx = idxDis(gen);
              audioSource.emplace((*idleSoundBuffers)[idx]);
              audioSource->setVolume(currentVolume);
@@ -274,4 +274,11 @@ void Spider::setTarget(sf::Vector2f pos, bool isRow, int line, int index) {
 void Spider::clearTarget() {
   hasTarget = false;
   changeState(State::Idle); // Go to idle when target is cleared
+}
+
+void Spider::hit() {
+  health--;
+  if (health <= 0) {
+    die();
+  }
 }

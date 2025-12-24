@@ -30,6 +30,8 @@ GridRenderer::GridRenderer(Grid &g, float size, sf::Vector2f off)
     std::cerr << "Failed to load assets/grid/slot.png" << std::endl;
   }
 
+
+
   if (!hintTabTexture.loadFromFile("assets/grid/tab_hint.png")) {
     std::cerr << "Failed to load assets/grid/tab_hint.png" << std::endl;
   } else {
@@ -63,16 +65,23 @@ GridRenderer::GridRenderer(Grid &g, float size, sf::Vector2f off)
     glassTextures.push_back(tex);
   }
 
-  // Randomize default glass color (exclude gray at index 4)
+  // Randomize default glass color
   static std::random_device rd;
   static std::mt19937 gen(rd());
   std::vector<int> validIndices;
   for (int i = 0; i < 16; ++i) {
-    if (i != 4)
+    if (i != 7) // Exclude Light Gray (7)
       validIndices.push_back(i);
   }
-  std::uniform_int_distribution<> dis(0, validIndices.size() - 1);
+  std::uniform_int_distribution<> dis(0, static_cast<int>(validIndices.size()) - 1);
   defaultGlassColorIndex = validIndices[dis(gen)];
+  
+  // Load effect display assets
+  try {
+    effectDisplay.loadAssets();
+  } catch (const std::exception& e) {
+    std::cerr << "Error loading effect assets: " << e.what() << std::endl;
+  }
 }
 
 void GridRenderer::setDiscoFeverMode(bool enabled) {
@@ -80,65 +89,80 @@ void GridRenderer::setDiscoFeverMode(bool enabled) {
 }
 
 void GridRenderer::drawGameInfo(sf::RenderWindow &window) const {
-  if (!fontLoaded)
-    return;
-
-  auto winSize = window.getSize();
-
-  auto fontSize =
-      static_cast<unsigned int>(static_cast<float>(winSize.y) * 0.035f);
-  fontSize = std::max(18u, std::min(fontSize, 40u));
-
-  sf::Text infoText(font, "");
-  infoText.setCharacterSize(fontSize);
-  infoText.setFillColor(sf::Color::Yellow);
-
-  if (grid.shouldDisplayScore()) {
-    std::ostringstream oss;
-    oss << "Score: " << grid.get_score();
-    infoText.setString(oss.str());
-
-    float padding = static_cast<float>(winSize.x) * 0.015f;
-    padding = std::max(10.f, std::min(padding, 30.f));
-
-    auto bounds = infoText.getLocalBounds();
-    infoText.setPosition({static_cast<float>(winSize.x) - bounds.size.x -
-                              bounds.position.x - padding,
-                          padding - bounds.position.y});
-
-    float scaleX = static_cast<float>(winSize.x) / 1280.0f;
-    float scaleY = static_cast<float>(winSize.y) / 720.0f;
-    float scale = std::min(scaleX, scaleY);
-
-    ShadowedText::draw(window, infoText, scale);
-  } else {
-    int currentMistakes = grid.get_mistakes();
-    if (grid.get_mistakes() > lastMistakes) {
-      heartDisplay.triggerFlash();
+  // Update HUD animations
+  float dt = animationClock.restart().asSeconds();
+  
+  // Helper to find AlchemyMode in decorator chain
+  auto findAlchemyMode = [](GameMode* mode) -> AlchemyMode* {
+    if (!mode) return nullptr;
+    
+    // Try direct cast
+    if (auto* alchemy = dynamic_cast<AlchemyMode*>(mode)) {
+      return alchemy;
     }
-    lastMistakes = grid.get_mistakes();
-
-    float scaleX = static_cast<float>(winSize.x) / 1280.0f;
-    float scaleY = static_cast<float>(winSize.y) / 720.0f;
-    float baseScale = std::min(scaleX, scaleY);
-
-    float heartScale = baseScale * 2.5f; // Make hearts 2.5x larger
-
-    float padding = static_cast<float>(winSize.x) * 0.015f;
-    padding = std::max(10.f, std::min(padding, 30.f));
-
-    int maxMistakes = grid.get_max_mistakes();
-    int totalHearts = (maxMistakes + 1) / 2;
-    float heartWidth = 9.0f * heartScale;
-    float totalWidth = static_cast<float>(totalHearts) * heartWidth;
-
-    sf::Vector2f pos(static_cast<float>(winSize.x) - totalWidth - padding,
-                     padding);
-
-    heartDisplay.update(animationClock.restart().asSeconds());
-    heartDisplay.draw(window, currentMistakes, maxMistakes, pos, heartScale,
-                      grid.is_time_mode());
+    
+    // Traverse decorator chain
+    GameMode* current = mode;
+    while (current) {
+      if (auto* decorator = dynamic_cast<GameModeDecorator*>(current)) {
+        if (auto* alchemy = dynamic_cast<AlchemyMode*>(decorator->getWrappedMode())) {
+          return alchemy;
+        }
+        current = decorator->getWrappedMode();
+      } else {
+        break;
+      }
+    }
+    return nullptr;
+  };
+  
+  // Check for Hunger and Saturation effects from AlchemyMode
+  bool hasHunger = false;
+  bool hasSaturation = false;
+  
+  if (auto* alchemyMode = findAlchemyMode(grid.getMode())) {
+    hasHunger = alchemyMode->hasEffect(EffectType::Hunger);
+    hasSaturation = alchemyMode->hasEffect(EffectType::Saturation);
   }
+  
+  int currentMistakes = grid.get_mistakes();
+
+  if (const_cast<MinecraftHUD&>(minecraftHUD).update(dt, hasHunger, hasSaturation)) {
+      const_cast<Grid&>(grid).damagePlayer();
+  }
+  
+  if (currentMistakes != lastMistakes) {
+    // Mistakes changed (damage or healing) - trigger flash
+    heartDisplay.triggerFlash();
+  }
+  lastMistakes = currentMistakes;
+  int maxMistakes = grid.get_max_mistakes();
+  int score = grid.get_score();
+
+  // Show poisoned hearts if Poison effect is active
+  // Show withered hearts if Time Mode is active (and not poisoned)
+  bool isPoisoned = false;
+  if (auto* alchemyMode = findAlchemyMode(grid.getMode())) {
+    isPoisoned = alchemyMode->hasEffect(EffectType::Poison);
+  }
+  
+  bool isWithered = grid.is_time_mode();
+  
+  bool showStats = grid.shouldShowSurvivalStats();
+
+  sf::View originalView = window.getView();
+  window.setView(window.getDefaultView());
+  
+  auto& hud = const_cast<MinecraftHUD&>(minecraftHUD);
+  hud.setShowHearts(showStats);
+  hud.setShowHunger(showStats);
+  
+  // Set max health from game mode's maxMistakes
+  hud.setMaxHealth(maxMistakes);
+  
+  hud.draw(window, score, currentMistakes, maxMistakes, isPoisoned, hasHunger, isWithered);
+  
+  window.setView(originalView);
 }
 
 void GridRenderer::drawHintTabs(sf::RenderWindow &window) const {
@@ -162,13 +186,13 @@ void GridRenderer::drawHintTabs(sf::RenderWindow &window) const {
 
   float tabWidth = cellSize - padding;
 
-  // Sprite setup
+
   sf::Sprite capSprite(hintTabTexture);
   sf::Sprite bodySprite(hintTabTexture);
 
   int texW = static_cast<int>(hintTabTexture.getSize().x);
   int texH = static_cast<int>(hintTabTexture.getSize().y);
-  int capH = 6; // Guessing
+  int capH = 6;
   int bodyH = texH - capH;
 
   capSprite.setTextureRect(sf::IntRect({0, 0}, {texW, capH}));
@@ -205,7 +229,7 @@ void GridRenderer::drawHintTabs(sf::RenderWindow &window) const {
     window.draw(capSprite);
   }
 
-  // Draw Row Tabs (Left)
+
   bodySprite.setRotation(sf::degrees(-90.f));
   capSprite.setRotation(sf::degrees(-90.f));
 
@@ -215,7 +239,6 @@ void GridRenderer::drawHintTabs(sf::RenderWindow &window) const {
   const auto &rowHints = hints.get_row_hints();
   for (int i = 0; i < n; ++i) {
     float y = gridOffset.y + static_cast<float>(i) * cellSize + padding / 2.0f;
-    // Shifted left further as requested (was -8.0f, now -14.0f)
     float rightX = gridOffset.x - 14.0f * uiScale;
 
     size_t currentRowWidth = rowHints[i].size();
@@ -253,14 +276,28 @@ void GridRenderer::drawHintTabs(sf::RenderWindow &window) const {
 }
 
 void GridRenderer::draw(sf::RenderWindow &window) const {
+  // Helper to find AlchemyMode in decorator chain  
+  auto findAlchemyMode = [](GameMode* mode) -> AlchemyMode* {
+    if (!mode) return nullptr;
+    if (auto* alchemy = dynamic_cast<AlchemyMode*>(mode)) return alchemy;
+    GameMode* current = mode;
+    while (current) {
+      if (auto* decorator = dynamic_cast<GameModeDecorator*>(current)) {
+        if (auto* alchemy = dynamic_cast<AlchemyMode*>(decorator->getWrappedMode())) return alchemy;
+        current = decorator->getWrappedMode();
+      } else break;
+    }
+    return nullptr;
+  };
+  
   if (isDiscoFeverMode) {
+    float deltaTime;
     // We use a static clock to track time between frames
-    // This is a bit of a hack since draw is const and we don't have deltaTime
-    // passed in
+    // This is a bit of a hack since draw is const and we don't have deltaTime passed in
     static sf::Clock discoClock;
     static float lastTime = 0.0f;
     float currentTime = discoClock.getElapsedTime().asSeconds();
-    float deltaTime = currentTime - lastTime;
+    deltaTime = currentTime - lastTime;
     lastTime = currentTime;
 
     // Avoid huge delta times (e.g. first frame or after pause)
@@ -298,22 +335,47 @@ void GridRenderer::draw(sf::RenderWindow &window) const {
   float scaleY = static_cast<float>(winSize.y) / 720.0f;
   float uiScale = std::min(scaleX, scaleY);
 
-  float borderScale = 16.0f / 4.0f;
-  float visualBorderScale = std::round(uiScale * borderScale);
-  if (visualBorderScale < 1.0f)
-    visualBorderScale = 1.0f;
+
+
+  float patchScale = std::round(uiScale);
+  if (patchScale < 1.f) patchScale = 1.f;
 
   auto &mutablePatch = const_cast<NinePatch &>(backgroundPatch);
   mutablePatch.setPixelSnapping(true);
-  mutablePatch.setPatchScale(visualBorderScale / borderScale);
+  mutablePatch.setPatchScale(patchScale);
+
+
 
   float scaledPadding = std::round(padding * uiScale);
 
-  mutablePatch.setSize(gridWidth + scaledPadding * 2,
-                       gridHeight + scaledPadding * 2);
-  mutablePatch.setPosition(
-      {gridOffset.x - scaledPadding, gridOffset.y - scaledPadding});
+  float bgWidth  = std::round(gridWidth + scaledPadding * 2);
+  float bgHeight = std::round(gridHeight + scaledPadding * 2);
+  
+  mutablePatch.setSize(bgWidth, bgHeight);
+  
+  sf::Vector2f bgPos = {
+    std::round(gridOffset.x - scaledPadding),
+    std::round(gridOffset.y - scaledPadding)
+  };
+  mutablePatch.setPosition(bgPos);
   window.draw(backgroundPatch);
+  
+  // Draw effects to the right of the grid
+  // Get effects from AlchemyMode if active
+  
+  std::vector<ActiveEffect> activeEffects;
+  if (auto* alchemyMode = findAlchemyMode(grid.getMode())) {
+    activeEffects = alchemyMode->getActiveEffects();
+  }
+  
+  if (!activeEffects.empty()) {
+    float effectPadding = 10.0f * uiScale;
+    sf::Vector2f effectPos;
+    effectPos.x = bgPos.x + bgWidth + effectPadding;
+    effectPos.y = bgPos.y;
+    
+    effectDisplay.draw(window, uiScale, activeEffects, effectPos);
+  }
 
   if (fontLoaded) {
     const auto &rowHints = hints.get_row_hints();
@@ -332,7 +394,6 @@ void GridRenderer::draw(sf::RenderWindow &window) const {
             std::min(28.f * uiScale, cellSize * 0.5f));
 
         if (grid.isHintWebbed(true, static_cast<int>(i), j)) {
-          // Web logic
           sf::Sprite webSprite(webTexture);
           float scale =
               (cellSize * 0.6f) / static_cast<float>(webTexture.getSize().x);
@@ -409,7 +470,6 @@ void GridRenderer::draw(sf::RenderWindow &window) const {
       float slotHeight = cellSize * 0.8f;
 
       for (int i = static_cast<int>(colHints[j].size()) - 1; i >= 0; --i) {
-        // k=0 is closest to grid (bottom).
         int k = static_cast<int>(colHints[j].size()) - 1 - i;
 
         float slotCenterY = gridOffset.y -
@@ -417,7 +477,8 @@ void GridRenderer::draw(sf::RenderWindow &window) const {
                             (slotHeight / 2.0f);
         slotCenterY -= 16.0f * uiScale;
 
-        // Dynamic font size
+
+
         unsigned int fontSize = static_cast<unsigned int>(
             std::min(28.f * uiScale, cellSize * 0.5f));
 
@@ -511,8 +572,8 @@ void GridRenderer::draw(sf::RenderWindow &window) const {
           int textureIndex = defaultGlassColorIndex;
           if (isDiscoFeverMode) {
             size_t h = std::hash<int>{}(i) ^ (std::hash<int>{}(j) << 1);
-            // Add time-based offset to the hash to animate it
-            textureIndex = (h + currentColorOffset) % glassTextures.size();
+
+            textureIndex = static_cast<int>((h + currentColorOffset) % glassTextures.size());
           }
 
           sf::Sprite glassSprite(glassTextures[textureIndex]);

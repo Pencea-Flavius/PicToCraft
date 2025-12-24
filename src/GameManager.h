@@ -8,6 +8,7 @@
 #include "Grid.h"
 #include "GridRenderer.h"
 #include "WinScreen.h"
+#include "Leaderboard.h"
 #include <SFML/Graphics.hpp>
 #include <memory>
 
@@ -38,6 +39,8 @@ class GameManager {
   float nextPauseDuration;
   
   void updateMusic(float deltaTime);
+  
+  Leaderboard leaderboard;
 
 public:
   GameManager();

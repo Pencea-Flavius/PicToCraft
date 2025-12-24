@@ -10,7 +10,7 @@
 
 class MenuButton {
 public:
-    enum class Style { Default, Tab, Slider };
+    enum class Style { Default, Tab, Slider, TextField };
 
     MenuButton(const std::string &label, const sf::Font &font,
                const sf::Texture &texture, unsigned int fontSize);
@@ -60,6 +60,10 @@ private:
     static sf::Texture sliderHandleTexture;
     static sf::Texture sliderHandleHighlightedTexture;
     static bool sliderTexturesLoaded;
+
+    static sf::Texture textFieldTexture;
+    static sf::Texture textFieldHighlightedTexture;
+    static bool textFieldTexturesLoaded;
 
     std::vector<sf::Sprite> patchSprites;
     const sf::Texture *currentTexture;

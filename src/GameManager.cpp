@@ -20,7 +20,7 @@ GameManager::GameManager()
   window.create(sf::VideoMode({width, height}), "PictoCraft", sf::Style::Close,
                 sf::State::Windowed);
   if (!window.isOpen()) {
-    throw GameException("Failed to create game window");
+    throw WindowCreationException("Failed to create game window");
   }
   window.setFramerateLimit(60);
 
@@ -51,6 +51,8 @@ GameManager::GameManager()
 
   musicPauseTimer = 0.0f;
   nextPauseDuration = 0.0f;
+  
+  leaderboard.load("leaderboard.txt");
 }
 
 void GameManager::updateMusic(float deltaTime) {
@@ -74,7 +76,7 @@ void GameManager::updateMusic(float deltaTime) {
           // Play random track
           static std::random_device rd;
           static std::mt19937 gen(rd());
-          std::uniform_int_distribution<> dis(0, c418Tracks.size() - 1);
+          std::uniform_int_distribution<> dis(0, static_cast<int>(c418Tracks.size()) - 1);
 
           if (!c418Tracks.empty()) {
             int idx = dis(gen);
@@ -130,26 +132,23 @@ void GameManager::resetGame() {
   size_t maxRowWidth = hints.get_max_row_width();
   size_t maxColHeight = hints.get_max_col_height();
 
-  float availableWidth = static_cast<float>(winSize.x) * 0.85f;
-  float availableHeight = static_cast<float>(winSize.y) * 0.85f;
+  float availableWidth = static_cast<float>(winSize.x) * 0.95f;
+  float availableHeight = static_cast<float>(winSize.y) * 0.95f;
 
   float cellSizeByWidth =
       availableWidth /
-      (static_cast<float>(n) + static_cast<float>(maxRowWidth) * 0.8f);
+      (static_cast<float>(n) + static_cast<float>(maxRowWidth) * 0.8f * 2.0f);
   float cellSizeByHeight =
       availableHeight /
-      (static_cast<float>(n) + static_cast<float>(maxColHeight) * 0.8f);
+      (static_cast<float>(n) + static_cast<float>(maxColHeight) * 0.8f * 2.0f);
   float cellSize = std::min(cellSizeByWidth, cellSizeByHeight);
 
-  float totalWidth =
-      (static_cast<float>(n) + static_cast<float>(maxRowWidth) * 0.8f) *
-      cellSize;
-  float totalHeight =
-      (static_cast<float>(n) + static_cast<float>(maxColHeight) * 0.8f) *
-      cellSize;
+  float gridScreenSize = static_cast<float>(n) * cellSize;
+  float rowHintsWidth = static_cast<float>(maxRowWidth) * cellSize * 0.8f;
+  float colHintsHeight = static_cast<float>(maxColHeight) * cellSize * 0.8f;
 
-  float offsetX = (static_cast<float>(winSize.x) - totalWidth) / 2.f;
-  float offsetY = (static_cast<float>(winSize.y) - totalHeight) / 2.f;
+  float offsetX = (static_cast<float>(winSize.x) - gridScreenSize) / 2.f - rowHintsWidth;
+  float offsetY = (static_cast<float>(winSize.y) - gridScreenSize) / 2.f - colHintsHeight + 25.0f; // Consistent offset for all modes
 
   renderer = std::make_unique<GridRenderer>(grid, cellSize,
                                             sf::Vector2f(offsetX, offsetY));
@@ -283,7 +282,24 @@ void GameManager::run() {
         if (grid.is_solved()) {
           inWinScreen = true;
           winScreen->reset();
-          winScreen->setScore(grid.get_score());
+          
+          int baseScore = grid.get_score();
+          int bonus = 0;
+          GameConfig cfg = menu->getGameConfig();
+          
+          if (cfg.timeMode) bonus += 2000;
+          if (cfg.torchMode) bonus += 2000;
+          if (cfg.spidersMode) bonus += 2000;
+          if (cfg.discoFeverMode) bonus += 2000;
+          if (cfg.endermanMode) bonus += 2000;
+          if (cfg.alchemyMode) bonus += 2000;
+          
+          int finalScore = baseScore + bonus;
+          
+          leaderboard.addEntry(menu->getPlayerName(), finalScore);
+          leaderboard.save("leaderboard.txt");
+          
+          winScreen->setScore(finalScore, leaderboard);
         } else if (grid.is_lost()) {
           inGameOver = true;
           gameOverScreen->reset();

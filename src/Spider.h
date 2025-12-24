@@ -76,6 +76,12 @@ private:
   float idleSoundTimer = 0.0f;
   float stepTimer = 0.0f;
   float currentVolume = 100.0f;
+  
+  int health = 1; // Health points - 1 normally, 2 with Weakness
+  
+public:
+  void setHealth(int hp) { health = hp; }
+  void hit(); // Damage spider
 };
 
 #endif // OOP_SPIDER_H

@@ -16,15 +16,20 @@ int Grid::totalGridsCreated = 0;
 Grid::Grid()
     : size{}, blocks{}, total_correct_blocks{}, completed_blocks{},
       correct_completed_blocks{}, hints{},
-      gameMode(std::make_unique<ScoreMode>()) {
+      gameMode(std::make_unique<ScoreMode>()), hurtSound(hurtBuffer) {
   totalGridsCreated++;
+  
+  // Load hurt sound
+  if (!hurtBuffer.loadFromFile("assets/sound/hurt.mp3")) {
+  }
 }
 
 Grid::Grid(int grid_size, const std::vector<std::vector<bool>> &pattern,
            const GameConfig &config)
     : size{grid_size}, total_correct_blocks{0}, completed_blocks{0},
       correct_completed_blocks{0},
-      gameMode(GameModeFactory::createGameMode(config, grid_size)) {
+      gameMode(GameModeFactory::createGameMode(config, grid_size)),
+      hurtSound(hurtBuffer) {
   if (grid_size <= 0) {
     throw InvalidGridException("Grid size must be positive: " +
                                std::to_string(grid_size));
@@ -59,7 +64,7 @@ Grid::Grid(const Grid &other)
       total_correct_blocks(other.total_correct_blocks),
       completed_blocks(other.completed_blocks),
       correct_completed_blocks(other.correct_completed_blocks),
-      hints(other.hints) {
+      hints(other.hints), hurtSound(hurtBuffer) {
   totalGridsCreated++;
 
   if (other.gameMode) {
@@ -243,6 +248,10 @@ bool Grid::shouldDisplayScore() const {
   return gameMode ? gameMode->shouldDisplayScore() : true;
 }
 
+bool Grid::shouldShowSurvivalStats() const {
+  return gameMode ? gameMode->shouldShowSurvivalStats() : true;
+}
+
 bool Grid::is_time_mode() const {
   GameMode *current = gameMode.get();
   while (current) {
@@ -341,4 +350,16 @@ void Grid::setRenderer(const GridRenderer *r) const {
 std::ostream &operator<<(std::ostream &os, const Grid &g) {
   os << g.hints;
   return os;
+}
+
+void Grid::damagePlayer(bool playSound) const {
+  if (gameMode) {
+    int current = gameMode->getMistakes();
+    gameMode->setMistakes(current + 1);
+    
+    // Play hurt sound
+    if (playSound && hurtBuffer.getDuration() != sf::Time::Zero) {
+      hurtSound.play();
+    }
+  }
 }

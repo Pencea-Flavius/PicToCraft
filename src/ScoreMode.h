@@ -10,6 +10,7 @@ public:
 
   [[nodiscard]] bool isLost() const override;
   [[nodiscard]] bool shouldDisplayScore() const override;
+  [[nodiscard]] bool shouldShowSurvivalStats() const override { return false; }
   [[nodiscard]] std::unique_ptr<GameMode> clone() const override;
   void print(std::ostream &os) const override {
     os << "ScoreMode (Score: " << score << ")";

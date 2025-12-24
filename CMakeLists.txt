@@ -52,6 +52,8 @@ add_executable(${MAIN_EXECUTABLE_NAME}
         src/PicrossHints.h
         src/Grid.cpp
         src/Grid.h
+        src/Potion.cpp
+        src/Potion.h
         src/GridRenderer.cpp
         src/GridRenderer.h
         src/GameMenu.cpp
@@ -88,6 +90,7 @@ add_executable(${MAIN_EXECUTABLE_NAME}
         src/ParticleSystem.h
         src/GameModeFactory.cpp
         src/GameModeFactory.h
+        src/PotionFactory.cpp
         src/NinePatch.cpp
         src/NinePatch.h
         src/DiscoFeverMode.cpp
@@ -96,6 +99,22 @@ add_executable(${MAIN_EXECUTABLE_NAME}
         src/EndermanMode.h
         src/GameBackground.cpp
         src/GameBackground.h
+        src/AlchemyMode.cpp
+        src/AlchemyMode.h
+        src/HungerDisplay.cpp
+        src/HungerDisplay.h
+        src/XPBar.cpp
+        src/XPBar.h
+        src/MinecraftHUD.cpp
+        src/MinecraftHUD.h
+
+        src/EffectDisplay.cpp
+        src/EffectDisplay.h
+        src/ParticleTemplates.cpp
+        src/ParticleTemplates.h
+        src/Leaderboard.cpp
+        src/Leaderboard.h
+
 )
 
 target_include_directories(${MAIN_EXECUTABLE_NAME} SYSTEM PRIVATE ${SFML_SOURCE_DIR}/include)

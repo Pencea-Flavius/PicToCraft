@@ -13,6 +13,7 @@
 #include "GameMode.h"
 #include "PicrossHints.h"
 #include <memory>
+#include <SFML/Audio.hpp>
 
 class Grid {
   int size;
@@ -65,6 +66,8 @@ public:
 
   [[nodiscard]] bool shouldDisplayScore() const;
 
+  [[nodiscard]] bool shouldShowSurvivalStats() const;
+
   [[nodiscard]] bool is_time_mode() const;
 
   [[nodiscard]] int get_size() const;
@@ -90,8 +93,17 @@ public:
   
   void setSfxVolume(float volume) {
       if (gameMode) gameMode->setSfxVolume(volume);
+      hurtSound.setVolume(volume);
   }
 
+  void damagePlayer(bool playSound = true) const;
+  
+  // Get game mode (for casting to specific types)
+  [[nodiscard]] GameMode* getMode() const { return gameMode.get(); }
+
+private:
+  sf::SoundBuffer hurtBuffer;
+  mutable sf::Sound hurtSound;
 };
 
 #endif // OOP_GRID_H

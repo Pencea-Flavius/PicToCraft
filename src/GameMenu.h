@@ -9,6 +9,7 @@
 #include "MenuButtonManager.h"
 #include "MenuPanorama.h"
 #include "SplashText.h"
+#include "Leaderboard.h"
 
 enum class MenuState { MainMenu, GameSetup, Options, Starting, Quitting };
 
@@ -117,13 +118,21 @@ private:
   std::vector<DifficultyOption> difficultyOptions;
   int selectedDifficultyIndex;
 
-  // Pentru scalare
+  // For Scale
   float baseWidth = 1280.0f;
   float baseHeight = 720.0f;
 
-  // Dimensiuni logo
+  // Logo
   float logoOriginalWidth = 1003.0f;
   float logoOriginalHeight = 162.0f;
+
+  // Player Name & Leaderboard
+  std::string playerName = "Player";
+  bool isTypingName = false;
+
+public:
+  const std::string& getPlayerName() const { return playerName; }
+  void handleTextInput(const sf::Event& event);
 };
 
 #endif // OOP_GAMEMENU_H

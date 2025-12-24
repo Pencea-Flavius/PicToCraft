@@ -5,6 +5,7 @@
 #include <optional>
 #include <string>
 #include <vector>
+#include "Leaderboard.h"
 
 class WinScreen {
   sf::Font font;
@@ -32,13 +33,14 @@ public:
   ~WinScreen();
 
   void reset();
-  void setScore(int score);
+  void setScore(int score, const Leaderboard& leaderboard);
   void update(float deltaTime);
   void draw(sf::RenderWindow &window);
   bool isFinished() const;
 
 private:
   int finalScore = 0;
+  std::vector<ScoreEntry> topScores;
 };
 
 #endif // OOP_WINSCREEN_H

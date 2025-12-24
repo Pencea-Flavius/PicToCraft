@@ -44,6 +44,18 @@ void MenuButtonManager::setButtonEnabled(int index, bool enabled) const {
   }
 }
 
+void MenuButtonManager::setButtonStyle(int index, MenuButton::Style style) const {
+  if (index >= 0 && index < static_cast<int>(buttons.size())) {
+    buttons[index]->setStyle(style);
+  }
+}
+
+void MenuButtonManager::setSelected(int index, bool selected) const {
+  if (index >= 0 && index < static_cast<int>(buttons.size())) {
+    buttons[index]->setSelected(selected);
+  }
+}
+
 void MenuButtonManager::layoutMainMenu(const sf::RenderWindow &window,
                                        float scale, float scaleY) const {
   if (buttons.size() < 3)
@@ -65,13 +77,15 @@ void MenuButtonManager::layoutMainMenu(const sf::RenderWindow &window,
   float optX = centerX - buttonWidth * 0.25f - gap / 2;
   float quitX = centerX + buttonWidth * 0.25f + gap / 2;
 
+  
   buttons[1]->update(scale, optX, row2Y, 0.5f, 1.0f, mousePos);
   buttons[2]->update(scale, quitX, row2Y, 0.5f, 1.0f, mousePos);
 }
 
 void MenuButtonManager::layoutGameSetup(
     const sf::RenderWindow &window, float scale, float scaleY, int selectedTab,
-    bool isTimeModeAvailable, const sf::Texture &activeButtonTexture,
+    bool isTimeModeAvailable, bool isAlchemyModeAvailable,
+    const sf::Texture &activeButtonTexture,
     const sf::Texture &inactiveButtonTexture) const {
 
   if (buttons.size() < 2)
@@ -103,17 +117,30 @@ void MenuButtonManager::layoutGameSetup(
                      mousePos);
 
   float contentY = topY + spacing * 1.5f;
+
   for (size_t i = 2; i < buttons.size() - 2; i++) {
-    buttons[i]->setStyle(MenuButton::Style::Default);
+    if (selectedTab == 0 && i == 2) {
+        buttons[i]->setStyle(MenuButton::Style::TextField);
+    } else {
+        buttons[i]->setStyle(MenuButton::Style::Default);
+    }
     buttons[i]->setEnabled(true);
 
-    if (bool shouldDisable =
-            (selectedTab == 1 && i == 2 && !isTimeModeAvailable);
-        shouldDisable) {
+    bool shouldDisable = false;
+    if (selectedTab == 1) {
+        // Name input is NOT present on Tab 1. Indices are 2..N.
+        if ((i == 2 && !isTimeModeAvailable) || (i == 7 && !isAlchemyModeAvailable)) {
+            shouldDisable = true;
+        }
+    }
+
+    if (shouldDisable) {
       buttons[i]->setTexture(inactiveButtonTexture);
       buttons[i]->setEnabled(false);
     } else {
-      buttons[i]->setTexture(activeButtonTexture);
+      if (!(selectedTab == 0 && i == 2)) {
+          buttons[i]->setTexture(activeButtonTexture);
+      }
     }
 
     buttons[i]->update(scale, centerX,
@@ -142,7 +169,7 @@ void MenuButtonManager::layoutOptions(const sf::RenderWindow &window,
 
   float centerX = static_cast<float>(window.getSize().x) / 2.0f;
   float startY = 150.0f * scaleY;
-  float spacing = 80.0f * scaleY; // Increased from 50 to 80 to fix overlap
+  float spacing = 80.0f * scaleY;
 
   sf::Vector2f mousePos =
       window.mapPixelToCoords(sf::Mouse::getPosition(window));
@@ -157,7 +184,7 @@ void MenuButtonManager::layoutOptions(const sf::RenderWindow &window,
   float row3Y = row2Y + spacing;
   buttons[3]->update(scale, centerX, row3Y, 1.5f, 1.5f, mousePos);
 
-  // Fullscreen (Index 4)
+
   buttons[4]->update(scale, centerX, row3Y + spacing, 1.5f, 1.5f, mousePos);
 
   float footerY = static_cast<float>(window.getSize().y) - 50.0f * scaleY;

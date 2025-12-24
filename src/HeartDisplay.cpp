@@ -52,10 +52,34 @@ HeartDisplay::HeartDisplay() : isFlashing(false), flashTimer(0.0f) {
         "assets/hearts/poisoned_hardcore_half_blinking.png", "Texture");
   }
 
+  if (!witheredFullHeartTexture.loadFromFile(
+          "assets/hearts/withered_hardcore_full.png")) {
+    throw AssetLoadException("assets/hearts/withered_hardcore_full.png",
+                             "Texture");
+  }
+  if (!witheredFullHeartBlinkingTexture.loadFromFile(
+          "assets/hearts/withered_hardcore_full_blinking.png")) {
+    throw AssetLoadException(
+        "assets/hearts/withered_hardcore_full_blinking.png", "Texture");
+  }
+
+  if (!witheredHalfHeartTexture.loadFromFile(
+          "assets/hearts/withered_hardcore_half.png")) {
+    throw AssetLoadException("assets/hearts/withered_hardcore_half.png",
+                             "Texture");
+  }
+  if (!witheredHalfHeartBlinkingTexture.loadFromFile(
+          "assets/hearts/withered_hardcore_half_blinking.png")) {
+    throw AssetLoadException(
+        "assets/hearts/withered_hardcore_half_blinking.png", "Texture");
+  }
+
   containerSprite.emplace(containerTexture);
   fullHeartSprite.emplace(fullHeartTexture);
   halfHeartSprite.emplace(halfHeartTexture);
 }
+
+
 
 void HeartDisplay::update(float deltaTime) {
   if (isFlashing) {
@@ -65,6 +89,11 @@ void HeartDisplay::update(float deltaTime) {
       flashTimer = 0.0f;
     }
   }
+  
+  if (shakeTimer > 0.0f) {
+    shakeTimer -= deltaTime;
+    if (shakeTimer < 0.0f) shakeTimer = 0.0f;
+  }
 }
 
 void HeartDisplay::triggerFlash() {
@@ -72,9 +101,13 @@ void HeartDisplay::triggerFlash() {
   flashTimer = FLASH_DURATION;
 }
 
+void HeartDisplay::triggerShake() {
+    shakeTimer = SHAKE_DURATION;
+}
+
 void HeartDisplay::draw(sf::RenderWindow &window, int currentMistakes,
                         int maxMistakes, const sf::Vector2f &position,
-                        float scale, bool isPoisoned) {
+                        float scale, bool isPoisoned, bool isWithered) {
 
   bool useBlinking =
       isFlashing && (static_cast<int>(flashTimer * 5.0f) % 2 == 0);
@@ -84,6 +117,9 @@ void HeartDisplay::draw(sf::RenderWindow &window, int currentMistakes,
     if (isPoisoned) {
       fullHeartSprite->setTexture(poisonedFullHeartBlinkingTexture);
       halfHeartSprite->setTexture(poisonedHalfHeartBlinkingTexture);
+    } else if (isWithered) {
+      fullHeartSprite->setTexture(witheredFullHeartBlinkingTexture);
+      halfHeartSprite->setTexture(witheredHalfHeartBlinkingTexture);
     } else {
       fullHeartSprite->setTexture(fullHeartBlinkingTexture);
       halfHeartSprite->setTexture(halfHeartBlinkingTexture);
@@ -93,6 +129,9 @@ void HeartDisplay::draw(sf::RenderWindow &window, int currentMistakes,
     if (isPoisoned) {
       fullHeartSprite->setTexture(poisonedFullHeartTexture);
       halfHeartSprite->setTexture(poisonedHalfHeartTexture);
+    } else if (isWithered) {
+      fullHeartSprite->setTexture(witheredFullHeartTexture);
+      halfHeartSprite->setTexture(witheredHalfHeartTexture);
     } else {
       fullHeartSprite->setTexture(fullHeartTexture);
       halfHeartSprite->setTexture(halfHeartTexture);
@@ -113,10 +152,10 @@ void HeartDisplay::draw(sf::RenderWindow &window, int currentMistakes,
   }
 
   int totalHearts = (totalHalfHearts + 1) / 2;
-  float heartSpacing = 9.0f * scale;
+  float heartSpacing = 8.0f * scale;
 
   bool isLowHealth =
-      (static_cast<float>(currentHalfHearts) / totalHalfHearts) <= 0.2f ||
+      (static_cast<float>(currentHalfHearts) / static_cast<float>(totalHalfHearts)) <= 0.2f ||
       currentHalfHearts <= 1;
 
   static std::mt19937 rng(std::random_device{}());
@@ -126,8 +165,9 @@ void HeartDisplay::draw(sf::RenderWindow &window, int currentMistakes,
     float x = position.x + static_cast<float>(i) * heartSpacing;
     float y = position.y;
 
-    if (isLowHealth) {
+    if (isLowHealth || shakeTimer > 0.0f) {
       float shakeOffset = dist(rng) * scale;
+      if (shakeTimer > 0.0f) shakeOffset *= 1.5f;
       y += shakeOffset;
     }
 

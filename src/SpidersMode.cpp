@@ -1,4 +1,5 @@
 #include "SpidersMode.h"
+#include "AlchemyMode.h"
 #include "Exceptions.h"
 #include "Grid.h"
 #include "GridRenderer.h"
@@ -136,10 +137,43 @@ void SpidersMode::update(float deltaTime) {
       spider.update(deltaTime, windowSize);
     }
   }
+  
+  // Update spider health only when Weakness effect changes
+  if (grid && grid->getMode()) {
+    if (auto* alchemyMode = dynamic_cast<AlchemyMode*>(grid->getMode())) {
+      bool hasWeakness = alchemyMode->hasEffect(EffectType::Weakness);
+      
+      // Only update if weakness state changed
+      if (hasWeakness != wasWeaknessActive) {
+        wasWeaknessActive = hasWeakness;
+        for (auto &spider : spiders) {
+          if (!spider.isDying() && !spider.isDead()) {
+            spider.setHealth(hasWeakness ? 2 : 1);
+          }
+        }
+      }
+    }
+  }
+  
   if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left)) {
     damageTimer += deltaTime;
-    if (damageTimer >= 0.1f) {
-      // Damage every 0.1s
+    
+    // Haste makes damage faster, Mining Fatigue makes it slower
+    float damageRate = 0.1f; // Default: damage every 0.1s
+    
+    // Check for Haste/Mining Fatigue from AlchemyMode
+    if (grid && grid->getMode()) {
+      if (auto* alchemyMode = dynamic_cast<AlchemyMode*>(grid->getMode())) {
+        if (alchemyMode->hasEffect(EffectType::Haste)) {
+          damageRate = 0.05f; // Twice as fast
+        } else if (alchemyMode->hasEffect(EffectType::MiningFatigue)) {
+          damageRate = 0.3f; // 3x slower
+        }
+      }
+    }
+    
+    if (damageTimer >= damageRate) {
+      // Damage web
       damageTimer = 0.0f;
       if (renderer) {
         // Use last known mouse position
@@ -153,15 +187,13 @@ void SpidersMode::update(float deltaTime) {
           if (!hitWebBuffers.empty()) {
             static std::random_device rd;
             static std::mt19937 gen(rd());
-            std::uniform_int_distribution<> dis(0, hitWebBuffers.size() - 1);
+            std::uniform_int_distribution<> dis(0, static_cast<int>(hitWebBuffers.size()) - 1);
 
             // Play random stone hit
-            static int hitIdx = 0;
+            int hitIdx = dis(gen);
             webAudioSource.emplace(hitWebBuffers[hitIdx]);
             webAudioSource->setVolume(currentVolume);
             webAudioSource->play();
-
-            hitIdx = (hitIdx + 1) % hitWebBuffers.size();
           }
         }
       }
@@ -225,7 +257,7 @@ bool SpidersMode::handleInput(const sf::Event &event,
       for (auto &spider : spiders) {
         if (!spider.isDying() && !spider.isDead() &&
             spider.contains(mousePos)) {
-          spider.die();
+          spider.hit(); // Use hit() instead of die() for Weakness support
           return true; // Consumed
         }
       }
@@ -275,6 +307,16 @@ void SpidersMode::spawnSpider() {
   Spider newSpider(sf::Vector2f(x, y), walkTexture, idleTexture, deathTexture,
                    &deathBuffer, &idleBuffers, &stepBuffers, spiderScale);
   newSpider.setVolume(currentVolume);
+  
+  // Set health based on Weakness effect
+  if (grid && grid->getMode()) {
+    if (auto* alchemyMode = dynamic_cast<AlchemyMode*>(grid->getMode())) {
+      if (alchemyMode->hasEffect(EffectType::Weakness)) {
+        newSpider.setHealth(2); // Spiders need 2 hits with Weakness
+      }
+    }
+  }
+  
   spiders.push_back(std::move(newSpider));
   // Assign target if grid/renderer available
   if (grid && renderer) {

@@ -1,7 +1,6 @@
 #ifndef OOP_GAMEMODE_H
 #define OOP_GAMEMODE_H
 
-#include <cmath>
 #include <iostream>
 #include <memory>
 
@@ -14,6 +13,7 @@ struct GameConfig {
   bool spidersMode = false;
   bool discoFeverMode = false;
   bool endermanMode = false;
+  bool alchemyMode = false;
 
   float masterVolume = 1.0f;
   float musicVolume = 1.0f;
@@ -42,9 +42,11 @@ public:
 
   [[nodiscard]] virtual bool isLost() const = 0;
 
-  [[nodiscard]] virtual int getMaxMistakes() const { return 0; }
+  [[nodiscard]] virtual int getMaxMistakes() const { return 20; } // Default 10 hearts (20 half-hearts)
 
   [[nodiscard]] virtual bool shouldDisplayScore() const = 0;
+
+  [[nodiscard]] virtual bool shouldShowSurvivalStats() const { return true; }
 
   virtual void update(float deltaTime) {}
 
@@ -64,7 +66,7 @@ public:
   [[nodiscard]] virtual std::string getName() const = 0;
 
   virtual void print(std::ostream &os) const {
-    os << "GameMode (Score: " << score << ", Mistakes: " << mistakes << ")";
+    os << getName() << " (Score: " << score << ", Mistakes: " << mistakes << ")";
   }
 
   friend std::ostream &operator<<(std::ostream &os, const GameMode &gm) {
@@ -122,6 +124,10 @@ public:
 
   [[nodiscard]] bool shouldDisplayScore() const override {
     return wrappedMode ? wrappedMode->shouldDisplayScore() : false;
+  }
+
+  [[nodiscard]] bool shouldShowSurvivalStats() const override {
+    return wrappedMode ? wrappedMode->shouldShowSurvivalStats() : true;
   }
 
   void update(float deltaTime) override {

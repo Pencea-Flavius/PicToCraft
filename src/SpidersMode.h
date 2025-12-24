@@ -62,6 +62,8 @@ private:
 
     Grid *grid = nullptr;
     const GridRenderer *renderer = nullptr;
+    
+    bool wasWeaknessActive = false; // Track Weakness effect state
 
     void spawnSpider();
 };

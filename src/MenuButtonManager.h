@@ -22,11 +22,14 @@ public:
   void addButton(const std::string &label, unsigned int fontSize);
   void setButtonText(int index, const std::string &text) const;
   void setButtonEnabled(int index, bool enabled) const;
+  void setButtonStyle(int index, MenuButton::Style style) const;
+  void setSelected(int index, bool selected) const;
 
   void layoutMainMenu(const sf::RenderWindow &window, float scale,
                       float scaleY) const;
   void layoutGameSetup(const sf::RenderWindow &window, float scale,
                        float scaleY, int selectedTab, bool isTimeModeAvailable,
+                       bool isAlchemyModeAvailable,
                        const sf::Texture &buttonTexture,
                        const sf::Texture &buttonDisabledTexture) const;
   void layoutOptions(const sf::RenderWindow &window, float scale,

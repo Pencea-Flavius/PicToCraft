@@ -32,7 +32,7 @@ void MistakesMode::onBlockToggled(bool isCorrect, bool isCompleted,
   }
 }
 
-bool MistakesMode::isLost() const { return mistakes >= 3; }
+bool MistakesMode::isLost() const { return mistakes >= getMaxMistakes(); }
 
 int MistakesMode::getMaxMistakes() const { return 3; }
 
