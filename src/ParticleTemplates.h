@@ -100,13 +100,13 @@ public:
                     float s = p.size;
                     sf::Color c = p.color;
                     
-                    vertices.append(sf::Vertex(pos + sf::Vector2f(-s, -s), c, {0, 0}));
-                    vertices.append(sf::Vertex(pos + sf::Vector2f(s, -s), c, {texSize.x, 0}));
-                    vertices.append(sf::Vertex(pos + sf::Vector2f(-s, s), c, {0, texSize.y}));
+                    vertices.append(sf::Vertex{pos + sf::Vector2f{-s, -s}, c, sf::Vector2f{0.f, 0.f}});
+                    vertices.append(sf::Vertex{pos + sf::Vector2f{s, -s}, c, sf::Vector2f{texSize.x, 0.f}});
+                    vertices.append(sf::Vertex{pos + sf::Vector2f{-s, s}, c, sf::Vector2f{0.f, texSize.y}});
                     
-                    vertices.append(sf::Vertex(pos + sf::Vector2f(-s, s), c, {0, texSize.y}));
-                    vertices.append(sf::Vertex(pos + sf::Vector2f(s, -s), c, {texSize.x, 0}));
-                    vertices.append(sf::Vertex(pos + sf::Vector2f(s, s), c, {texSize.x, texSize.y}));
+                    vertices.append(sf::Vertex{pos + sf::Vector2f{-s, s}, c, sf::Vector2f{0.f, texSize.y}});
+                    vertices.append(sf::Vertex{pos + sf::Vector2f{s, -s}, c, sf::Vector2f{texSize.x, 0.f}});
+                    vertices.append(sf::Vertex{pos + sf::Vector2f{s, s}, c, sf::Vector2f{texSize.x, texSize.y}});
                  }
              }
              

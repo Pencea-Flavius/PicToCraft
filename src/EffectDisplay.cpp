@@ -48,13 +48,14 @@ void EffectDisplay::draw(sf::RenderWindow& window, float uiScale, const std::vec
     if (activeEffects.empty()) return;
 
     auto winSize = window.getSize();
-    float padding = 4.0f * uiScale;
+    // float padding = 4.0f * uiScale;
     
     float startX, startY;
     if (startPos.has_value()) {
         startX = startPos->x;
         startY = startPos->y;
     } else {
+        float padding = 4.0f * uiScale;
         startX = static_cast<float>(winSize.x) - padding; 
         startY = padding;
     }

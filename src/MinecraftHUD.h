@@ -1,6 +1,7 @@
 #ifndef MINECRAFT_HUD_H
 #define MINECRAFT_HUD_H
 
+#include <algorithm>
 #include "HeartDisplay.h"
 #include "HungerDisplay.h"
 #include "XPBar.h"
