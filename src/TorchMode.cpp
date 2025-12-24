@@ -107,7 +107,7 @@ void TorchMode::draw(sf::RenderWindow &window) const {
   
   if (wrappedMode) {
     // Try to get AlchemyMode by traversing decorator chain
-    GameMode* current = wrappedMode.get();
+    const GameMode* current = wrappedMode.get();
     while (current) {
       if (const auto* alchemyMode = dynamic_cast<const AlchemyMode*>(current)) {
         hasNightVision = alchemyMode->hasEffect(EffectType::NightVision);
