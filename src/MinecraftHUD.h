@@ -47,10 +47,14 @@ public:
     void setMaxHealth(int maxHP) { maxHealth = maxHP; }
     
     // Hunger management
+    // cppcheck-suppress unusedFunction
     void setHunger(int hunger) { currentHunger = std::clamp(hunger, 0, maxHunger); }
+    // cppcheck-suppress unusedFunction
     int getHunger() const { return currentHunger; }
     void modifyHunger(int delta);
+    // cppcheck-suppress unusedFunction
     void triggerHungerFlash() { hungerDisplay.triggerFlash(); }
+    // cppcheck-suppress unusedFunction
     void triggerHealFlash() { heartDisplay.triggerFlash(); } // For regeneration effect
     
     // Draw the full HUD at bottom center of screen

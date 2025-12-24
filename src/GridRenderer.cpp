@@ -102,7 +102,7 @@ void GridRenderer::drawGameInfo(sf::RenderWindow &window) const {
     }
     
     // Traverse decorator chain
-    GameMode* current = mode;
+    const GameMode* current = mode;
     while (current) {
       if (const auto* decorator = dynamic_cast<const GameModeDecorator*>(current)) {
         if (auto* alchemy = dynamic_cast<AlchemyMode*>(decorator->getWrappedMode())) {
@@ -280,7 +280,7 @@ void GridRenderer::draw(sf::RenderWindow &window) const {
   auto findAlchemyMode = [](GameMode* mode) -> AlchemyMode* {
     if (!mode) return nullptr;
     if (auto* alchemy = dynamic_cast<AlchemyMode*>(mode)) return alchemy;
-    GameMode* current = mode;
+    const GameMode* current = mode;
     while (current) {
       if (const auto* decorator = dynamic_cast<const GameModeDecorator*>(current)) {
         if (auto* alchemy = dynamic_cast<AlchemyMode*>(decorator->getWrappedMode())) return alchemy;
