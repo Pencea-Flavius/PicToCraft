@@ -140,7 +140,7 @@ void SpidersMode::update(float deltaTime) {
   
   // Update spider health only when Weakness effect changes
   if (grid && grid->getMode()) {
-    if (auto* alchemyMode = dynamic_cast<AlchemyMode*>(grid->getMode())) {
+    if (const auto* alchemyMode = dynamic_cast<const AlchemyMode*>(grid->getMode())) {
       bool hasWeakness = alchemyMode->hasEffect(EffectType::Weakness);
       
       // Only update if weakness state changed
@@ -163,7 +163,7 @@ void SpidersMode::update(float deltaTime) {
     
     // Check for Haste/Mining Fatigue from AlchemyMode
     if (grid && grid->getMode()) {
-      if (auto* alchemyMode = dynamic_cast<AlchemyMode*>(grid->getMode())) {
+      if (const auto* alchemyMode = dynamic_cast<const AlchemyMode*>(grid->getMode())) {
         if (alchemyMode->hasEffect(EffectType::Haste)) {
           damageRate = 0.05f; // Twice as fast
         } else if (alchemyMode->hasEffect(EffectType::MiningFatigue)) {
@@ -310,7 +310,7 @@ void SpidersMode::spawnSpider() {
   
   // Set health based on Weakness effect
   if (grid && grid->getMode()) {
-    if (auto* alchemyMode = dynamic_cast<AlchemyMode*>(grid->getMode())) {
+    if (const auto* alchemyMode = dynamic_cast<const AlchemyMode*>(grid->getMode())) {
       if (alchemyMode->hasEffect(EffectType::Weakness)) {
         newSpider.setHealth(2); // Spiders need 2 hits with Weakness
       }

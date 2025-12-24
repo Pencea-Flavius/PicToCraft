@@ -104,7 +104,7 @@ void GridRenderer::drawGameInfo(sf::RenderWindow &window) const {
     // Traverse decorator chain
     GameMode* current = mode;
     while (current) {
-      if (auto* decorator = dynamic_cast<GameModeDecorator*>(current)) {
+      if (const auto* decorator = dynamic_cast<const GameModeDecorator*>(current)) {
         if (auto* alchemy = dynamic_cast<AlchemyMode*>(decorator->getWrappedMode())) {
           return alchemy;
         }
@@ -120,7 +120,7 @@ void GridRenderer::drawGameInfo(sf::RenderWindow &window) const {
   bool hasHunger = false;
   bool hasSaturation = false;
   
-  if (auto* alchemyMode = findAlchemyMode(grid.getMode())) {
+  if (const auto* alchemyMode = findAlchemyMode(grid.getMode())) {
     hasHunger = alchemyMode->hasEffect(EffectType::Hunger);
     hasSaturation = alchemyMode->hasEffect(EffectType::Saturation);
   }
@@ -142,7 +142,7 @@ void GridRenderer::drawGameInfo(sf::RenderWindow &window) const {
   // Show poisoned hearts if Poison effect is active
   // Show withered hearts if Time Mode is active (and not poisoned)
   bool isPoisoned = false;
-  if (auto* alchemyMode = findAlchemyMode(grid.getMode())) {
+  if (const auto* alchemyMode = findAlchemyMode(grid.getMode())) {
     isPoisoned = alchemyMode->hasEffect(EffectType::Poison);
   }
   
@@ -282,7 +282,7 @@ void GridRenderer::draw(sf::RenderWindow &window) const {
     if (auto* alchemy = dynamic_cast<AlchemyMode*>(mode)) return alchemy;
     GameMode* current = mode;
     while (current) {
-      if (auto* decorator = dynamic_cast<GameModeDecorator*>(current)) {
+      if (const auto* decorator = dynamic_cast<const GameModeDecorator*>(current)) {
         if (auto* alchemy = dynamic_cast<AlchemyMode*>(decorator->getWrappedMode())) return alchemy;
         current = decorator->getWrappedMode();
       } else break;
@@ -364,7 +364,7 @@ void GridRenderer::draw(sf::RenderWindow &window) const {
   // Get effects from AlchemyMode if active
   
   std::vector<ActiveEffect> activeEffects;
-  if (auto* alchemyMode = findAlchemyMode(grid.getMode())) {
+  if (const auto* alchemyMode = findAlchemyMode(grid.getMode())) {
     activeEffects = alchemyMode->getActiveEffects();
   }
   

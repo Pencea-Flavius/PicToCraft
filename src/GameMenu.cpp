@@ -348,9 +348,7 @@ void GameMenu::handleMainMenuClick(int buttonIndex) {
     menuState = MenuState::Options;
     initialFullscreenState = pendingFullscreen;
     setupOptionsScreen();
-  } else if (buttonIndex == 2) { // Quit
-    menuState = MenuState::Quitting;
-  } else if (buttonIndex == 2) { // Quit
+  } else if (buttonIndex == 2) {
     menuState = MenuState::Quitting;
   }
 }
