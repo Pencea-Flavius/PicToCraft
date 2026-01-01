@@ -128,3 +128,8 @@ void MinecraftHUD::draw(sf::RenderWindow& window, int score, int currentMistakes
     
 }
 
+
+void MinecraftHUD::setHunger(int hunger) { currentHunger = std::clamp(hunger, 0, maxHunger); }
+int MinecraftHUD::getHunger() const { return currentHunger; }
+void MinecraftHUD::triggerHungerFlash() { hungerDisplay.triggerFlash(); }
+void MinecraftHUD::triggerHealFlash() { heartDisplay.triggerFlash(); }

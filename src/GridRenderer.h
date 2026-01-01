@@ -65,9 +65,8 @@ public:
   // MinecraftHUD controls
   void setShowHearts(bool show) { minecraftHUD.setShowHearts(show); }
   void setShowHunger(bool show) { minecraftHUD.setShowHunger(show); }
-  // cppcheck-suppress unusedFunction
-  MinecraftHUD& getHUD() { return minecraftHUD; }
-  const MinecraftHUD& getHUD() const { return minecraftHUD; }
+  MinecraftHUD& getHUD();
+  const MinecraftHUD& getHUD() const;
 };
 
 #endif // OOP_GRIDRENDERER_H

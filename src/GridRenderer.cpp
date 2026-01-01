@@ -739,3 +739,6 @@ GridRenderer::handleHintClick(const sf::Vector2i &mousePos) const {
   }
   return Grid::WebDamageResult::None;
 }
+
+MinecraftHUD& GridRenderer::getHUD() { return minecraftHUD; }
+const MinecraftHUD& GridRenderer::getHUD() const { return minecraftHUD; }

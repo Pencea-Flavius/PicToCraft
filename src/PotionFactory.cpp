@@ -87,3 +87,5 @@ std::unique_ptr<FallingItemBase> PotionFactory::createRandomPotion(sf::Vector2u 
         return std::make_unique<Potion<HomingPolicy>>(bottleTex, overlayTex, startPos, c, scale, vel);
     }
 }
+
+const sf::Texture& PotionFactory::getBottleTex() const { return bottleTex; }
