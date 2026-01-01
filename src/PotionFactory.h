@@ -48,7 +48,7 @@ public:
 
     std::unique_ptr<FallingItemBase> createRandomPotion(sf::Vector2u windowSize);
     
-    const sf::Texture& getBottleTex() const;
+
 };
 
 #endif // POTION_FACTORY_H

@@ -47,11 +47,7 @@ public:
     void setMaxHealth(int maxHP) { maxHealth = maxHP; }
     
     // Hunger management
-    void setHunger(int hunger);
-    int getHunger() const;
     void modifyHunger(int delta);
-    void triggerHungerFlash();
-    void triggerHealFlash(); // For regeneration effect
     
     // Draw the full HUD at bottom center of screen
     void draw(sf::RenderWindow& window, int score, int currentMistakes, int maxMistakes,

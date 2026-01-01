@@ -88,4 +88,4 @@ std::unique_ptr<FallingItemBase> PotionFactory::createRandomPotion(sf::Vector2u 
     }
 }
 
-const sf::Texture& PotionFactory::getBottleTex() const { return bottleTex; }
+

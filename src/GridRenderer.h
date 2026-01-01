@@ -65,8 +65,7 @@ public:
   // MinecraftHUD controls
   void setShowHearts(bool show) { minecraftHUD.setShowHearts(show); }
   void setShowHunger(bool show) { minecraftHUD.setShowHunger(show); }
-  MinecraftHUD& getHUD();
-  const MinecraftHUD& getHUD() const;
+
 };
 
 #endif // OOP_GRIDRENDERER_H
