@@ -62,6 +62,13 @@ void AlchemyMode::update(float deltaTime) {
         
         sf::Vector2i delta = currentMousePos - lastMousePos;
         
+        // If delta is too large (e.g., from unpause or window focus), reinitialize
+        float deltaLength = std::sqrt(static_cast<float>(delta.x * delta.x + delta.y * delta.y));
+        if (deltaLength > 200.0f) { // Arbitrary threshold
+            lastMousePos = currentMousePos;
+            return; // Skip this frame's cursor modification to avoid jump
+        }
+        
         float speedMult = getCursorSpeedMultiplier();
         if (speedMult != 1.0f) {
             delta.x = static_cast<int>(static_cast<float>(delta.x) * speedMult);

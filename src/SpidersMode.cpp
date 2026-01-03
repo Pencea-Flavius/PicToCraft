@@ -139,18 +139,29 @@ void SpidersMode::update(float deltaTime) {
   }
   
   // Update spider health only when Weakness effect changes
+  bool hasWeakness = false;
   if (grid && grid->getMode()) {
-    if (const auto* alchemyMode = dynamic_cast<const AlchemyMode*>(grid->getMode())) {
-      bool hasWeakness = alchemyMode->hasEffect(EffectType::Weakness);
-      
-      // Only update if weakness state changed
-      if (hasWeakness != wasWeaknessActive) {
-        wasWeaknessActive = hasWeakness;
-        for (auto &spider : spiders) {
-          if (!spider.isDying() && !spider.isDead()) {
-            spider.setHealth(hasWeakness ? 2 : 1);
-          }
-        }
+    // AlchemyMode is outside SpidersMode, so traverse from grid down
+    const GameMode* current = grid->getMode();
+    while (current) {
+      if (const auto* alchemyMode = dynamic_cast<const AlchemyMode*>(current)) {
+        hasWeakness = alchemyMode->hasEffect(EffectType::Weakness);
+        break;
+      }
+      if (const auto* decorator = dynamic_cast<const GameModeDecorator*>(current)) {
+        current = decorator->getWrappedMode();
+      } else {
+        break;
+      }
+    }
+  }
+  
+  // Only update if weakness state changed
+  if (hasWeakness != wasWeaknessActive) {
+    wasWeaknessActive = hasWeakness;
+    for (auto &spider : spiders) {
+      if (!spider.isDying() && !spider.isDead()) {
+        spider.setHealth(hasWeakness ? 2 : 1);
       }
     }
   }
@@ -163,11 +174,20 @@ void SpidersMode::update(float deltaTime) {
     
     // Check for Haste/Mining Fatigue from AlchemyMode
     if (grid && grid->getMode()) {
-      if (const auto* alchemyMode = dynamic_cast<const AlchemyMode*>(grid->getMode())) {
-        if (alchemyMode->hasEffect(EffectType::Haste)) {
-          damageRate = 0.05f; // Twice as fast
-        } else if (alchemyMode->hasEffect(EffectType::MiningFatigue)) {
-          damageRate = 0.3f; // 3x slower
+      const GameMode* current = grid->getMode();
+      while (current) {
+        if (const auto* alchemyMode = dynamic_cast<const AlchemyMode*>(current)) {
+          if (alchemyMode->hasEffect(EffectType::Haste)) {
+            damageRate = 0.05f; // Twice as fast
+          } else if (alchemyMode->hasEffect(EffectType::MiningFatigue)) {
+            damageRate = 0.3f; // 3x slower
+          }
+          break;
+        }
+        if (const auto* decorator = dynamic_cast<const GameModeDecorator*>(current)) {
+          current = decorator->getWrappedMode();
+        } else {
+          break;
         }
       }
     }
@@ -222,10 +242,6 @@ void SpidersMode::setSfxVolume(float volume) {
   if (wrappedMode)
     wrappedMode->setSfxVolume(volume);
 
-  // Store volume? Or just set?
-  // Spiders need to know volume when they emulate sound inside update
-  // But Spider has audioSource.
-  // We update existing spiders
   for (auto &spider : spiders) {
     spider.setVolume(volume);
   }
@@ -233,8 +249,6 @@ void SpidersMode::setSfxVolume(float volume) {
   // Web audio
   if (webAudioSource)
     webAudioSource->setVolume(volume);
-  // Also need to store it for future plays?
-  // webAudioSource is a single optional.
   currentVolume = volume;
 }
 
@@ -310,9 +324,18 @@ void SpidersMode::spawnSpider() {
   
   // Set health based on Weakness effect
   if (grid && grid->getMode()) {
-    if (const auto* alchemyMode = dynamic_cast<const AlchemyMode*>(grid->getMode())) {
-      if (alchemyMode->hasEffect(EffectType::Weakness)) {
-        newSpider.setHealth(2); // Spiders need 2 hits with Weakness
+    const GameMode* current = grid->getMode();
+    while (current) {
+      if (const auto* alchemyMode = dynamic_cast<const AlchemyMode*>(current)) {
+        if (alchemyMode->hasEffect(EffectType::Weakness)) {
+          newSpider.setHealth(2); // Spiders need 2 hits with Weakness
+        }
+        break;
+      }
+      if (const auto* decorator = dynamic_cast<const GameModeDecorator*>(current)) {
+        current = decorator->getWrappedMode();
+      } else {
+        break;
       }
     }
   }

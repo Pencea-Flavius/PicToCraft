@@ -202,6 +202,9 @@ void GameManager::run() {
            PauseAction action = pauseMenu->handleEvent(*event, window);
            if (action == PauseAction::Resume) {
                isPaused = false;
+               // Reset cursor to center to prevent Alchemy effect cursor jumps
+               sf::Vector2i center(window.getSize().x / 2, window.getSize().y / 2);
+               sf::Mouse::setPosition(center, window);
            } else if (action == PauseAction::MainMenu) {
                isPaused = false;
                menu->reset();
