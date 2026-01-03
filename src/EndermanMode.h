@@ -78,6 +78,7 @@ private:
     bool jumpscareActive;
     bool playerLost;
     bool needsRescaling; // Flag to ensure we scale to window size on first draw
+    mutable sf::RenderWindow* cachedWindow = nullptr; // Cache window for hover checks in update
 
     float hoverTimer;
     float endermanOpacity;

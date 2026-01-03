@@ -82,6 +82,27 @@ void EndermanMode::update(float deltaTime) {
   if (endermanVisible) {
     endermanLifetime += deltaTime;
     updateEndermanAnimation(deltaTime);
+    
+    // Update hover logic
+    if (cachedWindow) {
+      bool hovering = isMouseOverEnderman(*cachedWindow);
+      updateStareSound(hovering, deltaTime);
+      
+      if (hovering) {
+        // Mouse over: increase opacity
+        hoverTimer += deltaTime * 0.25f; // Scale by deltaTime for smooth animation
+        endermanOpacity = std::min(1.0f, 0.4f + hoverTimer * 0.4f);
+        
+        // Trigger jumpscare when solid
+        if (endermanOpacity >= 0.98f) {
+          triggerJumpscare();
+        }
+      } else {
+        // Mouse off: decrease opacity
+        hoverTimer = std::max(0.0f, hoverTimer - deltaTime * 0.125f);
+        endermanOpacity = std::max(0.4f, endermanOpacity - deltaTime * 0.125f);
+      }
+    }
 
     if (endermanLifetime >= maxLifetime) {
       playRandomHurtSound();
@@ -311,6 +332,9 @@ void EndermanMode::playRandomHurtSound() {
 }
 
 void EndermanMode::draw(sf::RenderWindow &window) const {
+  // Cache window reference for hover checks in update()
+  const_cast<EndermanMode*>(this)->cachedWindow = &window;
+  
   if (endermanVisible && endermanSprite) {
     auto *mutableThis = const_cast<EndermanMode *>(this);
 
@@ -337,33 +361,8 @@ void EndermanMode::draw(sf::RenderWindow &window) const {
         {static_cast<float>(disX(gen)), static_cast<float>(disY(gen))});
     }
 
-    bool hovering = isMouseOverEnderman(window);
-
-    // Update Audio
-    mutableThis->updateStareSound(hovering, 0.016f); // Approx 60fps delta
-
-    if (hovering) {
-      // Mouse over: increase opacity
-      mutableThis->hoverTimer += 0.004f;
-
-      // Fade in speed
-      mutableThis->endermanOpacity =
-          std::min(1.0f, 0.4f + mutableThis->hoverTimer * 0.4f);
-
-      // Trigger jumpscare when solid
-      if (mutableThis->endermanOpacity >= 0.98f) {
-        mutableThis->triggerJumpscare();
-      }
-    } else {
-      // Mouse off: decrease opacity strictly to min 0.4
-      mutableThis->hoverTimer =
-          std::max(0.0f, mutableThis->hoverTimer - 0.002f);
-      mutableThis->endermanOpacity =
-          std::max(0.4f, mutableThis->endermanOpacity - 0.002f);
-    }
-
-    auto alpha =
-        static_cast<std::uint8_t>(mutableThis->endermanOpacity * 255.0f);
+    // Set color based on current opacity (updated in update(), not here)
+    auto alpha = static_cast<std::uint8_t>(endermanOpacity * 255.0f);
     mutableThis->endermanSprite->setColor(sf::Color(255, 255, 255, alpha));
 
     // Draw Enderman before the darkness
