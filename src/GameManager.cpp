@@ -27,6 +27,17 @@ GameManager::GameManager()
   menu = std::make_unique<GameMenu>();
   gameOverScreen = std::make_unique<GameOverScreen>();
   winScreen = std::make_unique<WinScreen>();
+  winScreen = std::make_unique<WinScreen>();
+  
+  try {
+      pauseMenu = std::make_unique<PauseMenu>();
+  } catch (const std::exception& e) {
+      throw AssetLoadException("PauseMenu resources", "PauseMenu");
+  }
+
+  isPaused = false;
+  
+  isPaused = false;
 
   bool enableCustomCursor = true;
   customCursor = std::make_unique<CustomCursor>(window);
@@ -52,7 +63,11 @@ GameManager::GameManager()
   musicPauseTimer = 0.0f;
   nextPauseDuration = 0.0f;
   
-  leaderboard.load("leaderboard.txt");
+  try {
+    leaderboard.load("leaderboard.txt");
+  } catch (const std::exception &e) {
+    std::cerr << "Warning: Failed to load leaderboard: " << e.what() << "\n";
+  }
 }
 
 void GameManager::updateMusic(float deltaTime) {
@@ -82,6 +97,8 @@ void GameManager::updateMusic(float deltaTime) {
             int idx = dis(gen);
             if (c418Music.openFromFile(c418Tracks[idx])) {
               c418Music.play();
+            } else {
+              throw AssetLoadException(c418Tracks[idx], "Music");
             }
           }
 
@@ -166,27 +183,36 @@ void GameManager::run() {
         window.close();
         break;
       }
-      if (auto key = event->getIf<sf::Event::KeyPressed>()) {
-        if (key->code == sf::Keyboard::Key::Escape) {
-          window.close();
-          break;
-        }
-      }
-      if (auto resized = event->getIf<sf::Event::Resized>()) {
-        sf::FloatRect visibleArea({0.f, 0.f},
-                                  {static_cast<float>(resized->size.x),
-                                   static_cast<float>(resized->size.y)});
-        window.setView(::sf::View(visibleArea));
+    // Inside loop
+          if (auto key = event->getIf<sf::Event::KeyPressed>()) {
+              if (isPaused) {
+              } else if (!inMenu && !inGameOver && !inWinScreen) {
+                   if (key->code == sf::Keyboard::Key::Escape) {
+                       isPaused = true; 
+                       continue;
+                   }
+              }
+          }
 
-        if (!inMenu && !inGameOver && !inWinScreen) {
-          resetGame();
-        }
-      }
       if (customCursor) {
         customCursor->handleEvent(*event);
       }
+      
+      if (isPaused) {
+           PauseAction action = pauseMenu->handleEvent(*event, window);
+           if (action == PauseAction::Resume) {
+               isPaused = false;
+           } else if (action == PauseAction::MainMenu) {
+               isPaused = false;
+               menu->reset();
+               inMenu = true;
+               if (customCursor) customCursor->setTorchMode(false);
+           }
+           continue; // Skip other updates
+      }
 
       if (inMenu) {
+
         menu->handleEvent(*event, window);
 
         if (auto res = menu->getPendingResolutionChange()) {
@@ -276,39 +302,46 @@ void GameManager::run() {
       }
     } else {
       window.clear(sf::Color(240, 240, 240));
-      grid.update(deltaTime);
+      
+      if (!isPaused && !inGameOver && !inWinScreen) {
+          grid.update(deltaTime);
+      }
 
       if (!inGameOver && !inWinScreen) {
-        if (grid.is_solved()) {
+        if (!isPaused && grid.is_solved()) { // Guard win check
           inWinScreen = true;
           winScreen->reset();
           
           int baseScore = grid.get_score();
-          int bonus = 0;
           GameConfig cfg = menu->getGameConfig();
-          
-          if (cfg.timeMode) bonus += 2000;
-          if (cfg.torchMode) bonus += 2000;
-          if (cfg.spidersMode) bonus += 2000;
-          if (cfg.discoFeverMode) bonus += 2000;
-          if (cfg.endermanMode) bonus += 2000;
-          if (cfg.alchemyMode) bonus += 2000;
+          int bonus = cfg.calculateBonus();
           
           int finalScore = baseScore + bonus;
           
           leaderboard.addEntry(menu->getPlayerName(), finalScore);
-          leaderboard.save("leaderboard.txt");
+          try {
+            leaderboard.save("leaderboard.txt");
+          } catch (const std::exception &e) {
+            std::cerr << "Warning: Failed to save leaderboard: " << e.what() << "\n";
+          }
           
           winScreen->setScore(finalScore, leaderboard);
-        } else if (grid.is_lost()) {
+        } else if (!isPaused && grid.is_lost()) { // Guard loss check
           inGameOver = true;
           gameOverScreen->reset();
           gameOverScreen->setScore(grid.get_score());
           deathSound.play();
         }
       }
+      
       if (background) {
-        background->update(deltaTime);
+        GameConfig cfg = menu->getGameConfig();
+        bool shouldScroll = cfg.backgroundMovement;
+        if (cfg.discoFeverMode) shouldScroll = true; 
+        
+        if (!isPaused && !inGameOver && !inWinScreen) {
+            background->update(deltaTime, shouldScroll);
+        }
         background->draw(window);
       }
       renderer->draw(window);
@@ -317,6 +350,11 @@ void GameManager::run() {
       if (inGameOver) {
         gameOverScreen->update(window);
         gameOverScreen->draw(window);
+      }
+      
+      if (isPaused) {
+          pauseMenu->update(window);
+          pauseMenu->draw(window);
       }
     }
 

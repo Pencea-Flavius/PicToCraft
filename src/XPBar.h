@@ -9,7 +9,6 @@ class XPBar {
     sf::Sprite backgroundSprite;
     sf::Sprite progressSprite;
     sf::Font font;
-    bool fontLoaded;
 
 public:
     XPBar();

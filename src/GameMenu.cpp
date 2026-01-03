@@ -11,7 +11,7 @@ GameMenu::GameMenu()
       availableResolutions(MenuResolution::getAvailableResolutions()),
       currentResolutionIndex(0), pendingResolutionChange(std::nullopt),
       pendingFullscreen(false), initialFullscreenState(false), font(),
-      subtitleFont(), titleTexture(), buttonTexture(), buttonDisabledTexture(),
+      titleTexture(), buttonTexture(), buttonDisabledTexture(),
       menuBackgroundTexture(), menuListBackgroundTexture(),
       tabHeaderBackgroundTexture(), headerSeparatorTexture(),
       footerSeparatorTexture(), panorama(), splashText(),
@@ -33,6 +33,7 @@ GameMenu::GameMenu()
   gameConfig.spidersMode = false;
   gameConfig.discoFeverMode = false;
   gameConfig.endermanMode = false;
+  gameConfig.backgroundMovement = true;
 
   loadAssets();
 
@@ -76,8 +77,10 @@ void GameMenu::reset() {
 }
 
 void GameMenu::loadAssets() {
-  (void)font.openFromFile("assets/Monocraft.ttf");
-  (void)subtitleFont.openFromFile("assets/MinecraftTen.ttf");
+  if (!font.openFromFile("assets/Monocraft.ttf")) {
+    throw AssetLoadException("assets/Monocraft.ttf", "Font");
+  }
+
 
   if (!titleTexture.loadFromFile("assets/pictocraft.png")) {
     throw AssetLoadException("assets/pictocraft.png", "Texture");
@@ -231,6 +234,8 @@ void GameMenu::setupOptionsScreen() {
   buttonManager.addButton(
       pendingFullscreen ? "Fullscreen: ON" : "Fullscreen: OFF", 20);
 
+  buttonManager.addButton(
+          gameConfig.backgroundMovement ? "Dynamic Scenery: ON" : "Dynamic Scenery: OFF", 20);
 
   buttonManager.addButton("Done", 20);
 }
@@ -320,9 +325,22 @@ void GameMenu::handleEvent(const sf::Event &event,
         }
     }
     
+    if (keyPress->code == sf::Keyboard::Key::Escape) {
+        if (menuState == MenuState::Options) {
+            pendingFullscreen = initialFullscreenState; // Don't save fullscreen change
+            menuState = MenuState::MainMenu;
+            setupMainMenu();
+        } else if (menuState == MenuState::GameSetup) {
+            menuState = MenuState::MainMenu;
+            setupMainMenu();
+        } else if (menuState == MenuState::MainMenu) {
+            menuState = MenuState::Quitting;
+        }
+    }
+
     if (keyPress->code == sf::Keyboard::Key::Enter) {
       if (menuState == MenuState::Options) {
-        handleOptionsClick(5, window);
+        handleOptionsClick(6, window); // Index 6 is now Done
       } else if (menuState == MenuState::GameSetup) {
         if (buttonManager.getButtonCount() >= 2) {
           int playIndex = static_cast<int>(buttonManager.getButtonCount() - 2);
@@ -364,7 +382,11 @@ void GameMenu::handleOptionsClick(int buttonIndex,
                                                      : "Fullscreen: OFF");
     buttonManager.setButtonEnabled(
         3, !pendingFullscreen);
-  } else if (buttonIndex == 5) {
+  } else if (buttonIndex == 5) { // Dynamic Scenery
+    gameConfig.backgroundMovement = !gameConfig.backgroundMovement;
+    buttonManager.setButtonText(
+            5, gameConfig.backgroundMovement ? "Dynamic Scenery: ON" : "Dynamic Scenery: OFF");
+  } else if (buttonIndex == 6) { // Done
     auto selectedRes = availableResolutions[currentResolutionIndex];
     if (selectedRes.size.x != window.getSize().x ||
         selectedRes.size.y != window.getSize().y ||

@@ -5,19 +5,21 @@
 #include <algorithm>
 #include <cmath>
 
-XPBar::XPBar() : backgroundSprite(backgroundTexture), progressSprite(progressTexture), fontLoaded(false) {
+XPBar::XPBar() : backgroundSprite(backgroundTexture), progressSprite(progressTexture) {
     if (!backgroundTexture.loadFromFile("assets/xp/experience_bar_background.png")) {
-        std::cerr << "Warning: Failed to load assets/xp/experience_bar_background.png" << std::endl;
+        throw AssetLoadException("assets/xp/experience_bar_background.png", "Texture");
     } else {
         backgroundSprite.setTexture(backgroundTexture);
     }
     if (!progressTexture.loadFromFile("assets/xp/experience_bar_progress.png")) {
-        std::cerr << "Warning: Failed to load assets/xp/experience_bar_progress.png" << std::endl;
+        throw AssetLoadException("assets/xp/experience_bar_progress.png", "Texture");
     } else {
         progressSprite.setTexture(progressTexture);
     }
     
-    fontLoaded = font.openFromFile("assets/Monocraft.ttf");
+    if (!font.openFromFile("assets/Monocraft.ttf")) {
+        throw AssetLoadException("assets/Monocraft.ttf", "Font");
+    }
 }
 
 void XPBar::drawOutlinedText(sf::RenderWindow& window, const std::string& text,
@@ -81,7 +83,7 @@ void XPBar::draw(sf::RenderWindow& window, int score, const sf::Vector2f& positi
         window.draw(progressSprite);
     }
     
-    if (fontLoaded) {
+    if (true) {
         std::ostringstream oss;
         oss << displayScore;
         

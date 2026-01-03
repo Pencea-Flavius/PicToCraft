@@ -7,6 +7,7 @@
 #include "GameOverScreen.h"
 #include "Grid.h"
 #include "GridRenderer.h"
+#include "PauseMenu.h"
 #include "WinScreen.h"
 #include "Leaderboard.h"
 #include <SFML/Graphics.hpp>
@@ -41,6 +42,10 @@ class GameManager {
   void updateMusic(float deltaTime);
   
   Leaderboard leaderboard;
+
+  // Pause Menu
+  std::unique_ptr<PauseMenu> pauseMenu;
+  bool isPaused;
 
 public:
   GameManager();

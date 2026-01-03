@@ -1,15 +1,17 @@
 #include "Leaderboard.h"
+#include "Exceptions.h"
 #include <algorithm>
 #include <fstream>
 #include <filesystem>
 
-Leaderboard::Leaderboard() {
-}
+Leaderboard::Leaderboard() = default;
 
 void Leaderboard::load(const std::string& filename) {
     entries.clear();
     std::ifstream file(filename);
-    if (!file.is_open()) return;
+    if (!file.is_open()) {
+        throw AssetLoadException(filename, "Leaderboard File");
+    }
 
     std::string name;
     int score;
@@ -18,7 +20,7 @@ void Leaderboard::load(const std::string& filename) {
     }
 
     // Sort just in case file was tampered
-    std::sort(entries.begin(), entries.end(), [](const ScoreEntry& a, const ScoreEntry& b) {
+    std::ranges::sort(entries, [](const ScoreEntry& a, const ScoreEntry& b) {
         return a.score > b.score;
     });
 
@@ -27,9 +29,11 @@ void Leaderboard::load(const std::string& filename) {
     }
 }
 
-void Leaderboard::save(const std::string& filename) {
+void Leaderboard::save(const std::string& filename) const {
     std::ofstream file(filename);
-    if (!file.is_open()) return;
+    if (!file.is_open()) {
+        throw AssetLoadException(filename, "Leaderboard File");
+    }
 
     for (const auto& entry : entries) {
         file << entry.name << " " << entry.score << "\n";
@@ -40,7 +44,7 @@ bool Leaderboard::addEntry(const std::string& name, int score) {
     entries.push_back({name, score});
     
     // Sort descending by score
-    std::sort(entries.begin(), entries.end(), [](const ScoreEntry& a, const ScoreEntry& b) {
+    std::ranges::sort(entries, [](const ScoreEntry& a, const ScoreEntry& b) {
         return a.score > b.score;
     });
 

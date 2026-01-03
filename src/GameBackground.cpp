@@ -1,31 +1,45 @@
 #include "GameBackground.h"
-#include <iostream>
 #include <random>
+#include "Exceptions.h"
 
 
 
 GameBackground::GameBackground() : currentType(BackgroundType::Desert), offset(0.0f), speed(30.0f), loaded(false), ambientTimer(10.0f) {
   loadTextures();
+  loadSounds();
 }
 
 void GameBackground::loadTextures() {
   if (!desertTexture.loadFromFile("assets/backgrounds/desert.jpg")) {
-    std::cerr << "Failed to load desert background" << std::endl;
+    throw AssetLoadException("assets/backgrounds/desert.jpg", "Texture");
   }
   desertTexture.setRepeated(true);
 
   if (!caveTexture.loadFromFile("assets/backgrounds/cave.jpg")) {
-    std::cerr << "Failed to load cave background" << std::endl;
+    throw AssetLoadException("assets/backgrounds/cave.jpg", "Texture");
   }
   caveTexture.setRepeated(true);
 
   if (!mineshaftTexture.loadFromFile("assets/backgrounds/mineshaft.jpg")) {
-    std::cerr << "Failed to load mineshaft background" << std::endl;
+    throw AssetLoadException("assets/backgrounds/mineshaft.jpg", "Texture");
   }
   mineshaftTexture.setRepeated(true);
   
   loaded = true;
 }
+
+void GameBackground::loadSounds() {
+  for (int i = 1; i <= 12; ++i) {
+    sf::SoundBuffer buffer;
+    std::string filename = "assets/sound/cave" + std::to_string(i) + ".ogg";
+    if (buffer.loadFromFile(filename)) {
+      caveBuffers.push_back(buffer);
+    } else {
+        throw AssetLoadException(filename, "Sound");
+    }
+  }
+}
+
 
 void GameBackground::selectBackground(const GameConfig &config) {
   BackgroundType selectedType;
@@ -35,9 +49,6 @@ void GameBackground::selectBackground(const GameConfig &config) {
   } else if (config.torchMode || config.spidersMode) {
     selectedType = BackgroundType::Cave;
   } else {
-    static std::random_device rd;
-    static std::mt19937 gen(rd());
-    std::uniform_int_distribution<> dis(0, 1);
     selectedType = BackgroundType::Desert; 
   }
 
@@ -65,14 +76,16 @@ void GameBackground::selectBackground(const GameConfig &config) {
   }
 }
 
-void GameBackground::update(float deltaTime) {
+void GameBackground::update(float deltaTime, bool shouldScroll) {
         if (!loaded) return;
     if (!currentBackground1.has_value()) return;
     
-    offset += speed * deltaTime;
-    float textureWidth = static_cast<float>(currentBackground1->getTexture().getSize().x);
-    if (offset >= textureWidth) {
-       offset -= textureWidth;
+    if (shouldScroll) {
+        offset += speed * deltaTime;
+        float textureWidth = static_cast<float>(currentBackground1->getTexture().getSize().x);
+        if (offset >= textureWidth) {
+           offset -= textureWidth;
+        }
     }
 
     // Ambient sound update
@@ -83,7 +96,7 @@ void GameBackground::update(float deltaTime) {
             if (!caveBuffers.empty()) {
                 static std::random_device rd;
                 static std::mt19937 gen(rd());
-                std::uniform_int_distribution<> dis(0, caveBuffers.size() - 1);
+                std::uniform_int_distribution<> dis(0, static_cast<int>(caveBuffers.size()) - 1);
                 
                 int idx = dis(gen);
                 ambientSound.emplace(caveBuffers[idx]);

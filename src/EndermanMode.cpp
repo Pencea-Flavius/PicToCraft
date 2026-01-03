@@ -201,8 +201,7 @@ void EndermanMode::triggerJumpscare() {
   jumpscareSound->setVolume(100.0f);
   jumpscareSound->play();
 
-  // Force game over state in UI (set lives to 0 / max mistakes)
-  setMistakes(getMaxMistakes());
+  // Allow animation to finish before setting game over state via playerLost logic
 }
 
 bool EndermanMode::isMouseOverEnderman(const sf::RenderWindow &window) const {

@@ -5,8 +5,10 @@
 #include <random>
 
 SplashText::SplashText()
-    : fontLoaded(false), increasing(true), currentScale(1.0f), speed(0.3f) {
-  fontLoaded = font.openFromFile("assets/Monocraft.ttf");
+    : font(), text(font), increasing(true), currentScale(1.0f), speed(0.3f) {
+  if (!font.openFromFile("assets/Monocraft.ttf")) {
+    throw AssetLoadException("assets/Monocraft.ttf", "Font");
+  }
   loadMessages();
   pickRandomMessage();
 }
@@ -31,22 +33,17 @@ void SplashText::loadMessages() {
 }
 
 void SplashText::pickRandomMessage() {
-  if (!fontLoaded)
-    return;
-
   std::random_device rd;
   std::mt19937 gen(rd());
   std::uniform_int_distribution<size_t> dist(0, messages.size() - 1);
   std::string randomMessage = messages[dist(gen)];
 
   text = sf::Text(font, randomMessage);
-  text->setCharacterSize(30);
-  text->setFillColor(sf::Color(213, 222, 82)); // Galben Minecraft
+  text.setCharacterSize(30);
+  text.setFillColor(sf::Color(213, 222, 82)); // Galben Minecraft
 }
 
 void SplashText::update(float deltaTime) {
-  if (!text)
-    return;
 
   if (increasing) {
     currentScale += speed * deltaTime;
@@ -66,8 +63,7 @@ void SplashText::update(float deltaTime) {
 void SplashText::draw(sf::RenderWindow &window, const sf::Sprite &titleSprite,
                       float scale, float scaleY, float logoOriginalWidth,
                       float logoOriginalHeight) {
-  if (!text)
-    return;
+
 
   float logoX = static_cast<float>(window.getSize().x) / 2.0f;
   float logoY = 100.0f * scaleY;
@@ -80,13 +76,13 @@ void SplashText::draw(sf::RenderWindow &window, const sf::Sprite &titleSprite,
   float splashY = logoY + logoHeight * 0.05f;
 
   float finalScale = scale * currentScale;
-  text->setCharacterSize(static_cast<unsigned int>(30.0f * finalScale));
+  text.setCharacterSize(static_cast<unsigned int>(30.0f * finalScale));
 
-  text->setRotation(sf::degrees(-20.0f));
+  text.setRotation(sf::degrees(-20.0f));
 
-  auto bounds = text->getLocalBounds();
-  text->setOrigin({bounds.size.x / 2.0f, bounds.size.y / 2.0f});
+  auto bounds = text.getLocalBounds();
+  text.setOrigin({bounds.size.x / 2.0f, bounds.size.y / 2.0f});
 
-  text->setPosition({splashX, splashY});
-  ShadowedText::draw(window, *text, scale);
+  text.setPosition({splashX, splashY});
+  ShadowedText::draw(window, text, scale);
 }

@@ -2,7 +2,6 @@
 #define OOP_SPLASHTEXT_H
 
 #include <SFML/Graphics.hpp>
-#include <optional>
 #include <string>
 #include <vector>
 
@@ -21,8 +20,7 @@ private:
   void pickRandomMessage();
 
   sf::Font font;
-  bool fontLoaded;
-  std::optional<sf::Text> text;
+  sf::Text text;
   std::vector<std::string> messages;
 
   bool increasing;

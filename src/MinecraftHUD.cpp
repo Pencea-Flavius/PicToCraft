@@ -10,16 +10,12 @@ MinecraftHUD::MinecraftHUD()
       hungerTimer(0.f), regenTimer(0.f), damageTimer(0.f) {
     
     if (!hotbarTexture.loadFromFile("assets/hotbar.png")) {
-        std::cerr << "Warning: Failed to load assets/hotbar.png" << std::endl;
+        throw AssetLoadException("assets/hotbar.png", "Texture");
     } else {
         hotbarSprite.setTexture(hotbarTexture);
     }
     
-    try {
-        effectDisplay.loadAssets();
-    } catch (const std::exception& e) {
-        std::cerr << "Error loading effect assets: " << e.what() << std::endl;
-    }
+    effectDisplay.loadAssets();
 }
 
 bool MinecraftHUD::update(float deltaTime, bool hasHungerEffect, bool hasSaturationEffect) {

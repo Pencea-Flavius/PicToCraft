@@ -11,6 +11,7 @@
 
 #include "Block.h"
 #include "GameMode.h"
+#include "GameConfig.h"
 #include "PicrossHints.h"
 #include <memory>
 #include <SFML/Audio.hpp>
@@ -91,7 +92,7 @@ public:
 
   friend std::ostream &operator<<(std::ostream &os, const Grid &g);
   
-  void setSfxVolume(float volume) {
+  void setSfxVolume(float volume) const {
       if (gameMode) gameMode->setSfxVolume(volume);
       hurtSound.setVolume(volume);
   }

@@ -33,14 +33,14 @@ void EffectDisplay::loadAssets() {
         sf::Texture tex;
         std::string path = "assets/mob_effect/" + iconInfo.filename;
         if (!tex.loadFromFile(path)) {
-            std::cerr << "Warning: Failed to load " << path << std::endl;
+            throw AssetLoadException(path, "Texture");
         } else {
             iconTextures[iconInfo.type] = tex;
         }
     }
     
     if (!font.openFromFile("assets/Monocraft.ttf")) {
-        std::cerr << "Warning: Failed to load assets/Monocraft.ttf" << std::endl;
+        throw AssetLoadException("assets/Monocraft.ttf", "Font");
     }
 }
 

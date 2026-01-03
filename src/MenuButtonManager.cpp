@@ -164,7 +164,7 @@ void MenuButtonManager::layoutGameSetup(
 
 void MenuButtonManager::layoutOptions(const sf::RenderWindow &window,
                                       float scale, float scaleY) const {
-  if (buttons.size() < 6)
+  if (buttons.size() < 7)
     return;
 
   float centerX = static_cast<float>(window.getSize().x) / 2.0f;
@@ -184,11 +184,14 @@ void MenuButtonManager::layoutOptions(const sf::RenderWindow &window,
   float row3Y = row2Y + spacing;
   buttons[3]->update(scale, centerX, row3Y, 1.5f, 1.5f, mousePos);
 
-
+  // Fullscreen
   buttons[4]->update(scale, centerX, row3Y + spacing, 1.5f, 1.5f, mousePos);
 
+  // Dynamic Scenery (Background Move)
+  buttons[5]->update(scale, centerX, row3Y + spacing * 2.0f, 1.5f, 1.5f, mousePos);
+
   float footerY = static_cast<float>(window.getSize().y) - 50.0f * scaleY;
-  buttons[5]->update(scale, centerX, footerY, 1.5f, 1.5f, mousePos);
+  buttons[6]->update(scale, centerX, footerY, 1.5f, 1.5f, mousePos);
 }
 
 void MenuButtonManager::handleDrag(const sf::Vector2f &mousePos) const {

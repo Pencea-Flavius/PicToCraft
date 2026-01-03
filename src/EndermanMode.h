@@ -41,6 +41,11 @@ public:
         os << "EndermanMode + ";
         GameModeDecorator::print(os);
     }
+    
+    [[nodiscard]] int getMistakes() const override {
+        if (playerLost) return getMaxMistakes();
+        return GameModeDecorator::getMistakes();
+    }
 
 private:
     sf::Texture endermanTexture;

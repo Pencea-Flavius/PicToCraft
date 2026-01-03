@@ -9,11 +9,11 @@
 #include "MenuButtonManager.h"
 #include "MenuPanorama.h"
 #include "SplashText.h"
-#include "Leaderboard.h"
+
 
 enum class MenuState { MainMenu, GameSetup, Options, Starting, Quitting };
 
-#include "GameMode.h"
+#include "GameConfig.h"
 
 enum class SourceMode { File, Random };
 
@@ -86,7 +86,6 @@ private:
 
   // Assets
   sf::Font font;
-  sf::Font subtitleFont;
   sf::Texture titleTexture;
   sf::Texture buttonTexture;
   sf::Texture buttonDisabledTexture;

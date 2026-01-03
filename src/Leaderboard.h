@@ -14,7 +14,7 @@ public:
     Leaderboard();
     
     void load(const std::string& filename);
-    void save(const std::string& filename);
+    void save(const std::string& filename) const;
     
     // Returns true if the score made it into the top 5
     bool addEntry(const std::string& name, int score);

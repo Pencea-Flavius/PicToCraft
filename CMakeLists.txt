@@ -46,6 +46,8 @@ add_executable(${MAIN_EXECUTABLE_NAME}
         src/MenuResolution.h
         src/GameManager.cpp
         src/GameManager.h
+        src/GameConfig.cpp
+        src/GameConfig.h
         src/Block.cpp
         src/Block.h
         src/PicrossHints.cpp
@@ -58,6 +60,8 @@ add_executable(${MAIN_EXECUTABLE_NAME}
         src/GridRenderer.h
         src/GameMenu.cpp
         src/GameMenu.h
+        src/PauseMenu.cpp
+        src/PauseMenu.h
         src/MenuPanorama.cpp
         src/MenuPanorama.h
         src/SplashText.cpp

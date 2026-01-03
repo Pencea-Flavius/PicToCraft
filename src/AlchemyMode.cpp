@@ -17,7 +17,7 @@ AlchemyMode::AlchemyMode(std::unique_ptr<GameMode> mode)
     glassDigBuffers.reserve(3);
     for (int i = 1; i <= 3; ++i) {
         sf::SoundBuffer buf;
-        if (buf.loadFromFile("assets/sound/glass_dig" + std::to_string(i) + ".ogg")) {
+        if (buf.loadFromFile("assets/sound/Glass_dig" + std::to_string(i) + ".ogg")) {
             glassDigBuffers.push_back(buf);
         }
     }

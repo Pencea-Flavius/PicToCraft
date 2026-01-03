@@ -1,4 +1,5 @@
 #include "GridRenderer.h"
+#include "Exceptions.h"
 #include "ShadowedText.h"
 
 #include <SFML/Graphics/RenderTexture.hpp>
@@ -10,34 +11,34 @@
 #include <sstream>
 
 GridRenderer::GridRenderer(Grid &g, float size, sf::Vector2f off)
-    : grid(g), cellSize(size), offset(off), fontLoaded(false), lastMistakes(0),
+    : grid(g), cellSize(size), offset(off), lastMistakes(0),
       animationClock(), backgroundPatch(sf::Texture(), 4, 10),
       hintTabPatch(sf::Texture(), 4, 0), isDiscoFeverMode(false),
       defaultGlassColorIndex(0), colorTimer(0.0f), currentColorOffset(0) {
-  fontLoaded = font.openFromFile("assets/Monocraft.ttf");
+  if (!font.openFromFile("assets/Monocraft.ttf")) {
+    throw AssetLoadException("assets/Monocraft.ttf", "Font");
+  }
   if (!webTexture.loadFromFile("assets/cobweb.png")) {
-    std::cerr << "Failed to load cobweb texture" << std::endl;
+    throw AssetLoadException("assets/cobweb.png", "Texture");
   }
 
   if (!backgroundTexture.loadFromFile("assets/grid/container.png")) {
-    std::cerr << "Failed to load assets/grid/container.png" << std::endl;
-  } else {
-    backgroundPatch.setTexture(backgroundTexture);
-    backgroundPatch.setPatchScale(1.0f);
+    throw AssetLoadException("assets/grid/container.png", "Texture");
   }
+  backgroundPatch.setTexture(backgroundTexture);
+  backgroundPatch.setPatchScale(1.0f);
 
   if (!blockTexture.loadFromFile("assets/grid/slot.png")) {
-    std::cerr << "Failed to load assets/grid/slot.png" << std::endl;
+    throw AssetLoadException("assets/grid/slot.png", "Texture");
   }
 
 
 
   if (!hintTabTexture.loadFromFile("assets/grid/tab_hint.png")) {
-    std::cerr << "Failed to load assets/grid/tab_hint.png" << std::endl;
-  } else {
-    hintTabPatch.setTexture(hintTabTexture);
-    hintTabPatch.setCornerSize(4);
+    throw AssetLoadException("assets/grid/tab_hint.png", "Texture");
   }
+  hintTabPatch.setTexture(hintTabTexture);
+  hintTabPatch.setCornerSize(4);
 
   // Load break textures
   for (int i = 0; i <= 9; ++i) {
@@ -45,7 +46,7 @@ GridRenderer::GridRenderer(Grid &g, float size, sf::Vector2f off)
     std::string path =
         "assets/break/destroy_stage_" + std::to_string(i) + ".png";
     if (!tex.loadFromFile(path)) {
-      std::cerr << "Failed to load " << path << std::endl;
+      throw AssetLoadException(path, "Break Texture");
     }
     breakTextures.push_back(tex);
   }
@@ -60,7 +61,7 @@ GridRenderer::GridRenderer(Grid &g, float size, sf::Vector2f off)
     sf::Texture tex;
     std::string path = "assets/glass/" + color + "_stained_glass.png";
     if (!tex.loadFromFile(path)) {
-      std::cerr << "Failed to load " << path << std::endl;
+      throw AssetLoadException(path, "Glass Texture");
     }
     glassTextures.push_back(tex);
   }
@@ -70,8 +71,9 @@ GridRenderer::GridRenderer(Grid &g, float size, sf::Vector2f off)
   static std::mt19937 gen(rd());
   std::vector<int> validIndices;
   for (int i = 0; i < 16; ++i) {
-    if (i != 7) // Exclude Light Gray (7)
+    if (i != 7 && i != 4) // Exclude Light Gray (7) and Gray (4) as they are hard to see
       validIndices.push_back(i);
+    // Note: These colors are still loaded and valid for DiscoFever mode 
   }
   std::uniform_int_distribution<> dis(0, static_cast<int>(validIndices.size()) - 1);
   defaultGlassColorIndex = validIndices[dis(gen)];
@@ -377,7 +379,7 @@ void GridRenderer::draw(sf::RenderWindow &window) const {
     effectDisplay.draw(window, uiScale, activeEffects, effectPos);
   }
 
-  if (fontLoaded) {
+  if (true) {
     const auto &rowHints = hints.get_row_hints();
     for (size_t i = 0; i < rowHints.size(); ++i) {
       float rowY =

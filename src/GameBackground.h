@@ -2,6 +2,7 @@
 #define GAMEBACKGROUND_H
 
 #include "GameMode.h"
+#include "GameConfig.h"
 #include <SFML/Graphics.hpp>
 #include <SFML/Audio.hpp>
 #include <optional>
@@ -14,7 +15,7 @@ public:
   GameBackground();
 
   void selectBackground(const GameConfig &config);
-  void update(float deltaTime);
+  void update(float deltaTime, bool shouldScroll = true);
   void draw(sf::RenderWindow &window) const;
 
 private:
@@ -41,9 +42,6 @@ private:
 public:
   void setVolume(float volume) {
       if (ambientSound) ambientSound->setVolume(volume);
-      // Also store for future plays? 
-      // Yes, if we play a new sound, it needs the volume. 
-      // But we construct ambientSound using emplace. We can just set volume immediately after playing or store a member `currentVolume`.
       currentVolume = volume;
   }
 private:

@@ -47,7 +47,7 @@ void TorchMode::update(float deltaTime) {
     }
   }
 
-  particleSystem.update(deltaTime);
+  // Particle update moved to draw() to continue during pause/death
 }
 
 void TorchMode::playNextFireSound() {
@@ -94,6 +94,11 @@ void TorchMode::createLightTexture() const {
 }
 
 void TorchMode::draw(sf::RenderWindow &window) const {
+  // Update particles independently of game state (even when paused/dead)
+  static sf::Clock particleClock;
+  float particleDeltaTime = particleClock.restart().asSeconds();
+  const_cast<TorchMode*>(this)->particleSystem.update(particleDeltaTime);
+  
   if (!lightTextureCreated) {
     createLightTexture();
   }

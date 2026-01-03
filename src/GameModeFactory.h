@@ -2,6 +2,7 @@
 #define GAMEMODEFACTORY_H
 
 #include "GameMode.h"
+#include "GameConfig.h"
 #include <memory>
 
 class GameModeFactory {

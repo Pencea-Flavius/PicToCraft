@@ -18,7 +18,6 @@ class GridRenderer {
   float cellSize;
   sf::Vector2f offset;
   sf::Font font;
-  bool fontLoaded;
   mutable HeartDisplay heartDisplay;
   mutable MinecraftHUD minecraftHUD;
   mutable EffectDisplay effectDisplay;
@@ -63,8 +62,8 @@ public:
   sf::Vector2f getHintCenter(bool isRow, int line, int index) const;
   
   // MinecraftHUD controls
-  void setShowHearts(bool show) { minecraftHUD.setShowHearts(show); }
-  void setShowHunger(bool show) { minecraftHUD.setShowHunger(show); }
+  void setShowHearts(bool show) const { minecraftHUD.setShowHearts(show); }
+  void setShowHunger(bool show) const { minecraftHUD.setShowHunger(show); }
 
 };
 
