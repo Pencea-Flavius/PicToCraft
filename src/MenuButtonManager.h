@@ -27,6 +27,8 @@ public:
 
   void layoutMainMenu(const sf::RenderWindow &window, float scale,
                       float scaleY) const;
+  void layoutHighscores(const sf::RenderWindow &window, float scale,
+                        float scaleY) const;
   void layoutGameSetup(const sf::RenderWindow &window, float scale,
                        float scaleY, int selectedTab, bool isTimeModeAvailable,
                        bool isAlchemyModeAvailable,

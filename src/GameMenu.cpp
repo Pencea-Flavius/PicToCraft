@@ -3,6 +3,7 @@
 #include "MenuResolution.h"
 #include <algorithm>
 #include <cmath>
+#include <iostream>
 #include <filesystem>
 
 GameMenu::GameMenu()
@@ -65,6 +66,13 @@ GameMenu::GameMenu()
 
 
   selectedFile = availableFiles[0];
+
+  // Load leaderboard
+  try {
+    leaderboard.load("leaderboard.txt");
+  } catch (const std::exception &e) {
+    std::cerr << "Info: Could not load leaderboard: " << e.what() << "\n";
+  }
 
   setupMainMenu();
 }
@@ -132,7 +140,11 @@ void GameMenu::update(float deltaTime) {
 }
 
 void GameMenu::setupMainMenu() {
-  buttonManager.createButtons({"Singleplayer", "Options", "Quit"}, 20);
+  buttonManager.createButtons({"Singleplayer", "Highscores", "Options", "Quit"}, 20);
+}
+
+void GameMenu::setupHighscoresScreen() {
+  buttonManager.createButtons({"Back"}, 20);
 }
 
 void GameMenu::setupGameSetupScreen() {
@@ -253,6 +265,9 @@ void GameMenu::handleEvent(const sf::Event &event,
         case MenuState::MainMenu:
           handleMainMenuClick(clickedIndex);
           break;
+        case MenuState::Highscores:
+          handleHighscoresClick(clickedIndex);
+          break;
         case MenuState::GameSetup:
           handleGameSetupClick(clickedIndex);
           break;
@@ -330,6 +345,9 @@ void GameMenu::handleEvent(const sf::Event &event,
             pendingFullscreen = initialFullscreenState; // Don't save fullscreen change
             menuState = MenuState::MainMenu;
             setupMainMenu();
+        } else if (menuState == MenuState::Highscores) {
+            menuState = MenuState::MainMenu;
+            setupMainMenu();
         } else if (menuState == MenuState::GameSetup) {
             menuState = MenuState::MainMenu;
             setupMainMenu();
@@ -361,13 +379,24 @@ void GameMenu::handleMainMenuClick(int buttonIndex) {
     isTypingName = false;
     menuState = MenuState::GameSetup;
     setupGameSetupScreen();
-  } else if (buttonIndex == 1) { // Options
+  } else if (buttonIndex == 1) { // Highscores
+    isTypingName = false;
+    menuState = MenuState::Highscores;
+    setupHighscoresScreen();
+  } else if (buttonIndex == 2) { // Options
     isTypingName = false;
     menuState = MenuState::Options;
     initialFullscreenState = pendingFullscreen;
     setupOptionsScreen();
-  } else if (buttonIndex == 2) {
+  } else if (buttonIndex == 3) { // Quit
     menuState = MenuState::Quitting;
+  }
+}
+
+void GameMenu::handleHighscoresClick(int buttonIndex) {
+  if (buttonIndex == 0) { // Back
+    menuState = MenuState::MainMenu;
+    setupMainMenu();
   }
 }
 
@@ -513,6 +542,10 @@ void GameMenu::draw(sf::RenderWindow &window) {
     break;
   }
 
+  case MenuState::Highscores:
+    drawHighscores(window);
+    break;
+
   case MenuState::GameSetup:
     drawGameSetup(window);
     break;
@@ -532,6 +565,52 @@ void GameMenu::drawOptions(sf::RenderWindow &window) {
 
   auto [scale, scaleY] = calculateScale(window);
   buttonManager.layoutOptions(window, scale, scaleY);
+  buttonManager.draw(window);
+}
+
+void GameMenu::drawHighscores(sf::RenderWindow &window) {
+  panorama.draw(window);
+  drawOverlay(window);
+
+  auto [scale, scaleY] = calculateScale(window);
+  
+  float centerX = static_cast<float>(window.getSize().x) / 2.0f;
+  float currentY = 150.0f * scaleY;
+  
+  // Draw Title
+  sf::Text titleText(font, "=== HIGHSCORES ===");
+  titleText.setCharacterSize(static_cast<unsigned int>(40.0f * scale));
+  titleText.setFillColor(sf::Color::Cyan);
+  auto titleBounds = titleText.getLocalBounds();
+  titleText.setPosition({centerX - titleBounds.size.x / 2.0f, currentY});
+  window.draw(titleText);
+  
+  currentY += titleBounds.size.y + 40.0f * scale;
+  
+  // Draw leaderboard entries
+  const auto& entries = leaderboard.getEntries();
+  if (entries.empty()) {
+    sf::Text noScoresText(font, "No scores yet!");
+    noScoresText.setCharacterSize(static_cast<unsigned int>(24.0f * scale));
+    noScoresText.setFillColor(sf::Color::White);
+    auto noScoresBounds = noScoresText.getLocalBounds();
+    noScoresText.setPosition({centerX - noScoresBounds.size.x / 2.0f, currentY});
+    window.draw(noScoresText);
+  } else {
+    for (const auto& entry : entries) {
+      std::string line = entry.name + " ........ " + std::to_string(entry.score);
+      sf::Text entryText(font, line);
+      entryText.setCharacterSize(static_cast<unsigned int>(24.0f * scale));
+      entryText.setFillColor(sf::Color::White);
+      auto entryBounds = entryText.getLocalBounds();
+      entryText.setPosition({centerX - entryBounds.size.x / 2.0f, currentY});
+      window.draw(entryText);
+      currentY += entryBounds.size.y + 15.0f * scale;
+    }
+  }
+  
+  // Draw Back button at the bottom
+  buttonManager.layoutHighscores(window, scale, scaleY);
   buttonManager.draw(window);
 }
 

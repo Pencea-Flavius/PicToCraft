@@ -4,6 +4,7 @@
 #include "MenuButton.h"
 #include <SFML/Graphics.hpp>
 #include <memory>
+#include <optional>
 #include <vector>
 
 enum class PauseAction { None, Resume, MainMenu };
@@ -11,7 +12,8 @@ enum class PauseAction { None, Resume, MainMenu };
 class PauseMenu {
   sf::Font font;
   sf::Text titleText;
-  sf::RectangleShape overlay;
+  sf::Texture pauseTexture;
+  std::optional<sf::Sprite> pauseSprite;
 
   std::vector<std::unique_ptr<MenuButton>> buttons;
 

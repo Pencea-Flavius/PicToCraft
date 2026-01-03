@@ -9,9 +9,10 @@
 #include "MenuButtonManager.h"
 #include "MenuPanorama.h"
 #include "SplashText.h"
+#include "Leaderboard.h"
 
 
-enum class MenuState { MainMenu, GameSetup, Options, Starting, Quitting };
+enum class MenuState { MainMenu, Highscores, GameSetup, Options, Starting, Quitting };
 
 #include "GameConfig.h"
 
@@ -54,11 +55,13 @@ private:
 
   // Screen setup functions
   void setupMainMenu();
+  void setupHighscoresScreen();
   void setupGameSetupScreen();
   void setupOptionsScreen();
 
   // Click handlers
   void handleMainMenuClick(int buttonIndex);
+  void handleHighscoresClick(int buttonIndex);
   void handleGameSetupClick(int buttonIndex);
   void handleOptionsClick(int buttonIndex, const sf::RenderWindow &window);
 
@@ -67,6 +70,7 @@ private:
 
   // New drawing helpers
   void drawOverlay(sf::RenderWindow &window) const;
+  void drawHighscores(sf::RenderWindow &window);
   void drawGameSetup(sf::RenderWindow &window);
   void drawOptions(sf::RenderWindow &window);
 
@@ -127,6 +131,7 @@ private:
 
   // Player Name & Leaderboard
   std::string playerName = "Player";
+  Leaderboard leaderboard;
   bool isTypingName = false;
 
 public:

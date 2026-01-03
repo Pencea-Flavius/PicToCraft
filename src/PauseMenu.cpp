@@ -8,11 +8,14 @@ PauseMenu::PauseMenu() : font(), titleText(font) {
     throw AssetLoadException("assets/Monocraft.ttf", "Font");
   }
 
+  if (!pauseTexture.loadFromFile("assets/dirt.png")) {
+    throw AssetLoadException("assets/dirt.png", "Texture");
+  }
+  pauseSprite.emplace(pauseTexture);
+
   titleText.setString("Game Paused");
   titleText.setCharacterSize(60);
   titleText.setFillColor(sf::Color::White);
-
-  overlay.setFillColor(sf::Color(0, 0, 0, 180)); // Darker black overlay
 
   createButtons();
 }
@@ -66,10 +69,12 @@ void PauseMenu::update(const sf::RenderWindow &window) {
   auto winSize = window.getSize();
   auto [scale, scaleY] = calculateScale(window);
 
-  // Update overlay
-  overlay.setSize(sf::Vector2f(static_cast<float>(winSize.x),
-                               std::round(static_cast<float>(winSize.y))));
-  overlay.setPosition({0.f, 0.f});
+  // Update pause background sprite to fill window
+  auto texSize = pauseTexture.getSize();
+  float scaleX = static_cast<float>(winSize.x) / static_cast<float>(texSize.x);
+  float scaleYSprite = static_cast<float>(winSize.y) / static_cast<float>(texSize.y);
+  pauseSprite->setScale({scaleX, scaleYSprite});
+  pauseSprite->setPosition({0.f, 0.f});
 
   // Title
   titleText.setCharacterSize(static_cast<unsigned int>(60.0f * scale));
@@ -93,7 +98,9 @@ void PauseMenu::update(const sf::RenderWindow &window) {
 void PauseMenu::draw(sf::RenderWindow &window) const {
   auto [scale, scaleY] = calculateScale(window);
 
-  window.draw(overlay);
+  if (pauseSprite) {
+    window.draw(*pauseSprite);
+  }
   ShadowedText::draw(window, titleText, scale);
 
   for (const auto &btn : buttons) {

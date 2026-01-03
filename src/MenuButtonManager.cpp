@@ -58,7 +58,7 @@ void MenuButtonManager::setSelected(int index, bool selected) const {
 
 void MenuButtonManager::layoutMainMenu(const sf::RenderWindow &window,
                                        float scale, float scaleY) const {
-  if (buttons.size() < 3)
+  if (buttons.size() < 4)
     return;
 
   float centerX = static_cast<float>(window.getSize().x) / 2.0f;
@@ -68,18 +68,38 @@ void MenuButtonManager::layoutMainMenu(const sf::RenderWindow &window,
   sf::Vector2f mousePos =
       window.mapPixelToCoords(sf::Mouse::getPosition(window));
 
+  // Row 1: Singleplayer
   buttons[0]->update(scale, centerX, startY, 1.0f, 1.0f, mousePos);
 
+  // Row 2: Highscores
   float row2Y = startY + spacing;
+  buttons[1]->update(scale, centerX, row2Y, 1.0f, 1.0f, mousePos);
+
+  // Row 3: Options and Quit (half width each, side by side)
+  float row3Y = row2Y + spacing;
   float buttonWidth = 400.0f * scale;
   float gap = 4.0f * scale;
 
   float optX = centerX - buttonWidth * 0.25f - gap / 2;
   float quitX = centerX + buttonWidth * 0.25f + gap / 2;
 
-  
-  buttons[1]->update(scale, optX, row2Y, 0.5f, 1.0f, mousePos);
-  buttons[2]->update(scale, quitX, row2Y, 0.5f, 1.0f, mousePos);
+  buttons[2]->update(scale, optX, row3Y, 0.5f, 1.0f, mousePos);
+  buttons[3]->update(scale, quitX, row3Y, 0.5f, 1.0f, mousePos);
+}
+
+void MenuButtonManager::layoutHighscores(const sf::RenderWindow &window,
+                                          float scale, float scaleY) const {
+  if (buttons.empty())
+    return;
+
+  float centerX = static_cast<float>(window.getSize().x) / 2.0f;
+  float footerY = static_cast<float>(window.getSize().y) - 50.0f * scaleY;
+
+  sf::Vector2f mousePos =
+      window.mapPixelToCoords(sf::Mouse::getPosition(window));
+
+  // Back button centered at bottom
+  buttons[0]->update(scale, centerX, footerY, 1.0f, 1.0f, mousePos);
 }
 
 void MenuButtonManager::layoutGameSetup(
