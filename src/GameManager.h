@@ -51,7 +51,7 @@ public:
   GameManager();
   void run();
 
-  ~GameManager() = default;
+  ~GameManager();
 
 private:
   void startGame();

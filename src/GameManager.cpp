@@ -66,7 +66,13 @@ GameManager::GameManager()
   try {
     leaderboard.load("leaderboard.txt");
   } catch (const std::exception &e) {
-    std::cerr << "Warning: Failed to load leaderboard: " << e.what() << "\n";
+  }
+}
+
+GameManager::~GameManager() {
+  // Reset cursor to system default before destroying window
+  if (customCursor) {
+    customCursor->setEnabled(false); // This sets system cursor
   }
 }
 
