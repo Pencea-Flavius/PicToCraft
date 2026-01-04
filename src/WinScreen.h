@@ -20,6 +20,7 @@ class WinScreen {
   float scrollOffset;
   float fadeAlpha;
   ::sf::Clock clock;
+  float speedMultiplier;
 
   float baseWidth = 1280.0f;
   float baseHeight = 720.0f;
@@ -37,6 +38,7 @@ public:
   void update(float deltaTime);
   void draw(sf::RenderWindow &window);
   bool isFinished() const;
+  void setSpeedMultiplier(float multiplier);
 
 private:
   int finalScore = 0;

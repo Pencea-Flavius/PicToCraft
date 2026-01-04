@@ -4,7 +4,7 @@
 #include <fstream>
 #include <iostream>
 
-WinScreen::WinScreen() : scrollOffset(0.0f), fadeAlpha(255.0f), clock() {
+WinScreen::WinScreen() : scrollOffset(0.0f), fadeAlpha(255.0f), clock(), speedMultiplier(1.0f) {
   if (!font.openFromFile("assets/Monocraft.ttf")) {
     throw AssetLoadException("assets/Monocraft.ttf", "Font");
   }
@@ -62,6 +62,7 @@ void WinScreen::reset() {
   scrollOffset = 0.0f;
   fadeAlpha = 255.0f;
   clock.restart();
+  speedMultiplier = 1.0f;
 }
 
 void WinScreen::setScore(int score, const Leaderboard& leaderboard) {
@@ -78,7 +79,7 @@ sf::Vector2f WinScreen::calculateScale(const sf::RenderWindow &window) const {
 }
 
 void WinScreen::update(float deltaTime) {
-  scrollOffset += 30.0f * deltaTime;
+  scrollOffset += 30.0f * deltaTime * speedMultiplier;
   if (contentHeight > 0 && scrollOffset > contentHeight) {
     scrollOffset = contentHeight;
   }
@@ -187,4 +188,8 @@ void WinScreen::draw(sf::RenderWindow &window) {
 
 bool WinScreen::isFinished() const {
   return contentHeight > 0 && scrollOffset >= contentHeight;
+}
+
+void WinScreen::setSpeedMultiplier(float multiplier) {
+  speedMultiplier = multiplier;
 }

@@ -262,14 +262,22 @@ void GameManager::run() {
         }
       } else if (inWinScreen) {
         if (auto key = event->getIf<sf::Event::KeyPressed>()) {
-          if (key->code == sf::Keyboard::Key::Enter ||
-              key->code == sf::Keyboard::Key::Space) {
+          if (key->code == sf::Keyboard::Key::Enter) {
+            // Enter skips everything
             menu->reset();
             inMenu = true;
             inWinScreen = false;
             if (customCursor) {
               customCursor->setTorchMode(false);
             }
+          } else if (key->code == sf::Keyboard::Key::Space) {
+            // Space speeds up scrolling
+            winScreen->setSpeedMultiplier(3.0f);
+          }
+        } else if (auto keyReleased = event->getIf<sf::Event::KeyReleased>()) {
+          if (keyReleased->code == sf::Keyboard::Key::Space) {
+            // Return to normal speed when Space is released
+            winScreen->setSpeedMultiplier(1.0f);
           }
         }
       } else {
