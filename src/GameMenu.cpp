@@ -144,6 +144,12 @@ void GameMenu::setupMainMenu() {
 }
 
 void GameMenu::setupHighscoresScreen() {
+  // Reload leaderboard to see scores from current session
+  try {
+    leaderboard.load("leaderboard.txt");
+  } catch (const std::exception &e) {
+    std::cerr << "Info: Could not load leaderboard: " << e.what() << "\n";
+  }
   buttonManager.createButtons({"Back"}, 20);
 }
 

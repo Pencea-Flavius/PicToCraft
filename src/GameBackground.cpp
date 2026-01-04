@@ -31,7 +31,7 @@ void GameBackground::loadTextures() {
 void GameBackground::loadSounds() {
   for (int i = 1; i <= 12; ++i) {
     sf::SoundBuffer buffer;
-    std::string filename = "assets/sound/cave" + std::to_string(i) + ".ogg";
+    std::string filename = "assets/sound/Cave" + std::to_string(i) + ".ogg";
     if (buffer.loadFromFile(filename)) {
       caveBuffers.push_back(buffer);
     } else {
