@@ -65,4 +65,10 @@ public:
       : GameException("Audio init error: " + details) {}
 };
 
+class LeaderboardException : public GameException {
+public:
+  explicit LeaderboardException(const std::string &details)
+      : GameException("Leaderboard error: " + details) {}
+};
+
 #endif // EXCEPTIONS_H

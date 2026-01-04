@@ -65,7 +65,8 @@ GameManager::GameManager()
   
   try {
     leaderboard.load("leaderboard.txt");
-  } catch (const std::exception &e) {
+  } catch (const LeaderboardException &e) {
+    std::cerr << "Info: Could not load leaderboard: " << e.what() << "\n";
   }
 }
 
@@ -338,7 +339,7 @@ void GameManager::run() {
           leaderboard.addEntry(menu->getPlayerName(), finalScore);
           try {
             leaderboard.save("leaderboard.txt");
-          } catch (const std::exception &e) {
+          } catch (const LeaderboardException &e) {
             std::cerr << "Warning: Failed to save leaderboard: " << e.what() << "\n";
           }
           

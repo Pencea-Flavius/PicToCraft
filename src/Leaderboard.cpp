@@ -10,7 +10,7 @@ void Leaderboard::load(const std::string& filename) {
     entries.clear();
     std::ifstream file(filename);
     if (!file.is_open()) {
-        throw AssetLoadException(filename, "Leaderboard File");
+        throw LeaderboardException("Failed to load from file: " + filename);
     }
 
     std::string name;
@@ -32,7 +32,7 @@ void Leaderboard::load(const std::string& filename) {
 void Leaderboard::save(const std::string& filename) const {
     std::ofstream file(filename);
     if (!file.is_open()) {
-        throw AssetLoadException(filename, "Leaderboard File");
+        throw LeaderboardException("Failed to save to file: " + filename);
     }
 
     for (const auto& entry : entries) {
