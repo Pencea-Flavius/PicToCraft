@@ -244,6 +244,13 @@ void Spider::updateAnimation(float dt) {
 
   // Ensure scale is positive
   sprite.setScale({scale, scale});
+
+  // Apply red tint if dying
+  if (state == State::Dying) {
+      sprite.setColor(sf::Color(255, 100, 100)); // Reddish tint
+  } else {
+      sprite.setColor(sf::Color::White); // Normal color
+  }
 }
 
 void Spider::draw(sf::RenderWindow &window) const { window.draw(sprite); }
