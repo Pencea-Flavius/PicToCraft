@@ -421,11 +421,11 @@ void EndermanMode::draw(sf::RenderWindow &window) const {
     window.draw(*endermanSprite);
   }
 
+  // Draw particles (same layer as Enderman)
+  const_cast<EndermanMode*>(this)->portalSystem.draw(window);
+
   // Draw the actual game (and Torch darkness if active)
   GameModeDecorator::draw(window);
-
-  // Draw particles (on top of game, but under jumpscare)
-  const_cast<EndermanMode*>(this)->portalSystem.draw(window);
 
   // Draw Jumpscare ON TOP of everything
   if (jumpscareActive && jumpscareSprite) {
