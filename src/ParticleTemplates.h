@@ -36,6 +36,12 @@ struct WitchMagicTrait {
     static sf::BlendMode getBlendMode();
 };
 
+struct DeathPoofTrait {
+    static void init(TemplateParticle& p, sf::Color unused, float scale);
+    static void update(TemplateParticle& p, float dt);
+    static sf::BlendMode getBlendMode();
+};
+
 template <typename Trait>
 class TemplateParticleSystem {
     std::vector<TemplateParticle> particles;

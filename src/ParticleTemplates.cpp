@@ -66,3 +66,36 @@ void WitchMagicTrait::update(TemplateParticle& p, float dt) {
 sf::BlendMode WitchMagicTrait::getBlendMode() { 
     return sf::BlendAdd; 
 }
+
+void DeathPoofTrait::init(TemplateParticle& p, sf::Color, float scale) {
+    // Gaussian distribution for velocity
+    static std::random_device rd;
+    static std::mt19937 gen(rd());
+    std::normal_distribution<float> dist(0.0f, 1.0f);
+
+    float xa = dist(gen) * 30.0f; 
+    float ya = dist(gen) * 40.0f - 60.0f; 
+    
+    p.velocity = {xa * scale, ya * scale};
+
+    float offsetX = dist(gen) * 40.0f * scale;
+    float offsetY = dist(gen) * 40.0f * scale;
+    
+    p.position += sf::Vector2f(offsetX, offsetY);
+
+    p.maxLifetime = ParticleUtils::randomFloat(0.5f, 1.5f); 
+    p.lifetime = p.maxLifetime;
+    
+    p.color = sf::Color::White;
+    p.size = ParticleUtils::randomFloat(20.f, 40.f) * scale;
+    p.rotation = ParticleUtils::randomFloat(0.f, 360.f);
+    p.angularVelocity = 0.f; 
+}
+
+void DeathPoofTrait::update(TemplateParticle& p, float dt) {
+    p.position += p.velocity * dt;
+}
+
+sf::BlendMode DeathPoofTrait::getBlendMode() {
+    return sf::BlendAlpha;
+}

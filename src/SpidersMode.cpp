@@ -83,6 +83,19 @@ SpidersMode::SpidersMode(std::unique_ptr<GameMode> mode)
           "assets/sound/Stone_hit" + std::to_string(i) + ".ogg", "Sound");
     }
   }
+
+  // Load death particles
+  deathPoofTextures.reserve(8);
+  for (int i = 0; i <= 7; ++i) {
+      sf::Texture tex;
+      if (tex.loadFromFile("assets/particle/generic_" + std::to_string(i) + ".png")) {
+          deathPoofTextures.push_back(std::move(tex));
+      }
+  }
+  
+  for(const auto& t : deathPoofTextures) {
+      deathPoofSystem.addTexture(&t);
+  }
 }
 
 void SpidersMode::setGrid(Grid *g) {
@@ -225,6 +238,22 @@ void SpidersMode::update(float deltaTime) {
     }
   }
 
+
+  // Handle death particles and removal
+    if (windowSize.x == 0) windowSize = {1280, 720};
+    float scaleX = static_cast<float>(windowSize.x) / 1920.0f;
+    float scaleY = static_cast<float>(windowSize.y) / 1080.0f;
+    float baseScale = std::min(scaleX, scaleY);
+    float particleScale = baseScale * 0.75f; 
+
+  for (const auto& spider : spiders) {
+      if (spider.isDead()) {
+          // Spawn death poof
+          deathPoofSystem.emit(spider.getPosition(), 20, sf::Color::White, particleScale);
+      }
+  }
+  deathPoofSystem.update(deltaTime);
+
   std::erase_if(spiders, [](const Spider &s) { return s.isDead(); });
 }
 
@@ -236,6 +265,8 @@ void SpidersMode::draw(sf::RenderWindow &window) const {
   for (const auto &spider : spiders) {
     spider.draw(window);
   }
+  
+  const_cast<SpidersMode*>(this)->deathPoofSystem.draw(window);
 }
 
 void SpidersMode::setSfxVolume(float volume) {

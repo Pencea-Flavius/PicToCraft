@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "Spider.h"
+#include "ParticleTemplates.h"
 
 class SpidersMode : public GameModeDecorator {
 public:
@@ -48,10 +49,7 @@ private:
     
     sf::SoundBuffer brokenWebBuffer;
     std::vector<sf::SoundBuffer> hitWebBuffers;
-    
-    // Use a separate audio source for web interaction to avoid cutting off spiders maybe? 
-    // Or just one for logic. Let's start with one on the mode or use fire-and-forget logic if possible?
-    // Actually SpidersMode shouldn't probably own the audioSource for *spiders*, but it needs one for *webs*.
+
     std::optional<sf::Sound> webAudioSource;
 
     float spawnTimer;
@@ -64,6 +62,10 @@ private:
     const GridRenderer *renderer = nullptr;
     
     bool wasWeaknessActive = false; // Track Weakness effect state
+
+    // Death particles
+    std::vector<sf::Texture> deathPoofTextures;
+    TemplateParticleSystem<DeathPoofTrait> deathPoofSystem;
 
     void spawnSpider();
 };

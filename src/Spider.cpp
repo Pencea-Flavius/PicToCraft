@@ -37,7 +37,9 @@ Spider::Spider(sf::Vector2f startPos, const sf::Texture &walkTex,
 
   // Random velocity
   float angle = randomFloat(0.0f, 2.0f * 3.14159f);
-  float speed = randomFloat(50.0f, 100.0f);
+  // Scale speed by resolution (scale / 0.45 is approx baseScale)
+  // 100.0f base speed at 0.45 scale -> 222.0f * scale
+  float speed = randomFloat(50.0f, 100.0f) * (scale * 2.22f);
   velocity = {std::cos(angle) * speed, std::sin(angle) * speed};
 
   changeState(State::Walking);
@@ -55,7 +57,7 @@ void Spider::changeState(State newState) {
 
     // Random new velocity
     float angle = randomFloat(0.0f, 2.0f * 3.14159f);
-    float speed = randomFloat(50.0f, 100.0f);
+    float speed = randomFloat(50.0f, 100.0f) * (scale * 2.22f);
     velocity = {std::cos(angle) * speed, std::sin(angle) * speed};
 
     updateRotation();
@@ -138,7 +140,7 @@ void Spider::update(float dt, const sf::Vector2u &windowSize) {
     if (distSq > 100.0f) {
       float length = std::sqrt(distSq);
       dir /= length;
-      velocity = dir * 100.0f; // Speed
+      velocity = dir * (100.0f * scale * 2.22f); // Speed scaled
 
       // Update rotation
       float angle = std::atan2(velocity.y, velocity.x) * 180.f / 3.14159f;
@@ -167,7 +169,7 @@ void Spider::update(float dt, const sf::Vector2u &windowSize) {
         // Random movement
         float angle = randomFloat(0.0f, 360.0f) * 3.14159f / 180.f;
         sf::Vector2f dir = {std::cos(angle), std::sin(angle)};
-        velocity = dir * 100.0f;
+        velocity = dir * (100.0f * scale * 2.22f);
         float rotationAngle =
             std::atan2(velocity.y, velocity.x) * 180.f / 3.14159f;
         sprite.setRotation(sf::degrees(rotationAngle - 90.f));
