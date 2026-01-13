@@ -7,6 +7,7 @@
 #include <array>
 #include <optional>
 #include <vector>
+#include "ParticleTemplates.h"
 
 class EndermanMode : public GameModeDecorator {
 public:
@@ -41,7 +42,11 @@ public:
         os << "EndermanMode + ";
         GameModeDecorator::print(os);
     }
-    
+
+    // Portal Particles
+    std::vector<sf::Texture> portalTextures;
+    TemplateParticleSystem<PortalParticleTrait> portalSystem;
+
     [[nodiscard]] int getMistakes() const override {
         if (playerLost) return getMaxMistakes();
         return GameModeDecorator::getMistakes();
@@ -116,6 +121,12 @@ private:
     void playRandomHurtSound();
 
     void updateStareSound(bool isHovering, float deltaTime);
+
+    sf::SoundBuffer teleport1Buffer;
+    sf::SoundBuffer teleport2Buffer;
+    std::optional<sf::Sound> teleportSound;
+
+    void playTeleportSound(bool appear);
 };
 
 #endif // OOP_ENDERMANMODE_H

@@ -69,10 +69,32 @@ EndermanMode::EndermanMode(std::unique_ptr<GameMode> mode)
   std::mt19937 gen(rd());
   std::uniform_real_distribution<> dis(10.0f, 20.0f);
   spawnInterval = static_cast<float>(dis(gen));
+
+  // Load portal textures
+  portalTextures.reserve(8);
+  for (int i = 0; i <= 7; ++i) {
+      sf::Texture tex;
+      if (tex.loadFromFile("assets/particle/generic_" + std::to_string(i) + ".png")) {
+          portalTextures.push_back(std::move(tex));
+      }
+  }
+  for(const auto& t : portalTextures) {
+      portalSystem.addTexture(&t);
+  }
+
+  // Load teleport sounds
+  if (!teleport1Buffer.loadFromFile("assets/sound/teleport1.ogg")) {
+     throw AssetLoadException("assets/sound/teleport1.ogg", "Sound");
+  }
+  if (!teleport2Buffer.loadFromFile("assets/sound/teleport2.ogg")) {
+     throw AssetLoadException("assets/sound/teleport2.ogg", "Sound");
+  }
 }
 
 void EndermanMode::update(float deltaTime) {
   GameModeDecorator::update(deltaTime);
+  
+  portalSystem.update(deltaTime); // Update particles regardless of visibility (trailing effect)
 
   if (jumpscareActive) {
     updateJumpscareAnimation(deltaTime);
@@ -103,9 +125,38 @@ void EndermanMode::update(float deltaTime) {
         endermanOpacity = std::max(0.4f, endermanOpacity - deltaTime * 0.125f);
       }
     }
+    
+    // Emit particles
+    static std::random_device rd;
+    static std::mt19937 gen(rd());
+    
+    std::uniform_int_distribution<> pDis(0, 2); 
+    if (pDis(gen) == 0) { 
+        if (endermanSprite) {
+             sf::Vector2f spawnPos = endermanSprite->getPosition();
+
+             if (!ENDERMAN_HITBOXES.empty()) {
+                 std::uniform_int_distribution<> hbDis(0, static_cast<int>(ENDERMAN_HITBOXES.size()) - 1);
+                 const auto& box = ENDERMAN_HITBOXES[hbDis(gen)];
+                 
+                 sf::Vector2f localCenter(box.x + box.w / 2.0f, box.y + box.h / 2.0f);
+                 spawnPos = endermanSprite->getTransform().transformPoint(localCenter);
+             }
+             
+            float pScale = 1.0f;
+            if (cachedWindow) {
+                float sx = static_cast<float>(cachedWindow->getSize().x) / 1920.0f;
+                float sy = static_cast<float>(cachedWindow->getSize().y) / 1080.0f;
+                pScale = std::min(sx, sy) * 0.75f;
+            }
+
+            portalSystem.emit(spawnPos, 1, sf::Color::White, pScale);
+        }
+    }
 
     if (endermanLifetime >= maxLifetime) {
       playRandomHurtSound();
+      playTeleportSound(false); // Disappear sound
       endermanVisible = false;
       endermanLifetime = 0.0f;
       currentFrame = 0;
@@ -179,6 +230,7 @@ void EndermanMode::spawnEnderman() {
 
   // Play IDLE sound on spawn
   playRandomIdleSound();
+  playTeleportSound(true); // Appear sound
 
   // Start visible (ghostly) so player can see it
   // 0.4 opacity = ~100 alpha
@@ -372,6 +424,9 @@ void EndermanMode::draw(sf::RenderWindow &window) const {
   // Draw the actual game (and Torch darkness if active)
   GameModeDecorator::draw(window);
 
+  // Draw particles (on top of game, but under jumpscare)
+  const_cast<EndermanMode*>(this)->portalSystem.draw(window);
+
   // Draw Jumpscare ON TOP of everything
   if (jumpscareActive && jumpscareSprite) {
     // Draw jumpscare as transparent overlay
@@ -409,4 +464,14 @@ void EndermanMode::draw(sf::RenderWindow &window) const {
 [[nodiscard]] std::unique_ptr<GameMode> EndermanMode::clone() const {
   auto clonedWrapped = wrappedMode ? wrappedMode->clone() : nullptr;
   return std::make_unique<EndermanMode>(std::move(clonedWrapped));
+}
+
+void EndermanMode::playTeleportSound(bool appear) {
+    if (appear) {
+        teleportSound.emplace(teleport1Buffer);
+    } else {
+        teleportSound.emplace(teleport2Buffer);
+    }
+    teleportSound->setVolume(100.0f);
+    teleportSound->play();
 }

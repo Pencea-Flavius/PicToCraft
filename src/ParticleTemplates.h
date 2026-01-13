@@ -22,6 +22,8 @@ struct TemplateParticle {
     float size{10.f};
     float rotation{0.f};
     float angularVelocity{0.f};
+    sf::Vector2f origin{};
+    int textureIndex{-1};
 };
 
 struct PotionSplashTrait {
@@ -37,6 +39,12 @@ struct WitchMagicTrait {
 };
 
 struct DeathPoofTrait {
+    static void init(TemplateParticle& p, sf::Color unused, float scale);
+    static void update(TemplateParticle& p, float dt);
+    static sf::BlendMode getBlendMode();
+};
+
+struct PortalParticleTrait {
     static void init(TemplateParticle& p, sf::Color unused, float scale);
     static void update(TemplateParticle& p, float dt);
     static sf::BlendMode getBlendMode();
@@ -91,11 +99,17 @@ public:
              
              // Collect particles for this frame
              for(const auto& p : particles) {
-                 float ratio = p.lifetime / p.maxLifetime;
-                 // Index: 0 to N-1.
-                 // ratio goes from 1.0 (start) to 0.0 (end)
-                 // We want index to go from (textures.size() - 1) down to 0.
-                 int frameIndex = static_cast<int>(ratio * (static_cast<float>(textures.size()) - 0.0001f)); // Use a small epsilon to ensure 1.0 maps to max index
+                 int frameIndex = 0;
+                 
+                 if (p.textureIndex >= 0) {
+                     frameIndex = p.textureIndex;
+                 } else {
+                     float ratio = p.lifetime / p.maxLifetime;
+                     // Index: 0 to N-1.
+                     // ratio goes from 1.0 (start) to 0.0 (end)
+                     // We want index to go from (textures.size() - 1) down to 0.
+                     frameIndex = static_cast<int>(ratio * (static_cast<float>(textures.size()) - 0.0001f)); 
+                 }
                  
                  // Clamp frameIndex to valid range [0, textures.size() - 1]
                  if(frameIndex >= static_cast<int>(textures.size())) frameIndex = static_cast<int>(textures.size()) - 1;

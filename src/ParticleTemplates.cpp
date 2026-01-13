@@ -1,6 +1,7 @@
 #include "ParticleTemplates.h"
 #include <random>
 #include <cmath>
+#include <cstdint>
 
 
 namespace ParticleUtils {
@@ -98,4 +99,50 @@ void DeathPoofTrait::update(TemplateParticle& p, float dt) {
 
 sf::BlendMode DeathPoofTrait::getBlendMode() {
     return sf::BlendAlpha;
+}
+
+void PortalParticleTrait::init(TemplateParticle& p, sf::Color, float scale) {
+    static std::random_device rd;
+    static std::mt19937 gen(rd());
+    std::uniform_real_distribution<float> distOffset(-150.0f, 150.0f);
+    std::uniform_real_distribution<float> distY(-100.0f, 200.0f); 
+
+    float startX = p.position.x + distOffset(gen) * scale;
+    float startY = p.position.y + distY(gen) * scale;
+
+    p.origin = {startX, startY};
+    p.velocity = {p.position.x - startX, p.position.y - startY};
+    
+    p.position = p.origin;
+
+    float br = std::uniform_real_distribution<float>(0.4f, 1.0f)(gen);
+    p.color = sf::Color(
+        static_cast<std::uint8_t>(br * 0.9f * 255),
+        static_cast<std::uint8_t>(br * 0.3f * 255),
+        static_cast<std::uint8_t>(br * 1.0f * 255)
+    );
+
+    p.maxLifetime = std::uniform_real_distribution<float>(2.0f, 2.5f)(gen);
+    p.lifetime = p.maxLifetime; 
+
+    p.size = ParticleUtils::randomFloat(15.f, 30.f) * scale;
+    p.rotation = 0.f; 
+    p.angularVelocity = 0.f; 
+    
+    std::uniform_int_distribution<> texDis(0, 7);
+    p.textureIndex = texDis(gen);
+}
+
+void PortalParticleTrait::update(TemplateParticle& p, float dt) {
+    float age = 1.0f - (p.lifetime / p.maxLifetime);
+    
+    float t = age;
+    t = -t + t * t * 2.0f;
+    t = 1.0f - t; 
+
+    p.position = p.origin + p.velocity * (1.0f - t);
+}
+
+sf::BlendMode PortalParticleTrait::getBlendMode() {
+    return sf::BlendAdd; // Glowing effect
 }
