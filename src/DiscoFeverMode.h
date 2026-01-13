@@ -13,6 +13,11 @@ public:
     return "Disco Fever Mode";
   }
 
+  void print(std::ostream &os) const override {
+    os << "DiscoFeverMode + ";
+    GameModeDecorator::print(os);
+  }
+
   void setRenderer(const GridRenderer *r) override;
 };
 

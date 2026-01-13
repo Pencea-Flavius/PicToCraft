@@ -63,6 +63,11 @@ public:
     std::unique_ptr<GameMode> clone() const override {
         return std::make_unique<AlchemyMode>(wrappedMode->clone()); 
     }
+
+    void print(std::ostream &os) const override {
+        os << "AlchemyMode + ";
+        GameModeDecorator::print(os);
+    }
     
     void setGrid(Grid* g) override { 
         this->grid = g;
