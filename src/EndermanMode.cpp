@@ -83,11 +83,11 @@ EndermanMode::EndermanMode(std::unique_ptr<GameMode> mode)
   }
 
   // Load teleport sounds
-  if (!teleport1Buffer.loadFromFile("assets/sound/teleport1.ogg")) {
-     throw AssetLoadException("assets/sound/teleport1.ogg", "Sound");
+  if (!teleport1Buffer.loadFromFile("assets/sound/Teleport1.ogg")) {
+     throw AssetLoadException("assets/sound/Teleport1.ogg", "Sound");
   }
-  if (!teleport2Buffer.loadFromFile("assets/sound/teleport2.ogg")) {
-     throw AssetLoadException("assets/sound/teleport2.ogg", "Sound");
+  if (!teleport2Buffer.loadFromFile("assets/sound/Teleport2.ogg")) {
+     throw AssetLoadException("assets/sound/Teleport2.ogg", "Sound");
   }
 }
 
