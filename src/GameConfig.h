@@ -12,6 +12,7 @@ struct GameConfig {
   bool endermanMode = false;
   bool alchemyMode = false;
   bool backgroundMovement = true;
+  bool betaStyle = false;
 
   float masterVolume = 1.0f;
   float musicVolume = 1.0f;

@@ -22,6 +22,7 @@ public:
   void addButton(const std::string &label, unsigned int fontSize);
   void setButtonText(int index, const std::string &text) const;
   void setButtonEnabled(int index, bool enabled) const;
+  void setSliderValue(int index, float value) const;
   void setButtonStyle(int index, MenuButton::Style style) const;
   void setSelected(int index, bool selected) const;
 

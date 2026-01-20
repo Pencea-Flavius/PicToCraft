@@ -11,7 +11,7 @@ GameMenu::GameMenu()
       selectedSourceMode(SourceMode::File), selectedFile(), gridSize(5),
       availableResolutions(MenuResolution::getAvailableResolutions()),
       currentResolutionIndex(0), pendingResolutionChange(std::nullopt),
-      pendingFullscreen(false), initialFullscreenState(false), font(),
+      pendingFullscreen(false), initialFullscreenState(false), pendingBetaStyle(false), font(),
       titleTexture(), buttonTexture(), buttonDisabledTexture(),
       menuBackgroundTexture(), menuListBackgroundTexture(),
       tabHeaderBackgroundTexture(), headerSeparatorTexture(),
@@ -20,9 +20,9 @@ GameMenu::GameMenu()
       titleSprite(std::nullopt), subtitleText(std::nullopt), availableFiles(),
       selectedFileIndex(0), difficultyOptions(), selectedDifficultyIndex(0) {
 
-  auto desktop = sf::VideoMode::getDesktopMode();
+  // Default to 1280x720
   for (size_t i = 0; i < availableResolutions.size(); ++i) {
-    if (availableResolutions[i].size == desktop.size) {
+    if (availableResolutions[i].size.x == 1280 && availableResolutions[i].size.y == 720) {
       currentResolutionIndex = static_cast<int>(i);
       break;
     }
@@ -35,6 +35,7 @@ GameMenu::GameMenu()
   gameConfig.discoFeverMode = false;
   gameConfig.endermanMode = false;
   gameConfig.backgroundMovement = true;
+  gameConfig.betaStyle = false;
 
   loadAssets();
 
@@ -129,6 +130,19 @@ void GameMenu::loadAssets() {
     throw AssetLoadException("assets/menu/footer_separator.png", "Texture");
   }
   footerSeparatorTexture.setRepeated(true);
+
+  if (!betaBackgroundTexture.loadFromFile("assets/beta.png")) {
+     throw AssetLoadException("assets/beta.png", "Texture");
+  }
+  betaBackgroundSprite.emplace(betaBackgroundTexture);
+
+  if (!betaLogoTexture.loadFromFile("assets/pictocraft-old.png")) {
+      throw AssetLoadException("assets/pictocraft-old.png", "Texture");
+  }
+  
+  betaLogoSprite.emplace(betaLogoTexture);
+  auto lb = betaLogoSprite->getLocalBounds();
+  betaLogoSprite->setOrigin({lb.size.x / 2.0f, lb.size.y / 2.0f});
 }
 
 void GameMenu::update(float deltaTime) {
@@ -255,6 +269,9 @@ void GameMenu::setupOptionsScreen() {
   buttonManager.addButton(
           gameConfig.backgroundMovement ? "Dynamic Scenery: ON" : "Dynamic Scenery: OFF", 20);
 
+  buttonManager.addButton(
+      gameConfig.betaStyle ? "Beta Style: ON" : "Beta Style: OFF", 20);
+
   buttonManager.addButton("Done", 20);
 }
 
@@ -349,6 +366,8 @@ void GameMenu::handleEvent(const sf::Event &event,
     if (keyPress->code == sf::Keyboard::Key::Escape) {
         if (menuState == MenuState::Options) {
             pendingFullscreen = initialFullscreenState; // Don't save fullscreen change
+            // gameConfig.betaStyle is not changed yet, so we don't need to revert it.
+            // pendingBetaStyle is simply discarded.
             menuState = MenuState::MainMenu;
             setupMainMenu();
         } else if (menuState == MenuState::Highscores) {
@@ -364,7 +383,7 @@ void GameMenu::handleEvent(const sf::Event &event,
 
     if (keyPress->code == sf::Keyboard::Key::Enter) {
       if (menuState == MenuState::Options) {
-        handleOptionsClick(6, window); // Index 6 is now Done
+        handleOptionsClick(7, window); // Index 7 is now Done
       } else if (menuState == MenuState::GameSetup) {
         if (buttonManager.getButtonCount() >= 2) {
           int playIndex = static_cast<int>(buttonManager.getButtonCount() - 2);
@@ -393,6 +412,7 @@ void GameMenu::handleMainMenuClick(int buttonIndex) {
     isTypingName = false;
     menuState = MenuState::Options;
     initialFullscreenState = pendingFullscreen;
+    pendingBetaStyle = gameConfig.betaStyle;
     setupOptionsScreen();
   } else if (buttonIndex == 3) { // Quit
     menuState = MenuState::Quitting;
@@ -417,11 +437,40 @@ void GameMenu::handleOptionsClick(int buttonIndex,
                                                      : "Fullscreen: OFF");
     buttonManager.setButtonEnabled(
         3, !pendingFullscreen);
+        
+    if (pendingFullscreen) {
+        // Find desktop resolution
+        auto desktop = sf::VideoMode::getDesktopMode();
+        for (size_t i = 0; i < availableResolutions.size(); ++i) {
+            if (availableResolutions[i].size == desktop.size) {
+                currentResolutionIndex = static_cast<int>(i);
+                
+                // Update Button 3 (Resolution Slider)
+                std::string resLabel =
+                   "Resolution: " + MenuResolution::resolutionToString(
+                                        availableResolutions[currentResolutionIndex]);
+                buttonManager.setButtonText(3, resLabel);
+                
+                // Update slider value
+                float val = 0.0f;
+                if (availableResolutions.size() > 1) {
+                    val = static_cast<float>(currentResolutionIndex) / static_cast<float>(availableResolutions.size() - 1);
+                }
+                buttonManager.setSliderValue(3, val);
+                break;
+            }
+        }
+    }
   } else if (buttonIndex == 5) { // Dynamic Scenery
     gameConfig.backgroundMovement = !gameConfig.backgroundMovement;
     buttonManager.setButtonText(
             5, gameConfig.backgroundMovement ? "Dynamic Scenery: ON" : "Dynamic Scenery: OFF");
-  } else if (buttonIndex == 6) { // Done
+  } else if (buttonIndex == 6) { // Beta Style
+      pendingBetaStyle = !pendingBetaStyle;
+      buttonManager.setButtonText(
+          6, pendingBetaStyle ? "Beta Style: ON" : "Beta Style: OFF");
+  } else if (buttonIndex == 7) { // Done
+    gameConfig.betaStyle = pendingBetaStyle; // Commit Beta Style change
     auto selectedRes = availableResolutions[currentResolutionIndex];
     if (selectedRes.size.x != window.getSize().x ||
         selectedRes.size.y != window.getSize().y ||
@@ -531,9 +580,17 @@ void GameMenu::draw(sf::RenderWindow &window) {
 
   switch (menuState) {
   case MenuState::MainMenu: {
-    panorama.draw(window);
+    drawMenuBackground(window);
 
-    if (titleSprite) {
+    if (gameConfig.betaStyle && betaLogoSprite) {
+        float logoScale = scale * 0.4f; 
+        betaLogoSprite->setScale({logoScale, logoScale});
+        betaLogoSprite->setPosition(
+            {static_cast<float>(window.getSize().x) / 2.0f, 80.0f * scaleY});
+        window.draw(*betaLogoSprite);
+        // Original splash text might not fit old logo well, but kept for now
+        splashText.draw(window, *betaLogoSprite, scale, scaleY, logoOriginalWidth, logoOriginalHeight);
+    } else if (titleSprite) {
       float logoScale = scale * 0.5f;
       titleSprite->setScale({logoScale, logoScale});
       titleSprite->setPosition(
@@ -566,7 +623,7 @@ void GameMenu::draw(sf::RenderWindow &window) {
 }
 
 void GameMenu::drawOptions(sf::RenderWindow &window) {
-  panorama.draw(window);
+  drawMenuBackground(window);
   drawOverlay(window);
 
   auto [scale, scaleY] = calculateScale(window);
@@ -575,7 +632,7 @@ void GameMenu::drawOptions(sf::RenderWindow &window) {
 }
 
 void GameMenu::drawHighscores(sf::RenderWindow &window) {
-  panorama.draw(window);
+  drawMenuBackground(window);
   drawOverlay(window);
 
   auto [scale, scaleY] = calculateScale(window);
@@ -621,7 +678,7 @@ void GameMenu::drawHighscores(sf::RenderWindow &window) {
 }
 
 void GameMenu::drawGameSetup(sf::RenderWindow &window) {
-  panorama.draw(window);
+  drawMenuBackground(window);
   drawOverlay(window);
 
   auto [scale, scaleY] = calculateScale(window);
@@ -694,5 +751,23 @@ void GameMenu::handleTextInput(const sf::Event& event) {
         if (menuState == MenuState::GameSetup && selectedTab == 0) {
              buttonManager.setButtonText(2, "Name: " + playerName);
         }
+    }
+}
+
+void GameMenu::drawMenuBackground(sf::RenderWindow &window) {
+    if (gameConfig.betaStyle && betaBackgroundSprite) {
+        auto winSize = window.getSize();
+        auto texSize = betaBackgroundTexture.getSize();
+        
+        // Scale to fill screen
+        float scaleX = static_cast<float>(winSize.x) / static_cast<float>(texSize.x);
+        float scaleY = static_cast<float>(winSize.y) / static_cast<float>(texSize.y);
+        
+        betaBackgroundSprite->setScale({scaleX, scaleY});
+        betaBackgroundSprite->setPosition({0.0f, 0.0f});
+        
+        window.draw(*betaBackgroundSprite);
+    } else {
+        panorama.draw(window);
     }
 }

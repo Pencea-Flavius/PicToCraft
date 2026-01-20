@@ -87,6 +87,7 @@ private:
   std::optional<sf::VideoMode> pendingResolutionChange;
   bool pendingFullscreen;
   bool initialFullscreenState;
+  bool pendingBetaStyle;
 
   // Assets
   sf::Font font;
@@ -100,6 +101,15 @@ private:
   sf::Texture tabHeaderBackgroundTexture;
   sf::Texture headerSeparatorTexture;
   sf::Texture footerSeparatorTexture;
+
+  // Beta assets
+  sf::Texture betaBackgroundTexture;
+  sf::Texture betaLogoTexture;
+
+  std::optional<sf::Sprite> betaBackgroundSprite;
+  std::optional<sf::Sprite> betaLogoSprite;
+  
+  void drawMenuBackground(sf::RenderWindow &window);
 
   // Components
   MenuPanorama panorama;

@@ -25,6 +25,11 @@ void GameBackground::loadTextures() {
   }
   mineshaftTexture.setRepeated(true);
   
+  if (!classicTexture.loadFromFile("assets/classic1.jpg")) {
+      throw AssetLoadException("assets/classic1.jpg", "Texture");
+  }
+  classicTexture.setRepeated(true);
+  
   loaded = true;
 }
 
@@ -44,7 +49,9 @@ void GameBackground::loadSounds() {
 void GameBackground::selectBackground(const GameConfig &config) {
   BackgroundType selectedType;
 
-  if (config.timeMode && config.spidersMode) {
+  if (config.betaStyle) {
+      selectedType = BackgroundType::Classic;
+  } else if (config.timeMode && config.spidersMode) {
     selectedType = BackgroundType::Mineshaft;
   } else if (config.torchMode || config.spidersMode) {
     selectedType = BackgroundType::Cave;
@@ -65,8 +72,9 @@ void GameBackground::selectBackground(const GameConfig &config) {
     break;
   case BackgroundType::Mineshaft:
     tex = &mineshaftTexture;
-
-
+    break;
+  case BackgroundType::Classic:
+    tex = &classicTexture;
     break;
   }
   
@@ -76,42 +84,60 @@ void GameBackground::selectBackground(const GameConfig &config) {
   }
 }
 
-void GameBackground::update(float deltaTime, bool shouldScroll) {
-        if (!loaded) return;
-    if (!currentBackground1.has_value()) return;
-    
-    if (shouldScroll) {
-        offset += speed * deltaTime;
-        float textureWidth = static_cast<float>(currentBackground1->getTexture().getSize().x);
-        if (offset >= textureWidth) {
-           offset -= textureWidth;
-        }
-    }
+void GameBackground::update(float deltaTime, sf::Vector2u windowSize, bool shouldScroll) {
+  if (!loaded)
+    return;
+  if (!currentBackground1.has_value())
+    return;
 
-    // Ambient sound update
-    if (currentType == BackgroundType::Cave || currentType == BackgroundType::Mineshaft) {
-        ambientTimer -= deltaTime;
-        if (ambientTimer <= 0.0f) {
-            // Play random cave sound
-            if (!caveBuffers.empty()) {
-                static std::random_device rd;
-                static std::mt19937 gen(rd());
-                std::uniform_int_distribution<> dis(0, static_cast<int>(caveBuffers.size()) - 1);
-                
-                int idx = dis(gen);
-                ambientSound.emplace(caveBuffers[idx]);
-                ambientSound->setVolume(currentVolume);
-                ambientSound->play();
-                // std::cout << "Playing ambient sound index " << idx << std::endl;
-            }
-            
-            // Result 1-3 mins (60-180s)
-            static std::random_device rd;
-            static std::mt19937 gen(rd());
-            std::uniform_real_distribution<float> timeDis(60.0f, 180.0f);
-            ambientTimer = timeDis(gen);
-        }
+  if (shouldScroll) {
+    offset += speed * deltaTime;
+    float textureWidth =
+        static_cast<float>(currentBackground1->getTexture().getSize().x);
+    if (offset >= textureWidth) {
+      offset -= textureWidth;
     }
+  } else {
+
+    auto texSize = currentBackground1->getTexture().getSize();
+    float scaleY =
+        static_cast<float>(windowSize.y) / static_cast<float>(texSize.y);
+    float textureWidth = static_cast<float>(texSize.x);
+    float availableSlack = textureWidth - (static_cast<float>(windowSize.x) / scaleY);
+    if (currentType == BackgroundType::Classic) {
+        offset = availableSlack * 0.70f;
+    } else {
+        offset = availableSlack / 2.0f;
+    }
+  }
+
+  // Ambient sound update
+  if (currentType == BackgroundType::Cave ||
+      currentType == BackgroundType::Mineshaft) {
+    ambientTimer -= deltaTime;
+    if (ambientTimer <= 0.0f) {
+      // Play random cave sound
+      if (!caveBuffers.empty()) {
+        static std::random_device rd;
+        static std::mt19937 gen(rd());
+        std::uniform_int_distribution<> dis(0,
+                                            static_cast<int>(caveBuffers.size()) -
+                                                1);
+
+        int idx = dis(gen);
+        ambientSound.emplace(caveBuffers[idx]);
+        ambientSound->setVolume(currentVolume);
+        ambientSound->play();
+        // std::cout << "Playing ambient sound index " << idx << std::endl;
+      }
+
+      // Result 1-3 mins (60-180s)
+      static std::random_device rd;
+      static std::mt19937 gen(rd());
+      std::uniform_real_distribution<float> timeDis(60.0f, 180.0f);
+      ambientTimer = timeDis(gen);
+    }
+  }
 }
 
 void GameBackground::draw(sf::RenderWindow &window) const {

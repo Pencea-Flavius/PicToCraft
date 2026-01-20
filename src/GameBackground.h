@@ -8,20 +8,21 @@
 #include <optional>
 #include <vector>
 
-enum class BackgroundType { Desert, Cave, Mineshaft };
+enum class BackgroundType { Desert, Cave, Mineshaft, Classic };
 
 class GameBackground {
 public:
   GameBackground();
 
   void selectBackground(const GameConfig &config);
-  void update(float deltaTime, bool shouldScroll = true);
+  void update(float deltaTime, sf::Vector2u windowSize, bool shouldScroll = true);
   void draw(sf::RenderWindow &window) const;
 
 private:
   sf::Texture desertTexture;
   sf::Texture caveTexture;
   sf::Texture mineshaftTexture;
+  sf::Texture classicTexture;
 
   mutable std::optional<sf::Sprite> currentBackground1;
   mutable std::optional<sf::Sprite> currentBackground2;

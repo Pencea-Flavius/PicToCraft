@@ -44,6 +44,12 @@ void MenuButtonManager::setButtonEnabled(int index, bool enabled) const {
   }
 }
 
+void MenuButtonManager::setSliderValue(int index, float value) const {
+  if (index >= 0 && index < static_cast<int>(buttons.size())) {
+    buttons[index]->setSliderValue(value);
+  }
+}
+
 void MenuButtonManager::setButtonStyle(int index, MenuButton::Style style) const {
   if (index >= 0 && index < static_cast<int>(buttons.size())) {
     buttons[index]->setStyle(style);
@@ -184,7 +190,7 @@ void MenuButtonManager::layoutGameSetup(
 
 void MenuButtonManager::layoutOptions(const sf::RenderWindow &window,
                                       float scale, float scaleY) const {
-  if (buttons.size() < 7)
+  if (buttons.size() < 8)
     return;
 
   float centerX = static_cast<float>(window.getSize().x) / 2.0f;
@@ -210,8 +216,11 @@ void MenuButtonManager::layoutOptions(const sf::RenderWindow &window,
   // Dynamic Scenery (Background Move)
   buttons[5]->update(scale, centerX, row3Y + spacing * 2.0f, 1.5f, 1.5f, mousePos);
 
+  // Beta Style
+  buttons[6]->update(scale, centerX, row3Y + spacing * 3.0f, 1.5f, 1.5f, mousePos);
+
   float footerY = static_cast<float>(window.getSize().y) - 50.0f * scaleY;
-  buttons[6]->update(scale, centerX, footerY, 1.5f, 1.5f, mousePos);
+  buttons[7]->update(scale, centerX, footerY, 1.5f, 1.5f, mousePos);
 }
 
 void MenuButtonManager::handleDrag(const sf::Vector2f &mousePos) const {

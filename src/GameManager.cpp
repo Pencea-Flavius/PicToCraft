@@ -227,7 +227,8 @@ void GameManager::run() {
 
         if (auto res = menu->getPendingResolutionChange()) {
           if (menu->getPendingFullscreen()) {
-            window.create(*res, "PictoCraft", sf::State::Fullscreen);
+            // Use desktop mode for fullscreen to prevent changing monitor resolution
+            window.create(sf::VideoMode::getDesktopMode(), "PictoCraft", sf::State::Fullscreen);
           } else {
             window.create(*res, "PictoCraft", sf::Style::Close,
                           sf::State::Windowed);
@@ -358,7 +359,7 @@ void GameManager::run() {
         if (cfg.discoFeverMode) shouldScroll = true; 
         
         if (!isPaused && !inGameOver && !inWinScreen) {
-            background->update(deltaTime, shouldScroll);
+            background->update(deltaTime, window.getSize(), shouldScroll);
         }
         background->draw(window);
       }
