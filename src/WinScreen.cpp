@@ -25,6 +25,8 @@ WinScreen::WinScreen() : scrollOffset(0.0f), fadeAlpha(255.0f), clock(), speedMu
 WinScreen::~WinScreen() = default;
 
 void WinScreen::loadPoemText() {
+  paragraphs.clear();
+  paragraphColors.clear();
   std::ifstream file("assets/poem.txt");
   if (!file.is_open()) {
     throw AssetLoadException("assets/poem.txt", "File");
